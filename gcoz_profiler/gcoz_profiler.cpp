@@ -1,11 +1,58 @@
 // gcoz_profiler.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
-
+#include <Windows.h>
 #include <iostream>
+#include <fileapi.h>
 
-int main()
-{
-    std::cout << "Hello World!\n";
+
+int main(int argc, char* argv[]) {
+	HANDLE processHandle = NULL;
+	PVOID remoteBuffer = NULL;
+	DWORD processId = NULL;
+
+	wchar_t dllPath[] = L"C:\\Users\\Moritz\\Documents\\bachelor_thesis\\github\\gcoz\\gcoz\\x64\\Debug\\gcoz_dll.dll"; /// prob needs abs path
+
+	// using switch here for later functionality
+	switch (argc)
+	{
+	case 2:
+		processId = DWORD(atoi(argv[1]));
+		break;
+	default:
+		break;
+		std::cout << "Usage: ./gcoz_profiler <ProcessId>" << std::endl;
+		std::cout << "Provide a PID" << std::endl;
+		std::cin >> processId;
+	}
+
+
+
+	processHandle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, processId);
+	remoteBuffer = VirtualAllocEx(processHandle, NULL, sizeof(dllPath), MEM_COMMIT, PAGE_READWRITE);
+	if (processHandle == NULL || remoteBuffer == NULL || processId == NULL) {
+		std::cout << "Initialization failed" << std::endl;
+		
+	}
+
+	if (WriteProcessMemory(processHandle, remoteBuffer, (LPVOID)dllPath, sizeof(dllPath), NULL)) {
+		std::cout << "WriteProcessMemory success!" << std::endl;
+	}
+
+	PTHREAD_START_ROUTINE threatStartRoutineAddress = (PTHREAD_START_ROUTINE)GetProcAddress(GetModuleHandle(L"Kernel32"), "LoadLibraryW");
+	std::cout << "Thread Start Routine Address: " << threatStartRoutineAddress << std::endl;
+
+	HANDLE remoteThreadHandle = CreateRemoteThread(processHandle, NULL, 0, threatStartRoutineAddress, remoteBuffer, 0, NULL);
+	std::cout << "Remote Thread Handle" << remoteThreadHandle << std::endl;
+
+	LPDWORD rmExitCode = (LPDWORD)259;
+	while (rmExitCode == (LPDWORD)259) {
+		GetExitCodeProcess(processHandle, rmExitCode);
+	}
+
+
+	CloseHandle(processHandle);
+
+	return 0;
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu

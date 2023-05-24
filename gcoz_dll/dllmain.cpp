@@ -1,26 +1,24 @@
 // dllmain.cpp : Defines the entry point for the DLL application.
 #include "pch.h"
-#include <d3d9.h>
+#include <d3d11.h>
 #include "kiero/kiero.h"
 
-typedef long(__stdcall* EndScene)(LPDIRECT3DDEVICE9);
-static EndScene oEndScene = NULL;
+typedef long(__stdcall* Present)(IDXGISwapChain*, UINT, UINT);
+static Present oPresent = NULL;
 
-long __stdcall hkEndScene(LPDIRECT3DDEVICE9 pDevice) {
+long __stdcall hkPresent11(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT Flags) {
     static bool init = false;
 
     if (!init) {
-        MessageBox(0, L"Boom it works", L"Kiero", MB_OK);
+        MessageBox(NULL, L"WORKS!", L"KIERO", MB_OK);
         init = true;
     }
-
-    return oEndScene(pDevice);
+    return oPresent(pSwapChain, SyncInterval, Flags);
 }
-
 int kieroExampleThread() {
     if (kiero::init(kiero::RenderType::D3D9)) {
-        kiero::bind(42, (void**)&oEndScene, hkEndScene);
-        oEndScene = (EndScene)kiero::getMethodsTable()[42];
+        kiero::bind(8, (void**)&oPresent, hkPresent11);
+        oPresent = (Present)kiero::getMethodsTable()[8];
     }
     return 0;
 }
