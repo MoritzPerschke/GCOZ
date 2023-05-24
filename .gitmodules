@@ -1,0 +1,3 @@
+[submodule "gcoz_dll/kiero"]
+	path = gcoz_dll/kiero
+	url = git@github.com:Rebzzel/kiero.git
