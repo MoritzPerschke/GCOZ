@@ -8,9 +8,9 @@
 int main(int argc, char* argv[]) {
 	HANDLE processHandle = NULL;
 	PVOID remoteBuffer = NULL;
-	DWORD processId = NULL;
+	DWORD processId = 7504;
 
-	wchar_t dllPath[] = L"C:\\Users\\Moritz\\Documents\\bachelor_thesis\\github\\gcoz\\gcoz\\x64\\Debug\\gcoz_dll.dll"; /// prob needs abs path
+	wchar_t dllPath[] = L"C:\\Users\\Moritz\\Documents\\bachelor_thesis\\github\\gcoz\\gcoz\\x64\\Debug\\gcoz_dll.dll"; // prob needs abs path
 
 	// using switch here for later functionality
 	switch (argc)
@@ -31,6 +31,8 @@ int main(int argc, char* argv[]) {
 	remoteBuffer = VirtualAllocEx(processHandle, NULL, sizeof(dllPath), MEM_COMMIT, PAGE_READWRITE);
 	if (processHandle == NULL || remoteBuffer == NULL || processId == NULL) {
 		std::cout << "Initialization failed" << std::endl;
+		std::cout << "handle: " << processHandle << "buffer: " << remoteBuffer << "procID: " << processId << std::endl;
+		std::cout << GetLastError() << std::endl;
 		
 	}
 
@@ -44,10 +46,10 @@ int main(int argc, char* argv[]) {
 	HANDLE remoteThreadHandle = CreateRemoteThread(processHandle, NULL, 0, threatStartRoutineAddress, remoteBuffer, 0, NULL);
 	std::cout << "Remote Thread Handle" << remoteThreadHandle << std::endl;
 
-	LPDWORD rmExitCode = (LPDWORD)259;
+	/*LPDWORD rmExitCode = (LPDWORD)259;
 	while (rmExitCode == (LPDWORD)259) {
 		GetExitCodeProcess(processHandle, rmExitCode);
-	}
+	}*/
 
 
 	CloseHandle(processHandle);
