@@ -22,7 +22,7 @@ long __stdcall hkPresent11(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT F
 }
 
 int kieroExampleThread() {
-    if (kiero::init(kiero::RenderType::D3D11)) {
+    if (kiero::init(kiero::RenderType::D3D11) == kiero::Status::Success) {
         kiero::bind(8, (void**)&oPresent, hkPresent11);
         oPresent = (Present)kiero::getMethodsTable()[8];
     }

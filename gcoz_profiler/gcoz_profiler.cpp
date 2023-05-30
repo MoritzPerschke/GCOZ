@@ -4,66 +4,64 @@
 #include <iostream>
 #include <fileapi.h>
 
+const char* k = "[+] ";
+const char* e = "[-] ";
+const char* i = "[*] ";
+
 
 int main(int argc, char* argv[]) {
-	HANDLE processHandle = NULL;
-	PVOID remoteBuffer = NULL;
-	DWORD processId = 7504;
+	HANDLE hProcess, hThread = NULL;
+	HMODULE hKernel32		 = NULL;
+	PVOID rBuffer			 = NULL;
+	DWORD PID, TID			 = NULL;
 
 	wchar_t dllPath[] = L"C:\\Users\\Moritz\\Documents\\bachelor_thesis\\github\\gcoz\\gcoz\\x64\\Debug\\gcoz_dll.dll"; // prob needs abs path
 
-	// using switch here for later functionality
-	switch (argc)
-	{
-	case 2:
-		processId = DWORD(atoi(argv[1]));
-		break;
-	default:
-		break;
-		std::cout << "Usage: ./gcoz_profiler <ProcessId>" << std::endl;
-		std::cout << "Provide a PID" << std::endl;
-		std::cin >> processId;
+	// using switch here is dumb
+	if (argc < 2) {
+		std::cout << e << "Provide PID";
 	}
 
+	PID = atoi(argv[1]);
 
-
-	processHandle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, processId);
-	remoteBuffer = VirtualAllocEx(processHandle, NULL, sizeof(dllPath), MEM_COMMIT, PAGE_READWRITE);
-	if (processHandle == NULL || remoteBuffer == NULL || processId == NULL) {
-		std::cout << "Initialization failed" << std::endl;
-		std::cout << "handle: " << processHandle << "buffer: " << remoteBuffer << "procID: " << processId << std::endl;
-		std::cout << GetLastError() << std::endl;
-		
+	hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, PID);
+	if (hProcess == NULL) {
+		std::cout << e << "Couldn't get handle to Process: " << GetLastError() << std::endl;
+		return 1;
 	}
 
-	if (WriteProcessMemory(processHandle, remoteBuffer, (LPVOID)dllPath, sizeof(dllPath), NULL)) {
-		std::cout << "WriteProcessMemory success!" << std::endl;
+	rBuffer = VirtualAllocEx(hProcess, rBuffer, sizeof(dllPath), (MEM_RESERVE | MEM_COMMIT), PAGE_READWRITE);
+	if (rBuffer == NULL) {
+		std::cout << e << "Couldn't allocate remote Memory" << std::endl;
+		return 1;
+
 	}
 
-	PTHREAD_START_ROUTINE threatStartRoutineAddress = (PTHREAD_START_ROUTINE)GetProcAddress(GetModuleHandle(L"Kernel32"), "LoadLibraryW");
-	std::cout << "Thread Start Routine Address: " << threatStartRoutineAddress << std::endl;
+	WriteProcessMemory(hProcess, rBuffer, (LPVOID)dllPath, sizeof(dllPath), NULL);
+	std::cout << i << "Wrote to Process Memory" << std::endl;
 
-	HANDLE remoteThreadHandle = CreateRemoteThread(processHandle, NULL, 0, threatStartRoutineAddress, remoteBuffer, 0, NULL);
-	std::cout << "Remote Thread Handle" << remoteThreadHandle << std::endl;
+	hKernel32 = GetModuleHandle(L"Kernel32");
+	if (hKernel32 == NULL) {
+		std::cout << e << "Couldn't get Kernel32 handle: " << GetLastError() << std::endl;
+		return 1;
+	}
 
-	/*LPDWORD rmExitCode = (LPDWORD)259;
-	while (rmExitCode == (LPDWORD)259) {
-		GetExitCodeProcess(processHandle, rmExitCode);
-	}*/
+	LPTHREAD_START_ROUTINE loadlib = (LPTHREAD_START_ROUTINE)GetProcAddress(hKernel32, "LoadLibraryW");
+	std::cout << i << "Got address of loadLibrayW: " << loadlib << std::endl;
 
+	hThread = CreateRemoteThread(hProcess, NULL, 0, loadlib, rBuffer, 0, &TID);
+	if (hThread == NULL) {
+		std::cout << e << "Couldn't get address of Thread: " << GetLastError();
+		return 1;
+	}
 
-	CloseHandle(processHandle);
+	std::cout << i << "Thread " << TID << "created with handle: " << hThread << "waiting..." << std::endl;
+	WaitForSingleObject(hThread, INFINITE);
 
+	std::cout << i << "Thread finished, cleaning up..." << std::endl;
+	CloseHandle(hThread);
+	CloseHandle(hProcess);
+
+	std::cout << i << "Done, exiting..." << std::endl;
 	return 0;
 }
-
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
-
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
