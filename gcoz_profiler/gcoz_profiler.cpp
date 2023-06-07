@@ -1,13 +1,6 @@
 // gcoz_profiler.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
-#include <Windows.h>
-#include <iostream>
-#include <fileapi.h>
-
-const char* k = "[+] ";
-const char* e = "[-] ";
-const char* i = "[*] ";
-
+#include "gcoz_profiler.h"
 
 int main(int argc, char* argv[]) {
 	HANDLE hProcess, hThread = NULL;
@@ -58,7 +51,49 @@ int main(int argc, char* argv[]) {
 	std::cout << i << "Thread " << TID << "created with handle: " << hThread << "waiting..." << std::endl;
 	WaitForSingleObject(hThread, INFINITE);
 
+	/* Communication */
+	hFileMapping = OpenFileMapping(
+		FILE_MAP_READ,
+		FALSE,
+		L"GCOZ_Shared_Memory"
+	);
+	if (hFileMapping == NULL) {
+		std::cout << e << "Couldn't File Mapping..." << std::endl;
+	}
+	else {
+		pSharedMemory = MapViewOfFile(
+			hFileMapping,
+			FILE_MAP_READ,
+			0, 0, 0);
+		if (pSharedMemory == NULL) {
+			std::cout << e << "Couldn't Open Shared Memory" << std::endl;
+		}
+		else {
+			pData = static_cast<Message*>(pSharedMemory);
+			hDataWrittenEvent = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"DataWrittenEvent");
+
+			bool reading = true;
+			while (reading) {
+				DWORD dWaitResult = WaitForSingleObject(hDataWrittenEvent, INFINITE);
+
+				if (dWaitResult == WAIT_OBJECT_0) {
+					dllMessage = *pData;
+					if (dllMessage.num_called % 10 == 0) {
+						std::cout << i << "Function " << dllMessage.function_from_table << " has been called " << dllMessage.num_called << " Times" << std::endl;
+						ResetEvent(hDataWrittenEvent);
+					}
+				}
+			}
+
+		}
+
+	}
+		 
 	std::cout << i << "Thread finished, cleaning up..." << std::endl;
+	UnmapViewOfFile(pSharedMemory);
+	CloseHandle(hFileMapping);
+	CloseHandle(hDataWrittenEvent);
+
 	CloseHandle(hThread);
 	CloseHandle(hProcess);
 

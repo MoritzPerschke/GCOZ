@@ -48,6 +48,9 @@
     <ClInclude Include="kiero\minhook\src\hde\table64.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Messages.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">

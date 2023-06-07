@@ -149,6 +149,7 @@
     <ClInclude Include="kiero\minhook\src\hde\table32.h" />
     <ClInclude Include="kiero\minhook\src\hde\table64.h" />
     <ClInclude Include="kiero\minhook\src\trampoline.h" />
+    <ClInclude Include="Messages.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
