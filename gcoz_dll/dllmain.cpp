@@ -3,7 +3,7 @@
 #include <d3d11.h>
 #include <Windows.h>
 #include "kiero/kiero.h"
-#include "Messages.h"
+#include "../gcoz_profiler/Messages.h"
 
 #define d3dPointer
 
@@ -22,13 +22,14 @@ HANDLE hDataWrittenEvent = NULL;
 HRESULT __stdcall hkPresent11(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT Flags)
 {
 	static bool init = false;
-	static Message presentMessage;
+	static Message presentMessage = {};
 
-	//MessageBoxW(0, L"Boom", L"works :D", MB_SETFOREGROUND);
 	if (!init)
 	{
+		MessageBoxA(NULL, "skdfj", "sdkfj", MB_SETFOREGROUND);
+		presentMessage.valid = true;
 		presentMessage.function_from_table = 8;
-		presentMessage.num_called		   = 1;
+		presentMessage.num_called		   = 0;
 		init = true;
 	}
 
@@ -43,6 +44,11 @@ int kieroExampleThread() {
 	if (kiero::init(kiero::RenderType::D3D11) == kiero::Status::Success) {
 		kiero::bind(8, (void**)&oPresent, hkPresent11); // don't use the 'getMethodstable' variant here
 	}
+
+	HANDLE hWriteFileMapping = OpenFileMappingA(FILE_MAP_ALL_ACCESS, FALSE, "gcoz_dll");
+	pSharedMemory = MapViewOfFile(hWriteFileMapping, FILE_MAP_WRITE, 0, 0, 0);
+	pData = static_cast<Message*>(pSharedMemory);
+	hDataWrittenEvent = OpenEventA(EVENT_ALL_ACCESS, FALSE, "dllWrittenEvent");
 	return 0;
 }
 
@@ -53,41 +59,12 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 	{
 	case DLL_PROCESS_ATTACH:
 		CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)kieroExampleThread, NULL, 0, NULL);
-
-		hFileMapping = CreateFileMapping(
-			INVALID_HANDLE_VALUE,
-			NULL,
-			PAGE_READWRITE,
-			0,
-			1024,
-			L"GCOZ_Shared_Memory"
-		);
-		if (hFileMapping == NULL) return 1;
-
-		pSharedMemory = MapViewOfFile(
-			hFileMapping,
-			FILE_MAP_ALL_ACCESS,
-			0, 0, 0);
-		if (pSharedMemory == NULL) return 1;
-
-		pData = static_cast<Message*>(pSharedMemory);
-
-		hDataWrittenEvent = CreateEvent(
-			NULL,
-			FALSE,
-			FALSE,
-			L"DataWrittenEvent"
-		);
-
 		break;
 
 	case DLL_THREAD_ATTACH:
 	case DLL_THREAD_DETACH:
 
 	case DLL_PROCESS_DETACH:
-		UnmapViewOfFile(pSharedMemory);
-		CloseHandle(hFileMapping);
-		CloseHandle(hDataWrittenEvent);
 		break;
 	}
 

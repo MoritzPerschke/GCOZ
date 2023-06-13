@@ -2,101 +2,79 @@
 //
 #include "gcoz_profiler.h"
 
+using namespace std;
+
 int main(int argc, char* argv[]) {
-	HANDLE hProcess, hThread = NULL;
-	HMODULE hKernel32		 = NULL;
-	PVOID rBuffer			 = NULL;
-	DWORD PID, TID			 = NULL;
 
 	wchar_t dllPath[] = L"C:\\Users\\Moritz\\Documents\\bachelor_thesis\\github\\gcoz\\gcoz\\x64\\Debug\\gcoz_dll.dll"; // prob needs abs path
 
 	// using switch here is dumb
 	if (argc < 2) {
-		std::cout << e << "Provide PID";
+		cout << e << "Provide PID";
 	}
 
-	PID = atoi(argv[1]);
+	DWORD PID = atoi(argv[1]);
+	
+	/* Communication */
+	Communication com = Communication();
+	cout << i << "GetLastError from Communication Setup: " << GetLastError() << endl;
 
-	hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, PID);
+	/* Injection */
+	HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, PID);
 	if (hProcess == NULL) {
-		std::cout << e << "Couldn't get handle to Process: " << GetLastError() << std::endl;
+		cout << e << "Couldn't get handle to Process: " << GetLastError() << endl;
 		return 1;
 	}
 
+	PVOID rBuffer = NULL;
 	rBuffer = VirtualAllocEx(hProcess, rBuffer, sizeof(dllPath), (MEM_RESERVE | MEM_COMMIT), PAGE_READWRITE);
 	if (rBuffer == NULL) {
-		std::cout << e << "Couldn't allocate remote Memory" << std::endl;
+		cout << e << "Couldn't allocate remote Memory" << endl;
 		return 1;
 
 	}
 
 	WriteProcessMemory(hProcess, rBuffer, (LPVOID)dllPath, sizeof(dllPath), NULL);
-	std::cout << i << "Wrote to Process Memory" << std::endl;
+	cout << i << "Wrote to Process Memory" << endl;
 
-	hKernel32 = GetModuleHandle(L"Kernel32");
+	HMODULE hKernel32 = GetModuleHandle(L"Kernel32");
 	if (hKernel32 == NULL) {
-		std::cout << e << "Couldn't get Kernel32 handle: " << GetLastError() << std::endl;
+		cout << e << "Couldn't get Kernel32 handle: " << GetLastError() << endl;
 		return 1;
 	}
 
 	LPTHREAD_START_ROUTINE loadlib = (LPTHREAD_START_ROUTINE)GetProcAddress(hKernel32, "LoadLibraryW");
-	std::cout << i << "Got address of loadLibrayW: " << loadlib << std::endl;
+	cout << i << "Got address of loadLibrayW: " << loadlib << endl;
 
-	hThread = CreateRemoteThread(hProcess, NULL, 0, loadlib, rBuffer, 0, &TID);
+	DWORD TID;
+	HANDLE hThread = CreateRemoteThread(hProcess, NULL, 0, loadlib, rBuffer, 0, &TID);
 	if (hThread == NULL) {
-		std::cout << e << "Couldn't get address of Thread: " << GetLastError();
+		cout << e << "Couldn't get address of Thread: " << GetLastError();
 		return 1;
 	}
 
-	std::cout << i << "Thread " << TID << "created with handle: " << hThread << "waiting..." << std::endl;
+	cout << i << "Thread " << TID << "created with handle: " << hThread << ", waiting..." << endl;
 	WaitForSingleObject(hThread, INFINITE);
 
-	/* Communication */
-	hFileMapping = OpenFileMapping(
-		FILE_MAP_READ,
-		FALSE,
-		L"GCOZ_Shared_Memory"
-	);
-	if (hFileMapping == NULL) {
-		std::cout << e << "Couldn't File Mapping..." << std::endl;
-	}
-	else {
-		pSharedMemory = MapViewOfFile(
-			hFileMapping,
-			FILE_MAP_READ,
-			0, 0, 0);
-		if (pSharedMemory == NULL) {
-			std::cout << e << "Couldn't Open Shared Memory" << std::endl;
-		}
-		else {
-			pData = static_cast<Message*>(pSharedMemory);
-			hDataWrittenEvent = OpenEvent(EVENT_ALL_ACCESS, FALSE, L"DataWrittenEvent");
+	//system("pause");
 
-			bool reading = true;
-			while (reading) {
-				DWORD dWaitResult = WaitForSingleObject(hDataWrittenEvent, INFINITE);
-
-				if (dWaitResult == WAIT_OBJECT_0) {
-					dllMessage = *pData;
-					if (dllMessage.num_called % 10 == 0) {
-						std::cout << i << "Function " << dllMessage.function_from_table << " has been called " << dllMessage.num_called << " Times" << std::endl;
-						ResetEvent(hDataWrittenEvent);
-					}
-				}
+	bool running = true;
+	cout << i << "Entering Read Loop";
+	while (running) {
+		Message dllMessage = com.getMessage();
+		if (dllMessage.valid) {
+			if (dllMessage.num_called % 10 == 0) {
+				cout << i << "Present has been called " << dllMessage.num_called << " times" << endl;
 			}
-
+			ResetEvent(com.hDllWrittenEvent);
 		}
-
 	}
-		 
-	std::cout << i << "Thread finished, cleaning up..." << std::endl;
-	UnmapViewOfFile(pSharedMemory);
-	CloseHandle(hFileMapping);
-	CloseHandle(hDataWrittenEvent);
 
+		 
+	cout << i << "Thread finished, cleaning up..." << endl;
 	CloseHandle(hThread);
 	CloseHandle(hProcess);
 
-	std::cout << i << "Done, exiting..." << std::endl;
+	cout << i << "Done, exiting..." << endl;
 	return 0;
 }
