@@ -56,21 +56,7 @@ int main(int argc, char* argv[]) {
 	cout << i << "Thread " << TID << "created with handle: " << hThread << ", waiting..." << endl;
 	WaitForSingleObject(hThread, INFINITE);
 
-	//system("pause");
 
-	bool running = true;
-	cout << i << "Entering Read Loop";
-	while (running) {
-		Message dllMessage = com.getMessage();
-		if (dllMessage.valid) {
-			if (dllMessage.num_called % 10 == 0) {
-				cout << i << "Present has been called " << dllMessage.num_called << " times" << endl;
-			}
-			ResetEvent(com.hDllWrittenEvent);
-		}
-	}
-
-		 
 	cout << i << "Thread finished, cleaning up..." << endl;
 	CloseHandle(hThread);
 	CloseHandle(hProcess);

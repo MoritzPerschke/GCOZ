@@ -58,13 +58,14 @@ Communication::~Communication() {
 }
 
 Message Communication::getMessage() {
-	DWORD dWaitResult = WaitForSingleObject(hDllWrittenEvent, INFINITE);
+	DWORD dWaitResult = WaitForSingleObject(hDllWrittenEvent, 60000);
 	Message dllMessage;
+	
 	if (dWaitResult == WAIT_OBJECT_0) {
 		dllMessage = *pDllData;
+		return dllMessage;
 	}
-	else {
-		dllMessage.valid = false;
-	}
+
+	dllMessage.valid = false;
 	return dllMessage;
 }

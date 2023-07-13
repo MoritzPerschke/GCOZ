@@ -1,53 +1,31 @@
 // dllmain.cpp : Defines the entry point for the DLL application.
 #include "pch.h"
-#include <d3d11.h>
+#include <d3d11.h> // C:\Program Files (x86)\Windows Kits\10\Include\10.0.22621.0\um\d3d11.h
 #include <Windows.h>
+#include <chrono>
 #include "kiero/kiero.h"
 #include "../gcoz_profiler/Messages.h"
-
-#define d3dPointer
-
-/* typedef function pointer to Present function */
-typedef HRESULT(__stdcall* Present)(IDXGISwapChain*, UINT, UINT);
-/* save pointer to original Present function to call later */
-static Present oPresent = NULL;
+#include "D3D11Hooks.h"
 
 /* FileMapping to communicate between dll and profiler */
-HANDLE hFileMapping      = NULL;
-LPVOID pSharedMemory     = NULL;
-Message* pData		     = NULL;
+Message* sharedMemoryRead   = NULL;
+Response* sharedMemoryWrite = NULL;
+HANDLE hDataWrittenEvent    = NULL;
 
-HANDLE hDataWrittenEvent = NULL;
 
-HRESULT __stdcall hkPresent11(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT Flags)
-{
-	static bool init = false;
-	static Message presentMessage = {};
-
-	if (!init)
-	{
-		MessageBoxA(NULL, "skdfj", "sdkfj", MB_SETFOREGROUND);
-		presentMessage.valid = true;
-		presentMessage.function_from_table = 8;
-		presentMessage.num_called		   = 0;
-		init = true;
-	}
-
-	presentMessage.num_called++;
-	*pData = presentMessage;
-	SetEvent(hDataWrittenEvent);
-
-	return oPresent(pSwapChain, SyncInterval, Flags);
-}
-
-int kieroExampleThread() {
+int profilerThread() {
 	if (kiero::init(kiero::RenderType::D3D11) == kiero::Status::Success) {
-		kiero::bind(8, (void**)&oPresent, hkPresent11); // don't use the 'getMethodstable' variant here
+		kiero::bind(8, (void**)&oPresent, hkPresent); // don't use the 'getMethodstable' variant here
 	}
 
-	HANDLE hWriteFileMapping = OpenFileMappingA(FILE_MAP_ALL_ACCESS, FALSE, "gcoz_dll");
-	pSharedMemory = MapViewOfFile(hWriteFileMapping, FILE_MAP_WRITE, 0, 0, 0);
-	pData = static_cast<Message*>(pSharedMemory);
+	HANDLE hReadFileMapping = OpenFileMappingA(FILE_MAP_ALL_ACCESS, FALSE, "gcoz_dll"); // read from here
+	LPVOID pReadSharedMemory = MapViewOfFile(hReadFileMapping, FILE_MAP_READ, 0, 0, 0);
+	sharedMemoryRead = static_cast<Message*>(pReadSharedMemory);
+
+	HANDLE hWriteFileMapping = OpenFileMappingA(FILE_MAP_ALL_ACCESS, FALSE, "gcoz_profiler");
+	LPVOID pWriteSharedMemory = MapViewOfFile(hWriteFileMapping, FILE_MAP_WRITE, 0, 0, 0);
+	sharedMemoryWrite = static_cast<Response*>(pWriteSharedMemory);
+
 	hDataWrittenEvent = OpenEventA(EVENT_ALL_ACCESS, FALSE, "dllWrittenEvent");
 	return 0;
 }
@@ -58,7 +36,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 	switch (ul_reason_for_call)
 	{
 	case DLL_PROCESS_ATTACH:
-		CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)kieroExampleThread, NULL, 0, NULL);
+		CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)profilerThread, NULL, 0, NULL);
 		break;
 
 	case DLL_THREAD_ATTACH:

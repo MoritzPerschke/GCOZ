@@ -1,7 +1,17 @@
 #pragma once
+#include <chrono>
+
+typedef enum Command {
+	DLL_DELAY,
+	DLL_FLUSH
+};
 
 typedef struct Message {
+	int delay[205];
+	Command command;
 	bool valid;
-	int function_from_table;
-	int num_called;
-}Message;
+};
+
+typedef struct Response {
+	std::chrono::high_resolution_clock::time_point timestamp;
+};

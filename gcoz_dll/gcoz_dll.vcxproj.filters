@@ -48,7 +48,10 @@
     <ClInclude Include="kiero\minhook\src\hde\table64.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Messages.h">
+    <ClInclude Include="D3D11Hooks.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HelperMacros.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
