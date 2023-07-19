@@ -112,8 +112,8 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <PreprocessToFile>true</PreprocessToFile>
-      <AdditionalOptions> /experimental:preprocessor %(AdditionalOptions)</AdditionalOptions>
+      <PreprocessToFile>false</PreprocessToFile>
+      <AdditionalOptions>/Zc:preprocessor %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -141,7 +141,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Communication.h" />
     <ClInclude Include="D3D11Hooks.h" />
+    <ClInclude Include="DelayManager.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="HelperMacros.h" />
     <ClInclude Include="kiero\kiero.h" />
@@ -156,6 +158,8 @@
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Communication.cpp" />
+    <ClCompile Include="DelayManager.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="kiero\kiero.cpp" />
     <ClCompile Include="kiero\minhook\src\buffer.c" />

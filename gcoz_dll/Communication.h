@@ -1,6 +1,6 @@
 #pragma once
 #include <Windows.h>
-#include "Messages.h"
+#include "../gcoz_profiler/Messages.h"
 
 // maybe singleton? https://stackoverflow.com/a/1008289/15005309
 class Communication {
@@ -14,5 +14,5 @@ public:
 	Communication();
 	~Communication();
 
-	DllMessage getMessage();
+	ProfilerMessage getMessage(DWORD waitTimeout);
 };

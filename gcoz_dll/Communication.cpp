@@ -1,23 +1,17 @@
 #include "Communication.h"
 
-Communication::Communication() {
-	hDllFileMapping = CreateFileMappingA(
-		INVALID_HANDLE_VALUE,
+Communication::Communication(){
+	hDllFileMapping = OpenFileMappingA(
+		FILE_MAP_WRITE,
 		FALSE,
-		PAGE_READWRITE,
-		0,
-		2048,
 		"gcoz_dll"
 	); if (hDllFileMapping == NULL) {
 		SetLastError(1);
 	}
 
-	hProfilerFileMapping = CreateFileMappingA(
-		INVALID_HANDLE_VALUE,
+	hProfilerFileMapping = OpenFileMappingA(
+		FILE_MAP_READ,
 		FALSE,
-		PAGE_READWRITE,
-		0,
-		2048,
 		"gcoz_profiler"
 	); if (hProfilerFileMapping == NULL) {
 		SetLastError(1);
@@ -25,7 +19,7 @@ Communication::Communication() {
 
 	pSharedMemoryDll = MapViewOfFile(
 		hDllFileMapping,
-		FILE_MAP_ALL_ACCESS,
+		FILE_MAP_WRITE,
 		0, 0, 0
 	); if (pSharedMemoryDll == NULL) {
 		SetLastError(1);
@@ -33,14 +27,14 @@ Communication::Communication() {
 
 	pSharedMemoryProfiler = MapViewOfFile(
 		hProfilerFileMapping,
-		FILE_MAP_ALL_ACCESS,
+		FILE_MAP_READ,
 		0, 0, 0
 	); if (pSharedMemoryProfiler == NULL) {
 		SetLastError(1);
 	}
 
-	hDllWrittenEvent = CreateEventA(NULL, FALSE, FALSE, "dllWrittenEvent");
-	hProfilerWrittenEvent = CreateEventA(NULL, FALSE, FALSE, "profilerWrittenEvent");
+	hDllWrittenEvent = OpenEventA(EVENT_ALL_ACCESS, FALSE, "dllWrittenEvent");
+	hProfilerWrittenEvent = OpenEventA(EVENT_ALL_ACCESS, FALSE, "profilerWrittenEvent");
 
 	pDllData = static_cast<DllMessage*>(pSharedMemoryDll);
 	pProfilerData = static_cast<ProfilerMessage*>(pSharedMemoryProfiler);
@@ -49,7 +43,7 @@ Communication::Communication() {
 Communication::~Communication() {
 	UnmapViewOfFile(hDllFileMapping);
 	UnmapViewOfFile(hProfilerFileMapping);
-	 
+
 	CloseHandle(pSharedMemoryDll);
 	CloseHandle(pSharedMemoryProfiler);
 
@@ -57,14 +51,16 @@ Communication::~Communication() {
 	CloseHandle(hProfilerWrittenEvent);
 }
 
-DllMessage Communication::getMessage() {
-	DWORD dWaitResult = WaitForSingleObject(hDllWrittenEvent, 60000);
-	DllMessage dllMessage;
-	
+ProfilerMessage Communication::getMessage(DWORD waitTimeout) {
+	DWORD dWaitResult = WaitForSingleObject(hProfilerWrittenEvent, waitTimeout);
+	ProfilerMessage profilerMessage;
+
 	if (dWaitResult == WAIT_OBJECT_0) {
-		dllMessage = *pDllData;
-		return dllMessage;
+		profilerMessage = *pProfilerData;
 	}
-	dllMessage.valid = false;
-	return dllMessage;
+	else {
+		profilerMessage.valid = false;
+	}
+
+	return profilerMessage;
 }

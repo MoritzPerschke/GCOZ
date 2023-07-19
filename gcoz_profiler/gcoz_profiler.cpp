@@ -19,7 +19,7 @@ int main(int argc, char* argv[]) {
 	Communication com = Communication();
 	cout << i << "GetLastError from Communication Setup: " << GetLastError() << endl;
 
-	/* Injection */
+	/* Injection */ //move to namespace/class
 	HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, PID);
 	if (hProcess == NULL) {
 		cout << e << "Couldn't get handle to Process: " << GetLastError() << endl;
