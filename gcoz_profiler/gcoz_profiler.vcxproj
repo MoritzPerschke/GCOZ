@@ -127,6 +127,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Communication.cpp" />
     <ClCompile Include="gcoz_profiler.cpp" />
     <ClCompile Include="Injector.cpp" />
   </ItemGroup>
@@ -134,6 +135,11 @@
     <ClInclude Include="gcoz_profiler.h" />
     <ClInclude Include="Injector.h" />
     <ClInclude Include="status.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="gcoz_profiler.h" />
+    <ClInclude Include="Communication.h" />
+    <ClInclude Include="Messages.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

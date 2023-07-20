@@ -1,5 +1,4 @@
 // gcoz_profiler.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
 #include "gcoz_profiler.h"
 
 int main(int argc, char* argv[]) {
@@ -13,7 +12,11 @@ int main(int argc, char* argv[]) {
 
 	Injector injector = Injector();
 	injector.inject_dll(PID);
-
-	std::cout << ok << "Done, exiting..." << std::endl;
+ 
+	/* Communication */
+	Communication com = Communication();
+	cout << i << "GetLastError from Communication Setup: " << GetLastError() << endl;
+  
+	cout << i << "Done, exiting..." << endl;
 	return 0;
 }
