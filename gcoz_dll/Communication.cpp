@@ -4,7 +4,7 @@ Communication::Communication(){
 	hDllFileMapping = OpenFileMappingA(
 		FILE_MAP_WRITE,
 		FALSE,
-		"gcoz_dll"
+		"global\\gcoz_dll"
 	); if (hDllFileMapping == NULL) {
 		SetLastError(1);
 	}
@@ -12,7 +12,7 @@ Communication::Communication(){
 	hProfilerFileMapping = OpenFileMappingA(
 		FILE_MAP_READ,
 		FALSE,
-		"gcoz_profiler"
+		"global\\gcoz_profiler"
 	); if (hProfilerFileMapping == NULL) {
 		SetLastError(1);
 	}
@@ -51,8 +51,8 @@ Communication::~Communication() {
 	CloseHandle(hProfilerWrittenEvent);
 }
 
-ProfilerMessage Communication::getMessage(DWORD waitTimeout) {
-	DWORD dWaitResult = WaitForSingleObject(hProfilerWrittenEvent, waitTimeout);
+ProfilerMessage Communication::getMessage(DWORD _waitTimeout) {
+	DWORD dWaitResult = WaitForSingleObject(hProfilerWrittenEvent, _waitTimeout);
 	ProfilerMessage profilerMessage;
 
 	if (dWaitResult == WAIT_OBJECT_0) {
@@ -63,4 +63,9 @@ ProfilerMessage Communication::getMessage(DWORD waitTimeout) {
 	}
 
 	return profilerMessage;
+}
+
+bool Communication::sendMessage(DllMessage _msg) {
+	*pDllData = _msg;
+	return SetEvent(hDllWrittenEvent);
 }

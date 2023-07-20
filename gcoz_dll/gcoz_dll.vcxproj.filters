@@ -48,6 +48,7 @@
     <ClInclude Include="kiero\minhook\src\hde\table64.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+<<<<<<< HEAD
     <ClInclude Include="D3D11Hooks.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -58,6 +59,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DelayManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MethodDurations.h">
+=======
+    <ClInclude Include="status.hpp">
+>>>>>>> injector_class
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

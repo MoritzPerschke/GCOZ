@@ -145,6 +145,7 @@
     <ClInclude Include="D3D11Hooks.h" />
     <ClInclude Include="DelayManager.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="MethodDurations.h" />
     <ClInclude Include="HelperMacros.h" />
     <ClInclude Include="kiero\kiero.h" />
     <ClInclude Include="kiero\minhook\include\MinHook.h" />
@@ -156,6 +157,7 @@
     <ClInclude Include="kiero\minhook\src\hde\table64.h" />
     <ClInclude Include="kiero\minhook\src\trampoline.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="status.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Communication.cpp" />

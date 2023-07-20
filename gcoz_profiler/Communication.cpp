@@ -7,7 +7,7 @@ Communication::Communication() {
 		PAGE_READWRITE,
 		0,
 		2048,
-		"gcoz_dll"
+		"global\\gcoz_dll"
 	); if (hDllFileMapping == NULL) {
 		SetLastError(1);
 	}
@@ -18,7 +18,7 @@ Communication::Communication() {
 		PAGE_READWRITE,
 		0,
 		2048,
-		"gcoz_profiler"
+		"global\\gcoz_profiler"
 	); if (hProfilerFileMapping == NULL) {
 		SetLastError(1);
 	}

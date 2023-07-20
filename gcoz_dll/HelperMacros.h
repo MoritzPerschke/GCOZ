@@ -56,7 +56,6 @@
 #define D3D11_METHODS \
 	X(3, HRESULT, SetPrivateData, REFGUID, guid, UINT, DataSize, const void*, pData) \
 	X(5, HRESULT, GetPrivateData, REFGUID, guid, UINT, *pDataSize, void*, pData) \
-	X(8, HRESULT, Present, IDXGISwapChain*, pSwapChain, UINT, SyncInterval, UINT, Flags) \
 	X(10, HRESULT, SetFullscreenState, BOOL, Fullscreen, _In_opt_ IDXGIOutput, *pTarget) \
 	X(13, HRESULT, ResizeBuffers, UINT, BufferCount, UINT, Width, UINT, Height, UINT, Format, DXGI_FORMAT, NewFormat, UINT, SwapChainFlags) \
 	X(14, HRESULT, ResizeTarget, const DXGI_MODE_DESC, *pNewTargetParameters) \

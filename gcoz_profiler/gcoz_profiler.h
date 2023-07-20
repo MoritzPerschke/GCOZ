@@ -3,11 +3,10 @@
 #include <Windows.h>
 #include <iostream>
 #include <fileapi.h>
-
 #include "Messages.h"
 #include "Communication.h"
+#include "Injector.h"
 
-const char* k = "[+] ";
-const char* e = "[-] ";
-const char* i = "[*] ";
-
+const char* ok = "[+] ";
+const char* err = "[-] ";
+const char* inf = "[*] ";

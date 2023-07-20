@@ -5,9 +5,9 @@ int Injector::inject_dll(DWORD _PID) {
 	std::cout << inf << "Dll path is: " << dllPath << std::endl;
 
 	HANDLE hProcess, hThread = NULL;
-	HMODULE hKernel32 = NULL;
-	PVOID rBuffer = NULL;
-	DWORD PID, TID = NULL;
+	HMODULE hKernel32		 = NULL;
+	PVOID rBuffer			 = NULL;
+	DWORD PID, TID			 = NULL;
 
 	PID = _PID;
 

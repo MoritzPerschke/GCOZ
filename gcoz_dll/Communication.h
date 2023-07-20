@@ -14,5 +14,6 @@ public:
 	Communication();
 	~Communication();
 
-	ProfilerMessage getMessage(DWORD waitTimeout);
+	ProfilerMessage getMessage(DWORD _waitTimeout);
+	bool sendMessage(DllMessage _msg);
 };

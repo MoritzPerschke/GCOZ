@@ -1,21 +1,23 @@
 #pragma once
 #include <chrono>
 #include <array>
+	
+using Duration = std::chrono::duration<double>;
 
-typedef enum Command {
+enum Command {
 	DLL_DELAY,
 	DLL_FLUSH
 };
 
-typedef struct Message {
+struct Message {
 	bool valid;
 };
 
-typedef struct ProfilerMessage : Message {
+struct ProfilerMessage : Message {
 	std::array<DWORD, 205> delays;
 	Command command;
 };
 
-typedef struct DllMessage : Message {
-	std::chrono::high_resolution_clock::time_point timestamp;
+struct DllMessage : Message {
+	std::array<std::chrono::nanoseconds, 205> durations;
 };
