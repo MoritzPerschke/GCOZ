@@ -1,18 +1,16 @@
 #pragma once
 #include <Windows.h>
 #include <iostream>
+#include <cstring>
 
 #include "status.h"
 
 class Injector
 {
 private:
-	wchar_t* dllPath;
+	const wchar_t dllPath[82] = L"C:\\Users\\Moritz\\Documents\\bachelor_thesis\\github\\gcoz\\gcoz\\x64\\Debug\\gcoz_dll.dll";
 
 public:
-	Injector(wchar_t* dllPath)
-		: dllPath(dllPath){}
-
 	int inject_dll(const DWORD _PID);
 };
 

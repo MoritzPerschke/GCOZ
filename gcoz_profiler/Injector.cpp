@@ -2,6 +2,8 @@
 
 int Injector::inject_dll(DWORD _PID) {
 
+	std::cout << inf << "Dll path is: " << dllPath << std::endl;
+
 	HANDLE hProcess, hThread = NULL;
 	HMODULE hKernel32		 = NULL;
 	PVOID rBuffer			 = NULL;
@@ -23,7 +25,7 @@ int Injector::inject_dll(DWORD _PID) {
 	}
 
 	WriteProcessMemory(hProcess, rBuffer, (LPVOID)dllPath, sizeof(dllPath), NULL);
-	std::cout << inf << "Wrote " << dllPath << " to Memory of Process " << PID << std::endl;
+	std::cout << inf << "Wrote " << (String)dllPath << " to Memory of Process " << PID << std::endl;
 
 	hKernel32 = GetModuleHandle(L"Kernel32");
 	if (hKernel32 == NULL) {

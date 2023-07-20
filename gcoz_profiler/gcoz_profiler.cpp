@@ -4,8 +4,6 @@
 
 int main(int argc, char* argv[]) {
 
-	wchar_t dllPath[] = L"C:\\Users\\Moritz\\Documents\\bachelor_thesis\\github\\gcoz\\gcoz\\x64\\Debug\\gcoz_dll.dll"; // prob needs abs path
-
 	// using switch here is dumb
 	if (argc < 2) {
 		std::cout << err << "Provide PID";
@@ -13,7 +11,7 @@ int main(int argc, char* argv[]) {
 
 	DWORD PID = atoi(argv[1]);
 
-	Injector injector = Injector(dllPath);
+	Injector injector = Injector();
 	injector.inject_dll(PID);
 
 	std::cout << ok << "Done, exiting..." << std::endl;
