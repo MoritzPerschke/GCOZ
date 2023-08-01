@@ -36,6 +36,7 @@ int main(int argc, char* argv[]) {
 		}
 		else {
 			std::cout << err << "No message after timeout" << std::endl;
+			break;
 		}
 		
 	}

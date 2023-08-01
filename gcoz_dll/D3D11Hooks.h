@@ -3,6 +3,7 @@
 #include <d3d11.h>
 #include <d3d11_1.h>
 #include <d3d11_2.h>
+#include <thread>
 #include "HelperMacros.h"
 #include "DelayManager.h"
 #include "MethodDurations.h"
@@ -45,7 +46,8 @@ namespace D3D11Hooks{
 	typedef HRESULT(__stdcall* SetPrivateData)(REFGUID, UINT, const void*);
 	static SetPrivateData oSetPrivateData = NULL;
 	HRESULT __stdcall hkSetPrivateData(REFGUID guid, UINT DataSize, const void* pData) {
-		/*Sleep(delays.getDelay(3));*/
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(delays.getDelay(3)));
 		MessageBoxW(0, L"Debug", L"SetPrivateData1", MB_SETFOREGROUND);
 
 		MethodDurations::Timepoint start = MethodDurations::now();
@@ -62,17 +64,20 @@ namespace D3D11Hooks{
 	HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT Flags) {
 			static int callCount = 0;
 			callCount++;
-			
+
+			std::this_thread::sleep_for(std::chrono::milliseconds(delays.getDelay(8)));
+
 			MethodDurations::Timepoint start = MethodDurations::now();
 			HRESULT value = oPresent(pSwapChain, SyncInterval, Flags);
 			MethodDurations::Duration duration = MethodDurations::now() - start;
 			MethodDurations::addDuration(8, duration);
 
-			DllMessage send = {};
-			send.durations = MethodDurations::getDurations();
-			send.valid = true;
-			com.sendMessage(send); // crashes game
-			//MessageBoxW(0, L"hkPresent done", L"Debug", MB_SETFOREGROUND);
+			if (callCount % 100 == 0) {
+				DllMessage send = {};
+				send.durations = MethodDurations::getDurations();
+				send.valid = true;
+				com.sendMessage(send);
+			}
 
 			return value;
 	}

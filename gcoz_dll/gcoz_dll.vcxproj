@@ -144,6 +144,7 @@
     <ClInclude Include="Communication.h" />
     <ClInclude Include="D3D11Hooks.h" />
     <ClInclude Include="DelayManager.h" />
+    <ClInclude Include="ErrorMessage.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="MethodDurations.h" />
     <ClInclude Include="HelperMacros.h" />
@@ -163,6 +164,7 @@
     <ClCompile Include="Communication.cpp" />
     <ClCompile Include="DelayManager.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="ErrorMessage.cpp" />
     <ClCompile Include="kiero\kiero.cpp" />
     <ClCompile Include="kiero\minhook\src\buffer.c" />
     <ClCompile Include="kiero\minhook\src\hde\hde32.c" />

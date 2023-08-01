@@ -1,33 +1,12 @@
 #include "Communication.h"
 
-std::wstring GetLastErrorAsString()
-{
-	DWORD errorCode = GetLastError();
-	LPWSTR messageBuffer = nullptr;
-	size_t size = FormatMessageW(
-		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-		NULL,
-		errorCode,
-		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(LPWSTR)&messageBuffer,
-		0,
-		NULL
-	);
-
-	std::wstring message(messageBuffer, size);
-
-	LocalFree(messageBuffer);
-
-	return message;
-}
-
 Communication::Communication(){
 	hDllFileMapping = OpenFileMapping(
 		FILE_MAP_ALL_ACCESS,
 		FALSE,
 		L"gcoz_dll_shared_memory"
 	); if (hDllFileMapping == NULL) {
-		MessageBoxW(0, GetLastErrorAsString().c_str(), L"OpenFileMapping Dll", MB_SETFOREGROUND);
+		DisplayErrorBox(L"OpenFileMapping Dll");
 	}
 
 	hProfilerFileMapping = OpenFileMapping(
@@ -35,7 +14,7 @@ Communication::Communication(){
 		FALSE,
 		L"gcoz_profiler_shared_memory"
 	); if (hProfilerFileMapping == NULL) {
-		MessageBoxW(0, GetLastErrorAsString().c_str(), L"OpenFileMapping Profiler", MB_SETFOREGROUND);
+		DisplayErrorBox(L"OpenFileMapping Profiler");
 	}
 
 	pSharedMemoryDll = MapViewOfFile( // this is the only one failing
@@ -43,8 +22,7 @@ Communication::Communication(){
 		FILE_MAP_WRITE, // the writing is the issue
 		0, 0, 20
 	); if (pSharedMemoryDll == NULL) {
-		
-		MessageBoxW(0, GetLastErrorAsString().c_str(), L"MapViewOfFile Dll", MB_SETFOREGROUND);
+		DisplayErrorBox(L"MapViewOfFile Dll");
 	}
 
 	pSharedMemoryProfiler = MapViewOfFile(
@@ -52,7 +30,7 @@ Communication::Communication(){
 		FILE_MAP_READ,
 		0, 0, 2048
 	); if (pSharedMemoryProfiler == NULL) {
-		MessageBoxW(0, GetLastErrorAsString().c_str(), L"MapViewOfFile Profiler", MB_SETFOREGROUND);
+		DisplayErrorBox(L"MapViewOfFile Profiler");
 	}
 
 	hDllWrittenEvent = OpenEventA(EVENT_ALL_ACCESS, FALSE, "dllWrittenEvent");
