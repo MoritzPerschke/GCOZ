@@ -1,5 +1,6 @@
 #pragma once
 #include <Windows.h>
+#include <iostream>
 #include "Messages.h"
 
 // maybe singleton? https://stackoverflow.com/a/1008289/15005309
@@ -11,8 +12,7 @@ public:
 	HANDLE hDllWrittenEvent, hProfilerWrittenEvent;
 	ProfilerMessage* pProfilerData;
 	DllMessage* pDllData;
-	Communication();
 	~Communication();
-
+	void init();
 	DllMessage getMessage();
 };

@@ -54,7 +54,6 @@
 #define FUNCTION_SIGNATURE(...) COUNT_ALL_(__VA_ARGS__, 6,6,5,5,4,4,3,3,2,2,1,0)(__VA_ARGS__)
 
 #define D3D11_METHODS \
-	X(3, HRESULT, SetPrivateData, REFGUID, guid, UINT, DataSize, const void*, pData) \
 	X(5, HRESULT, GetPrivateData, REFGUID, guid, UINT, *pDataSize, void*, pData) \
 	X(10, HRESULT, SetFullscreenState, BOOL, Fullscreen, _In_opt_ IDXGIOutput, *pTarget) \
 	X(13, HRESULT, ResizeBuffers, UINT, BufferCount, UINT, Width, UINT, Height, UINT, Format, DXGI_FORMAT, NewFormat, UINT, SwapChainFlags) \
@@ -74,13 +73,13 @@
 	X(196, HRESULT, CopyTileMappings, ID3D11Resource, *pDestTiledResource, const D3D11_TILED_RESOURCE_COORDINATE, *pDestRegionStartCoordinate, ID3D11Resource, *pSourceTiledResource, const D3D11_TILED_RESOURCE_COORDINATE, *pSourceRegionStartCoordinate, const D3D11_TILE_REGION_SIZE, *pTileRegionSize, UINT, Flags) \
 	X(199, HRESULT, ResizeTilePool, ID3D11Buffer, *pTilePool, UINT64, NewSizeInBytes) \
 	X(201, BOOL, IsAnnotationEnabled) \
+	//X(3, HRESULT, SetPrivateData, REFGUID, guid, UINT, DataSize, const void*, pData) \
 
 #define D3D11_METHODS_VOID \
 	X(49, void, CheckCounterInfo, D3D11_COUNTER_INFO, *pCounterinfo) \
 	X(58, void, GetImmediateContext, ID3D11DeviceContext, **ppImmediateContext) \
 	X(64, void, GetDevice, ID3D11Device, **ppDevice) \
 	X(73, void, DrawIndexed, UINT, IndexCount, UINT, StartIndexLocation, INT, BaseVertexLocation) \
-	X(74, void, Draw, UINT, VertexCount, UINT, StartVertexLocation) \
 	X(76, void, Unmap, ID3D11Resource, *pResource, UINT, Subresource) \
 	X(81, void, DrawIndexedInstanced, UINT, IndexCountPerInstance, UINT, InstanceCount, UINT, StartIndexLocation, INT, BaseVertexLocation, UINT, StartInstanceLocation) \
 	X(82, void, DrawInstanced, UINT, VertexCountPerInstance, UINT, InstanceCount, UINT, StartVertexLocation, UINT, StartInstanceLocation) \
@@ -114,4 +113,5 @@
 	X(198, void, UpdateTiles, ID3D11Resource, *pDestTiledResource, const D3D11_TILED_RESOURCE_COORDINATE, *pDestTiledRegionStartCoordinate, const D3D11_TILE_REGION_SIZE, *pDestTileRegionSize, const void*, pSourceTileData, UINT, Flags) \
 	X(202, void, SetMarkerInt, LPCWSTR, pLabel, INT, Data) \
 	X(203, void, BeginEventInt, LPCWSTR, pLabel, INT, Data) \
-	X(204, void, EndEvent)
+	X(204, void, EndEvent) \
+	//X(74, void, Draw, UINT, VertexCount, UINT, StartVertexLocation) \

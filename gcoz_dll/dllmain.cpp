@@ -10,12 +10,10 @@
 #include "../gcoz_profiler/Messages.h"
 
 int profilerThread() {
-	//Communication com = Communication();
-	//if (kiero::init(kiero::RenderType::D3D11) == kiero::Status::Success) {
-	//	D3D11Hooks::hookD3D11(com);
-	//}
-	
-
+	if (kiero::init(kiero::RenderType::D3D11) == kiero::Status::Success) {
+		MessageBoxW(0, L"Debug", L"MainThread", MB_SETFOREGROUND);
+		D3D11Hooks::hookD3D11();
+	}
 	return 0;
 }
 
@@ -30,7 +28,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 	switch (ul_reason_for_call)
 	{
 	case DLL_PROCESS_ATTACH:
-		CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)profilerThread, NULL, 0, NULL);
+		CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)profilerThread, NULL, 0, NULL); 
 		//CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)debugMessageBoxThread, NULL, 0, NULL);
 		break;
 

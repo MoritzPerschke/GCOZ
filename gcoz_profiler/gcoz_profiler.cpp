@@ -10,14 +10,21 @@ int main(int argc, char* argv[]) {
 	}
 
 	DWORD PID = atoi(argv[1]);
-	
-	Injector injector = Injector();
-	injector.inject_dll(PID);
 
 	/* Communication */
-	Communication com = Communication();
-	std::cout << inf << "GetLastError from Communication Setup: " << GetLastError() << std::endl;
+	Communication com;
+	try {
+		com.init();
+	}
+	catch (const std::runtime_error& ex) {
+		std::cout << err << ex.what() << std::endl;
+		return 1;
+	}
 
+	/* Injection */
+	// this HAS TO happen after Communication is initialized
+	Injector injector = Injector();
+	injector.inject_dll(PID);
 
 	while (true) {
 		DllMessage msg = com.getMessage();

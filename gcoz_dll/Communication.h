@@ -1,5 +1,6 @@
 #pragma once
 #include <Windows.h>
+#include <string>
 #include "../gcoz_profiler/Messages.h"
 
 // maybe singleton? https://stackoverflow.com/a/1008289/15005309

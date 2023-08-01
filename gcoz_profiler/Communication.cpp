@@ -1,26 +1,27 @@
 #include "Communication.h"
 
-Communication::Communication() {
-	hDllFileMapping = CreateFileMappingA(
+void Communication::init() {
+	hDllFileMapping = CreateFileMapping(
 		INVALID_HANDLE_VALUE,
-		FALSE,
+		NULL,
 		PAGE_READWRITE,
 		0,
 		2048,
-		"global\\gcoz_dll"
-	); if (hDllFileMapping == NULL) {
-		SetLastError(1);
+		L"gcoz_dll_shared_memory"
+	); 
+	if (hDllFileMapping == NULL) {
+		throw std::runtime_error("hDllFileMapping creation failed");
 	}
 
-	hProfilerFileMapping = CreateFileMappingA(
+	hProfilerFileMapping = CreateFileMapping(
 		INVALID_HANDLE_VALUE,
-		FALSE,
+		NULL,
 		PAGE_READWRITE,
 		0,
 		2048,
-		"global\\gcoz_profiler"
+		L"gcoz_profiler_shared_memory"
 	); if (hProfilerFileMapping == NULL) {
-		SetLastError(1);
+		throw std::runtime_error("hProfilerFileMapping creation failed");
 	}
 
 	pSharedMemoryDll = MapViewOfFile(
@@ -28,7 +29,7 @@ Communication::Communication() {
 		FILE_MAP_ALL_ACCESS,
 		0, 0, 0
 	); if (pSharedMemoryDll == NULL) {
-		SetLastError(1);
+		throw std::runtime_error("pSharedMemoryDll File Mapping failed");
 	}
 
 	pSharedMemoryProfiler = MapViewOfFile(
@@ -36,7 +37,7 @@ Communication::Communication() {
 		FILE_MAP_ALL_ACCESS,
 		0, 0, 0
 	); if (pSharedMemoryProfiler == NULL) {
-		SetLastError(1);
+		throw std::runtime_error("pSharedMemoryProfiler File Mapping failed");
 	}
 
 	hDllWrittenEvent = CreateEventA(NULL, FALSE, FALSE, "dllWrittenEvent");
@@ -55,6 +56,7 @@ Communication::~Communication() {
 
 	CloseHandle(hDllWrittenEvent);
 	CloseHandle(hProfilerWrittenEvent);
+	std::cout << "[*] Communication Destructor called" << std::endl;
 }
 
 DllMessage Communication::getMessage() {
