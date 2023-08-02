@@ -54,34 +54,39 @@ namespace D3D11Hooks{
 	typedef HRESULT(__stdcall* Present)(IDXGISwapChain*, UINT, UINT);
 	static Present oPresent = NULL;
 	HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT Flags) {
-			static unsigned long long int callCount = 0;
-			callCount++;
+		MethodDurations::presentCalled();
+		
+		static unsigned long long int callCount = 0;
+		callCount++;
 
-			std::this_thread::sleep_for(std::chrono::milliseconds(delays.getDelay(8))); // maybe make this more readable ('using')
+		std::this_thread::sleep_for(std::chrono::milliseconds(delays.getDelay(8))); // maybe make this more readable ('using')
 
-			MethodDurations::Timepoint start = MethodDurations::now();
-			HRESULT value = oPresent(pSwapChain, SyncInterval, Flags);
-			MethodDurations::Duration duration = MethodDurations::now() - start;
-			MethodDurations::addDuration(8, duration);
+		MethodDurations::Timepoint start = MethodDurations::now();
+		HRESULT value = oPresent(pSwapChain, SyncInterval, Flags);
+		MethodDurations::Duration duration = MethodDurations::now() - start;
+		MethodDurations::addDuration(8, duration);
 
-			if (callCount % 500 == 0) {
-				// update the profiler with the average execution times
-				DllMessage send = {};
-				send.durations = MethodDurations::getDurations();
-				send.valid = true;
-				com.sendMessage(send);
-
-				// update the delays (maybe this should happen in Delaymanager Class)
-				ProfilerMessage newDelays = com.getMessage(500);
-				if (newDelays.valid) {
-					delays.updateDelays(newDelays.delays);
-				}
-				else {
-					//DisplayErrorBox(L"Updating Delays", L"Failed to get updated delays from profiler");
-				}
+		if (callCount % 500 == 0) {
+			// update the profiler with the average execution times
+			DllMessage send = {};
+			send.frameTimepoints = MethodDurations::getPresentTimes();
+			send.durations = MethodDurations::getDurations();
+			send.valid = true;
+			if (!com.sendMessage(send)) {
+				DisplayErrorBox(L"Sending Message to Profiler");
 			}
 
-			return value;
+			// update the delays (maybe this should happen in Delaymanager Class)
+			ProfilerMessage newDelays = com.getMessage(0);
+			if (newDelays.valid) {
+				delays.updateDelays(newDelays.delays);
+			}
+			else {
+				//DisplayErrorBox(L"Updating Delays", L"Failed to get updated delays from profiler");
+			}
+		}
+
+		return value;
 	}
 
 	void hookD3D11() {

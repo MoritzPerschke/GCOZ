@@ -31,8 +31,12 @@ int main(int argc, char* argv[]) {
 			std::cout << inf << "Got times from dll:" << std::endl;
 			for (int i = 0; i < 205; i++) {
 				if (msg.durations[i] > std::chrono::nanoseconds(0)) {
-					std::cout << i << ": " << msg.durations[i].count() << "\n";
+					std::cout << i << ": " << msg.durations[i].count() << std::endl;
 				}
+			}
+			std::cout << std::endl;
+			for (auto& iter : msg.frameTimepoints) {
+				std::cout << iter.count() << std::endl; // this does not get printed?
 			}
 		}
 		else {
