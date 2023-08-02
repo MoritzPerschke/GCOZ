@@ -11,7 +11,6 @@
 
 int profilerThread() {
 	if (kiero::init(kiero::RenderType::D3D11) == kiero::Status::Success) {
-		MessageBoxW(0, L"Debug", L"MainThread", MB_SETFOREGROUND);
 		D3D11Hooks::hookD3D11();
 	}
 	return 0;

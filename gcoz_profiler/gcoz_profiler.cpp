@@ -1,5 +1,4 @@
 // gcoz_profiler.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
 #include "gcoz_profiler.h"
 
 int main(int argc, char* argv[]) {
@@ -31,7 +30,9 @@ int main(int argc, char* argv[]) {
 		if (msg.valid) {
 			std::cout << inf << "Got times from dll:" << std::endl;
 			for (int i = 0; i < 205; i++) {
-				std::cout << i << ": " << msg.durations[i].count() << "\n";
+				if (msg.durations[i] > std::chrono::nanoseconds(0)) {
+					std::cout << i << ": " << msg.durations[i].count() << "\n";
+				}
 			}
 		}
 		else {

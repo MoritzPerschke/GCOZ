@@ -4,6 +4,7 @@
 #include <d3d11_1.h>
 #include <d3d11_2.h>
 #include <thread>
+#include "ErrorMessage.h"
 #include "HelperMacros.h"
 #include "DelayManager.h"
 #include "MethodDurations.h"
@@ -28,7 +29,11 @@ namespace D3D11Hooks{
 	// expands to hooked d3d11 function
 	#define X(idx, returnType, name, ...) \
 		returnType __stdcall hk##name(FUNCTION_SIGNATURE(__VA_ARGS__)){ \
+			std::this_thread::sleep_for(std::chrono::milliseconds(delays.getDelay(idx)));\
+			MethodDurations::Timepoint start = MethodDurations::now();\
 			returnType value = o##name(PARAMETER_NAMES(__VA_ARGS__)); \
+			MethodDurations::Duration duration = MethodDurations::now() - start;\
+			MethodDurations::addDuration(idx, duration);\
 			return value; \
 		}
 		D3D11_METHODS
@@ -37,77 +42,57 @@ namespace D3D11Hooks{
 	// same as above just for void functions
 	#define X(idx, returnType, name, ...) \
 		returnType __stdcall hk##name(FUNCTION_SIGNATURE(__VA_ARGS__)){ \
+			std::this_thread::sleep_for(std::chrono::milliseconds(delays.getDelay(idx)));\
+			MethodDurations::Timepoint start = MethodDurations::now();\
 			o##name(PARAMETER_NAMES(__VA_ARGS__)); \
-			return; \
+			MethodDurations::Duration duration = MethodDurations::now() - start;\
+			MethodDurations::addDuration(idx, duration);\
 		}
 		D3D11_METHODS_VOID
 	#undef X
 
-	typedef HRESULT(__stdcall* SetPrivateData)(REFGUID, UINT, const void*);
-	static SetPrivateData oSetPrivateData = NULL;
-	HRESULT __stdcall hkSetPrivateData(REFGUID guid, UINT DataSize, const void* pData) {
-
-		std::this_thread::sleep_for(std::chrono::milliseconds(delays.getDelay(3)));
-		MessageBoxW(0, L"Debug", L"SetPrivateData1", MB_SETFOREGROUND);
-
-		MethodDurations::Timepoint start = MethodDurations::now();
-		HRESULT value = oSetPrivateData(guid, DataSize, pData);
-		MessageBoxW(0, L"Debug", L"SetPrivateData2", MB_SETFOREGROUND);
-
-		MethodDurations::Duration duration = MethodDurations::now() - start;
-		MethodDurations::addDuration(3, duration);
-		return value;
-	} //this hook works?
-
 	typedef HRESULT(__stdcall* Present)(IDXGISwapChain*, UINT, UINT);
 	static Present oPresent = NULL;
 	HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT Flags) {
-			static int callCount = 0;
+			static unsigned long long int callCount = 0;
 			callCount++;
 
-			std::this_thread::sleep_for(std::chrono::milliseconds(delays.getDelay(8)));
+			std::this_thread::sleep_for(std::chrono::milliseconds(delays.getDelay(8))); // maybe make this more readable ('using')
 
 			MethodDurations::Timepoint start = MethodDurations::now();
 			HRESULT value = oPresent(pSwapChain, SyncInterval, Flags);
 			MethodDurations::Duration duration = MethodDurations::now() - start;
 			MethodDurations::addDuration(8, duration);
 
-			if (callCount % 100 == 0) {
+			if (callCount % 500 == 0) {
+				// update the profiler with the average execution times
 				DllMessage send = {};
 				send.durations = MethodDurations::getDurations();
 				send.valid = true;
 				com.sendMessage(send);
+
+				// update the delays (maybe this should happen in Delaymanager Class)
+				ProfilerMessage newDelays = com.getMessage(500);
+				if (newDelays.valid) {
+					delays.updateDelays(newDelays.delays);
+				}
+				else {
+					//DisplayErrorBox(L"Updating Delays", L"Failed to get updated delays from profiler");
+				}
 			}
 
 			return value;
 	}
 
-	//X(74, void, Draw, UINT, VertexCount, UINT, StartVertexLocation)
-	typedef void(__stdcall* Draw)(UINT, UINT);
-	static Draw oDraw = NULL;
-	void __stdcall hkDraw(UINT VertexCount, UINT StartVertexLocation) {
-		MessageBoxW(0, L"Debug", L"Draw1", MB_SETFOREGROUND);
-
-		MethodDurations::Timepoint start = MethodDurations::now();
-		oDraw(VertexCount, StartVertexLocation);
-		MessageBoxW(0, L"Debug", L"Draw2", MB_SETFOREGROUND);
-		MethodDurations::Duration duration = MethodDurations::now() - start;
-
-		MethodDurations::addDuration(74, duration);
-		return;
-	}
-
 	void hookD3D11() {
 		kiero::bind(8, (void**)&oPresent, hkPresent);
-		kiero::bind(3, (void**)&oSetPrivateData, hkSetPrivateData);
-		//kiero::bind(74, (void**)&oDraw, hkDraw);
-
-		//#define X(idx, returnType, name, ...)\
-			//kiero::bind(idx, (void**)&o##name, hk##name);
-			//D3D11_METHODS
-			//D3D11_METHODS_VOID
-		//#undef X
-		MessageBoxW(0, L"hookD3D11 complete", L"Debug", MB_SETFOREGROUND);
+		#define X(idx, returnType, name, ...)\
+				kiero::bind(idx, (void**)&o##name, hk##name);
+			//if(kiero::bind(idx, (void**)&o##name, hk##name) == kiero::Status::Success){DisplayInfoBox(L""#name, L"Hook success");}
+			D3D11_METHODS
+			D3D11_METHODS_VOID
+		#undef X
+		DisplayInfoBox(L"Progress", L"hookD3D11 function complete");
 	}
 } // namespace D3D11Hooks
 

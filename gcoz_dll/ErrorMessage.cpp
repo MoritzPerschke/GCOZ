@@ -29,3 +29,21 @@ int DisplayErrorBox(std::wstring _location) {
 		MB_ICONERROR | MB_SETFOREGROUND | MB_OK
 	);
 }
+
+int DisplayErrorBox(std::wstring _title, std::wstring _body) {
+	return MessageBoxW(
+		NULL,
+		_body.c_str(),
+		_title.c_str(),
+		MB_ICONERROR | MB_SETFOREGROUND | MB_OK
+	);
+}
+
+int DisplayInfoBox(std::wstring _title, std::wstring _body) {
+	return MessageBoxW(
+		NULL,
+		_body.c_str(),
+		_title.c_str(),
+		MB_ICONINFORMATION | MB_SETFOREGROUND | MB_OK
+	);
+}

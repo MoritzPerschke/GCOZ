@@ -51,6 +51,7 @@ Communication::~Communication() {
 	CloseHandle(hProfilerWrittenEvent);
 }
 
+/* get Message from profiler, _waitTimeout in ms */
 ProfilerMessage Communication::getMessage(DWORD _waitTimeout) {
 	DWORD dWaitResult = WaitForSingleObject(hProfilerWrittenEvent, _waitTimeout);
 	ProfilerMessage profilerMessage;

@@ -8,9 +8,6 @@ DWORD DelayManager::getDelay(int methodIndex){
 	return methodDelays[methodIndex];
 }
 
-void DelayManager::updateDelays(Communication com){
-	ProfilerMessage msg = com.getMessage(INFINITE);
-	if (msg.valid) {
-		methodDelays = msg.delays;
-	}
+void DelayManager::updateDelays(std::array<DWORD, 205> _newDelays){
+	methodDelays = _newDelays;
 }

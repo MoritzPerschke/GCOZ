@@ -4,10 +4,11 @@
 #include <array>
 #include "Communication.h"
 
+// maybe this can be a namespace
 class DelayManager {
 	std::array<DWORD, 205> methodDelays;
 public:
 	DelayManager();
 	DWORD getDelay(int methodIndex);
-	void updateDelays(Communication com);
+	void updateDelays(std::array<DWORD, 205> _newDelays);
 };
