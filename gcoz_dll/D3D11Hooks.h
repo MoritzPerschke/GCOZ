@@ -13,20 +13,20 @@ namespace D3D11Hooks{
 	DelayManager delays; // not sure if this is the best option, default constructor sets all delays to 0
 	Communication com = Communication();
 
-	// expands to function pointers for D3D11 methods
+	/* expands to function pointers for D3D11 methods */
 	#define X(idx, returnType, name, ...) typedef returnType (__stdcall* name)(PARAMETER_TYPES(__VA_ARGS__));
 		D3D11_METHODS
 		D3D11_METHODS_VOID
 	#undef X
 
-	// expands to setting previously defined pointers to NULL
+	/* expands to setting previously defined pointers to NULL */
 	#define X(idx, returnType, name, ...) static name o##name = NULL;
 		D3D11_METHODS
 		D3D11_METHODS_VOID
 	#undef X
 
 
-	// expands to hooked d3d11 function
+	/* expands to hooked d3d11 function */
 	#define X(idx, returnType, name, ...) \
 		returnType __stdcall hk##name(FUNCTION_SIGNATURE(__VA_ARGS__)){ \
 			std::this_thread::sleep_for(std::chrono::milliseconds(delays.getDelay(idx)));\
@@ -37,9 +37,9 @@ namespace D3D11Hooks{
 			return value; \
 		}
 		D3D11_METHODS
-	#undef X // this hook does not work, crashes game
+	#undef X
 
-	// same as above just for void functions
+	/* same as above just for void functions */
 	#define X(idx, returnType, name, ...) \
 		returnType __stdcall hk##name(FUNCTION_SIGNATURE(__VA_ARGS__)){ \
 			std::this_thread::sleep_for(std::chrono::milliseconds(delays.getDelay(idx)));\
@@ -69,7 +69,9 @@ namespace D3D11Hooks{
 		if (callCount % 500 == 0) {
 			// update the profiler with the average execution times
 			DllMessage send = {};
-			send.frameTimepoints = MethodDurations::getPresentTimes();
+			if (MethodDurations::getPresentTimes(send) == 0) { // this does not take, profiler still gets 0-length vector
+				DisplayErrorBox(L"Sending Message", L"frameTimePoints vector is empty");
+			}
 			send.durations = MethodDurations::getDurations();
 			send.valid = true;
 			if (!com.sendMessage(send)) {
@@ -93,11 +95,10 @@ namespace D3D11Hooks{
 		kiero::bind(8, (void**)&oPresent, hkPresent);
 		#define X(idx, returnType, name, ...)\
 				kiero::bind(idx, (void**)&o##name, hk##name);
-			//if(kiero::bind(idx, (void**)&o##name, hk##name) == kiero::Status::Success){DisplayInfoBox(L""#name, L"Hook success");}
 			D3D11_METHODS
 			D3D11_METHODS_VOID
 		#undef X
-		DisplayInfoBox(L"Progress", L"hookD3D11 function complete");
+		DisplayInfoBox(L"Progress", L"D3D11 functions hooked");
 	}
 } // namespace D3D11Hooks
 
