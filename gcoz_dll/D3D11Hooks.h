@@ -4,6 +4,7 @@
 #include <d3d11_1.h>
 #include <d3d11_2.h>
 #include <thread>
+
 #include "ErrorMessage.h"
 #include "HelperMacros.h"
 #include "DelayManager.h"

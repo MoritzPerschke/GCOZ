@@ -28,7 +28,7 @@ int main(int argc, char* argv[]) {
 	while (true) {
 		DllMessage msg = com.getMessage();
 		if (msg.valid) {
-			std::cout << inf << "Got times from dll:" << std::endl;
+			std::cout << ok << "Got times from dll:" << std::endl;
 			for (int i = 0; i < 205; i++) {
 				if (msg.durations[i] > std::chrono::nanoseconds(0)) {
 					std::cout << inf << i << ": " << msg.durations[i].count() << std::endl;
