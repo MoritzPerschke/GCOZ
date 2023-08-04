@@ -11,3 +11,7 @@ DWORD DelayManager::getDelay(int methodIndex){
 void DelayManager::updateDelays(std::array<DWORD, 205> _newDelays){
 	methodDelays = _newDelays;
 }
+
+void DelayManager::resetDelays() {
+	methodDelays.fill(0);
+}

@@ -11,4 +11,5 @@ public:
 	DelayManager();
 	DWORD getDelay(int methodIndex);
 	void updateDelays(std::array<DWORD, 205> _newDelays);
+	void resetDelays();
 };

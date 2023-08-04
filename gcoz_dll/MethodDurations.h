@@ -40,7 +40,7 @@ namespace MethodDurations {
 
 	size_t getPresentTimes(DllMessage _msg) {
 		if (presentCallTimes.size() == 0) {
-			DisplayErrorBox(L"getPresentTimes()", L"presentCallTimes is empty");
+			//DisplayErrorBox(L"getPresentTimes()", L"presentCallTimes is empty");
 			return 0;
 		}
 

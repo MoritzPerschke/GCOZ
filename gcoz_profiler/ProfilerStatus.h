@@ -5,7 +5,3 @@ enum ProfilerStatus {
 	GCOZ_PROFILE,
 	GCOZ_WAIT
 };
-
-class ProfilerStatusManager {
-
-};

@@ -15,4 +15,5 @@ public:
 	~Communication();
 	void init();
 	DllMessage getMessage();
+	bool sendMessage(ProfilerMessage _msg);
 };

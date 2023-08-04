@@ -25,9 +25,11 @@ int main(int argc, char* argv[]) {
 	Injector injector = Injector();
 	injector.inject_dll(PID);
 
+	int receivedMsgs = 0;
 	while (true) {
 		DllMessage msg = com.getMessage();
 		if (msg.valid) {
+			receivedMsgs++;
 			std::cout << ok << "Got times from dll:" << std::endl;
 			for (int i = 0; i < 205; i++) {
 				if (msg.durations[i] > std::chrono::nanoseconds(0)) {
@@ -39,7 +41,22 @@ int main(int argc, char* argv[]) {
 			for (const auto& iter : msg.frameTimepoints) {
 				std::cout << iter.count() << std::endl; // this does not get printed?
 			}
-		}
+			
+			if (receivedMsgs % 10 == 0) {
+				ProfilerMessage send = {};
+				send.status = ProfilerStatus::GCOZ_PROFILE;
+				send.delays.fill(1);
+				send.valid = true;
+				com.sendMessage(send);
+			}
+			else {
+				ProfilerMessage send = {};
+				send.status = ProfilerStatus::GCOZ_MEASURE;
+				send.delays.fill(0);
+				send.valid = true;
+				com.sendMessage(send);
+			}
+		} // if(msg.valid)
 		else {
 			std::cout << err << "No message after timeout" << std::endl;
 			break;

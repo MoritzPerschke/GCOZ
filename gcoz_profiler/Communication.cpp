@@ -70,3 +70,8 @@ DllMessage Communication::getMessage() {
 	dllMessage.valid = false;
 	return dllMessage;
 }
+
+bool Communication::sendMessage(ProfilerMessage _msg) {
+	*pProfilerData = _msg;
+	return SetEvent(hProfilerWrittenEvent);
+}

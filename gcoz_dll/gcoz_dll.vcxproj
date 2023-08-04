@@ -158,11 +158,11 @@
     <ClInclude Include="kiero\minhook\src\hde\table64.h" />
     <ClInclude Include="kiero\minhook\src\trampoline.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="ProfilerStatusManager.h" />
     <ClInclude Include="status.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Communication.cpp" />
-    <ClCompile Include="D3D11Hooks.cpp" />
     <ClCompile Include="DelayManager.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="ErrorMessage.cpp" />

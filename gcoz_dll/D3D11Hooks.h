@@ -9,6 +9,7 @@
 #include "HelperMacros.h"
 #include "DelayManager.h"
 #include "MethodDurations.h"
+#include "ProfilerStatusManager.h"
 
 namespace D3D11Hooks{
 	DelayManager delays; // not sure if this is the best option, default constructor sets all delays to 0
@@ -55,40 +56,70 @@ namespace D3D11Hooks{
 	typedef HRESULT(__stdcall* Present)(IDXGISwapChain*, UINT, UINT);
 	static Present oPresent = NULL;
 	HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT Flags) {
-		MethodDurations::presentCalled();
-		
 		static unsigned long long int callCount = 0;
-		callCount++;
+		HRESULT value;
+		MethodDurations::Timepoint start;
 
-		std::this_thread::sleep_for(std::chrono::milliseconds(delays.getDelay(8))); // maybe make this more readable ('using')
+		switch (ProfilerStatusManager::currentStatus) {
+			case ProfilerStatus::GCOZ_MEASURE : // measure times of D3D11 Methods, nothing else
+				MethodDurations::presentCalled();
+				start = MethodDurations::now();
+				value = oPresent(pSwapChain, SyncInterval, Flags);
+				MethodDurations::Duration duration = MethodDurations::now() - start;
+				MethodDurations::addDuration(8, duration);
+				
+				if (callCount++ == 500) {
+					callCount = 0;
+					ProfilerStatusManager::changeStatus(ProfilerStatus::GCOZ_WAIT);
+					DllMessage send = {};
+					if (MethodDurations::getPresentTimes(send) == 0) { // this does not take, profiler still gets 0-length vector
+						//DisplayErrorBox(L"Sending Message", L"frameTimePoints vector is empty");
+					}
+					send.durations = MethodDurations::getDurations();
+					send.valid = true;
+					if (!com.sendMessage(send)) {
+						DisplayErrorBox(L"Sending Message to Profiler");
+					}
+				}
+				break;
 
-		MethodDurations::Timepoint start = MethodDurations::now();
-		HRESULT value = oPresent(pSwapChain, SyncInterval, Flags);
-		MethodDurations::Duration duration = MethodDurations::now() - start;
-		MethodDurations::addDuration(8, duration);
+			case ProfilerStatus::GCOZ_PROFILE : // apply last received delays and measure FPS
+				MethodDurations::presentCalled();
+				std::this_thread::sleep_for(std::chrono::milliseconds(delays.getDelay(8))); // prob. use Ns here, Ms drops FPS to <1
+				value = oPresent(pSwapChain, SyncInterval, Flags);
+				if (callCount++ == 500) {
+					callCount = 0;
+					ProfilerStatusManager::changeStatus(ProfilerStatus::GCOZ_WAIT);
+					DllMessage send = {};
+					if (MethodDurations::getPresentTimes(send) == 0) { // this does not take, profiler still gets 0-length vector
+						//DisplayErrorBox(L"Sending Message", L"frameTimePoints vector is empty");
+					}
+					send.durations = MethodDurations::getDurations();
+					send.valid = true;
+					if (!com.sendMessage(send)) {
+						DisplayErrorBox(L"Sending Message to Profiler");
+					}
+				}
+				break;
 
-		if (callCount % 500 == 0) {
-			// update the profiler with the average execution times
-			DllMessage send = {};
-			if (MethodDurations::getPresentTimes(send) == 0) { // this does not take, profiler still gets 0-length vector
-				DisplayErrorBox(L"Sending Message", L"frameTimePoints vector is empty");
-			}
-			send.durations = MethodDurations::getDurations();
-			send.valid = true;
-			if (!com.sendMessage(send)) {
-				DisplayErrorBox(L"Sending Message to Profiler");
-			}
+			case ProfilerStatus::GCOZ_WAIT : // do nothing, wait for message from Profiler
+				delays.resetDelays();
+				ProfilerMessage profilerResponse = com.getMessage(1);
+				if (profilerResponse.valid) {
+					delays.updateDelays(profilerResponse.delays);
+					if (profilerResponse.status != ProfilerStatusManager::currentStatus) {
+						ProfilerStatusManager::changeStatus(profilerResponse.status);
+					}
+				}
+				else {
+					//DisplayErrorBox(L"Updating Delays", L"Failed to get updated delays from profiler");
+				}
+				value = oPresent(pSwapChain, SyncInterval, Flags);
+				break;
 
-			// update the delays (maybe this should happen in Delaymanager Class)
-			ProfilerMessage newDelays = com.getMessage(0);
-			if (newDelays.valid) {
-				delays.updateDelays(newDelays.delays);
-			}
-			else {
-				//DisplayErrorBox(L"Updating Delays", L"Failed to get updated delays from profiler");
-			}
-		}
-
+			default:
+				value = oPresent(pSwapChain, SyncInterval, Flags);
+		} // switch(ProfilerStatusManager::currentStatus)
 		return value;
 	}
 
