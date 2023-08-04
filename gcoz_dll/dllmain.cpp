@@ -11,7 +11,7 @@
 
 int profilerThread() {
 	if (kiero::init(kiero::RenderType::D3D11) == kiero::Status::Success) {
-		hookD3D11();
+		D3D11Hooks::hookD3D11();
 	}
 	return 0;
 }
