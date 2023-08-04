@@ -162,6 +162,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Communication.cpp" />
+    <ClCompile Include="D3D11Hooks.cpp" />
     <ClCompile Include="DelayManager.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="ErrorMessage.cpp" />
