@@ -27,28 +27,56 @@ namespace D3D11Hooks{
 		D3D11_METHODS_VOID
 	#undef X
 
-
 	/* expands to hooked d3d11 function */
-	#define X(idx, returnType, name, ...) \
-		returnType __stdcall hk##name(FUNCTION_SIGNATURE(__VA_ARGS__)){ \
-			std::this_thread::sleep_for(std::chrono::milliseconds(delays.getDelay(idx)));\
-			MethodDurations::Timepoint start = MethodDurations::now();\
-			returnType value = o##name(PARAMETER_NAMES(__VA_ARGS__)); \
-			MethodDurations::Duration duration = MethodDurations::now() - start;\
-			MethodDurations::addDuration(idx, duration);\
+	#define X(_IDX, _RETURN_TYPE, _NAME, ...) \
+		_RETURN_TYPE __stdcall hk##_NAME(FUNCTION_SIGNATURE(__VA_ARGS__)){ \
+			_RETURN_TYPE value; \
+			MethodDurations::Timepoint start; \
+			switch (ProfilerStatusManager::currentStatus) { \
+				case ProfilerStatus::GCOZ_MEASURE : \
+					start = MethodDurations::now(); \
+					value = o##_NAME(PARAMETER_NAMES(__VA_ARGS__)); \
+					MethodDurations::Duration duration = MethodDurations::now() - start; \
+					MethodDurations::addDuration(_IDX, duration); \
+					break; \
+				case ProfilerStatus::GCOZ_PROFILE : \
+					std::this_thread::sleep_for(std::chrono::nanoseconds(delays.getDelay(_IDX))); \
+					value = o##_NAME(PARAMETER_NAMES(__VA_ARGS__)); \
+					break; \
+				case ProfilerStatus::GCOZ_WAIT : \
+					value = o##_NAME(PARAMETER_NAMES(__VA_ARGS__));	\
+					break; \
+				default : \
+					value = o##_NAME(PARAMETER_NAMES(__VA_ARGS__)); \
+					break; \
+			} \
 			return value; \
 		}
 		D3D11_METHODS
 	#undef X
 
-	/* same as above just for void functions */
-	#define X(idx, returnType, name, ...) \
-		returnType __stdcall hk##name(FUNCTION_SIGNATURE(__VA_ARGS__)){ \
-			std::this_thread::sleep_for(std::chrono::milliseconds(delays.getDelay(idx)));\
-			MethodDurations::Timepoint start = MethodDurations::now();\
-			o##name(PARAMETER_NAMES(__VA_ARGS__)); \
-			MethodDurations::Duration duration = MethodDurations::now() - start;\
-			MethodDurations::addDuration(idx, duration);\
+	/* same as above just for void functions (no return)*/
+	#define X(_IDX, _RETURN_TYPE, _NAME, ...) \
+		_RETURN_TYPE __stdcall hk##_NAME(FUNCTION_SIGNATURE(__VA_ARGS__)){ \
+			MethodDurations::Timepoint start; \
+			switch (ProfilerStatusManager::currentStatus) { \
+				case ProfilerStatus::GCOZ_MEASURE : \
+					start = MethodDurations::now(); \
+					o##_NAME(PARAMETER_NAMES(__VA_ARGS__)); \
+					MethodDurations::Duration duration = MethodDurations::now() - start; \
+					MethodDurations::addDuration(_IDX, duration); \
+					break; \
+				case ProfilerStatus::GCOZ_PROFILE : \
+					std::this_thread::sleep_for(std::chrono::nanoseconds(delays.getDelay(_IDX))); \
+					o##_NAME(PARAMETER_NAMES(__VA_ARGS__)); \
+					break; \
+				case ProfilerStatus::GCOZ_WAIT : \
+					o##_NAME(PARAMETER_NAMES(__VA_ARGS__));	\
+					break; \
+				default : \
+					o##_NAME(PARAMETER_NAMES(__VA_ARGS__)); \
+					break; \
+			} \
 		}
 		D3D11_METHODS_VOID
 	#undef X
@@ -68,37 +96,39 @@ namespace D3D11Hooks{
 				MethodDurations::Duration duration = MethodDurations::now() - start;
 				MethodDurations::addDuration(8, duration);
 				
-				if (callCount++ == 500) {
+				if (callCount++ == 1000) {
 					callCount = 0;
-					ProfilerStatusManager::changeStatus(ProfilerStatus::GCOZ_WAIT);
 					DllMessage send = {};
 					if (MethodDurations::getPresentTimes(send) == 0) { // this does not take, profiler still gets 0-length vector
 						//DisplayErrorBox(L"Sending Message", L"frameTimePoints vector is empty");
 					}
 					send.durations = MethodDurations::getDurations();
+					send.lastStatus = ProfilerStatusManager::currentStatus;
 					send.valid = true;
 					if (!com.sendMessage(send)) {
 						DisplayErrorBox(L"Sending Message to Profiler");
 					}
+					ProfilerStatusManager::changeStatus(ProfilerStatus::GCOZ_WAIT);
 				}
 				break;
 
 			case ProfilerStatus::GCOZ_PROFILE : // apply last received delays and measure FPS
 				MethodDurations::presentCalled();
-				std::this_thread::sleep_for(std::chrono::milliseconds(delays.getDelay(8))); // prob. use Ns here, Ms drops FPS to <1
+				std::this_thread::sleep_for(std::chrono::nanoseconds(delays.getDelay(8))); // prob. use Ns here, Ms drops FPS to <1
 				value = oPresent(pSwapChain, SyncInterval, Flags);
 				if (callCount++ == 500) {
 					callCount = 0;
-					ProfilerStatusManager::changeStatus(ProfilerStatus::GCOZ_WAIT);
 					DllMessage send = {};
 					if (MethodDurations::getPresentTimes(send) == 0) { // this does not take, profiler still gets 0-length vector
 						//DisplayErrorBox(L"Sending Message", L"frameTimePoints vector is empty");
 					}
 					send.durations = MethodDurations::getDurations();
+					send.lastStatus = ProfilerStatusManager::currentStatus;
 					send.valid = true;
 					if (!com.sendMessage(send)) {
 						DisplayErrorBox(L"Sending Message to Profiler");
 					}
+					ProfilerStatusManager::changeStatus(ProfilerStatus::GCOZ_WAIT);
 				}
 				break;
 

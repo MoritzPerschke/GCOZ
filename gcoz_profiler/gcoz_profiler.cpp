@@ -42,24 +42,24 @@ int main(int argc, char* argv[]) {
 				std::cout << iter.count() << std::endl; // this does not get printed?
 			}
 			
-			if (receivedMsgs % 10 == 0) {
-				ProfilerMessage send = {};
-				send.status = ProfilerStatus::GCOZ_PROFILE;
-				send.delays.fill(1);
-				send.valid = true;
-				com.sendMessage(send);
-			}
-			else {
-				ProfilerMessage send = {};
-				send.status = ProfilerStatus::GCOZ_MEASURE;
-				send.delays.fill(0);
-				send.valid = true;
-				com.sendMessage(send);
-			}
+			//if (receivedMsgs % 10 == 0) {
+			//	ProfilerMessage send = {};
+			//	send.status = ProfilerStatus::GCOZ_PROFILE;
+			//	send.delays.fill(1);
+			//	send.valid = true;
+			//	com.sendMessage(send);
+			//}
+			//else {
+			//	ProfilerMessage send = {};
+			//	send.status = ProfilerStatus::GCOZ_MEASURE;
+			//	send.delays.fill(0);
+			//	send.valid = true;
+			//	com.sendMessage(send);
+			//}
 		} // if(msg.valid)
 		else {
 			std::cout << err << "No message after timeout" << std::endl;
-			break;
+			//break;
 		}
 		
 	}

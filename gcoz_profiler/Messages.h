@@ -17,6 +17,7 @@ struct ProfilerMessage : Message {
 };
 
 struct DllMessage : Message {
+	ProfilerStatus lastStatus;
 	std::vector<Duration> frameTimepoints;
 	std::array<std::chrono::nanoseconds, 205> durations;
 };
