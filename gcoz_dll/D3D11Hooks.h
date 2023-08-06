@@ -96,7 +96,7 @@ namespace D3D11Hooks{
 				MethodDurations::Duration duration = MethodDurations::now() - start;
 				MethodDurations::addDuration(8, duration);
 				
-				if (callCount++ == 1000) {
+				if (callCount++ == 500) {
 					callCount = 0;
 					DllMessage send = {};
 					if (MethodDurations::getPresentTimes(send) == 0) { // this does not take, profiler still gets 0-length vector

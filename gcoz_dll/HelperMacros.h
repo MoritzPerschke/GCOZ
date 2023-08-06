@@ -72,12 +72,13 @@
 #define COUNT_ALL_(_1, __1, _2, __2, _3, __3, _4, __4, _5, __5, _6, __6, _7, __7, _8, __8, _9, __9, _10, __10, num, ...) ALL##num
 #define FUNCTION_SIGNATURE(...) COUNT_ALL_(__VA_ARGS__, 10,10,9,9,8,8,7,7,6,6,5,5,4,4,3,3,2,2,1,0)(__VA_ARGS__)
 
-// these also need pointer to the interface they come from,
-// so for example it should be:
-// X(74, void, Draw, ID3D11DeviceContext*, pDeviceContext, UINT, VertexCount, UINT, StartVertexLocation
 #define D3D11_METHODS \
-	X(5, HRESULT, GetPrivateData, ID3D11Device*, pDevice, REFGUID, guid, UINT*, pDataSize, void*, pData) \
+	X(3, HRESULT, SetPrivateDataDevice, ID3D11Device*, pDevice, REFGUID, guid, UINT, DataSize, const void*, pData) \
+	X(4, HRESULT, SetPrivateDataInterfaceDevice, ID3D11Device*, pDevice, REFGUID, guid) \
+	X(5, HRESULT, GetPrivateDataDevice, ID3D11Device*, pDevice, REFGUID, guid, UINT*, pDataSize, void*, pData)\
+	X(6, HRESULT, GetParent, IDXGIObject*, pObject, REFIID, riid, void**, pParent)\
 	X(10, HRESULT, SetFullscreenState, IDXGISwapChain*, pSwapChain, BOOL, Fullscreen) \
+	X(11, HRESULT, GetFullscreenState, IDXGISwapChain*, pSwapChain, BOOL*, pFullscreen, IDXGIOutput**, ppTarget)\
 	X(13, HRESULT, ResizeBuffers, IDXGISwapChain*, pSwapChain, UINT, BufferCount, UINT, Width, UINT, Height, UINT, Format, DXGI_FORMAT, NewFormat, UINT, SwapChainFlags) \
 	X(14, HRESULT, ResizeTarget, IDXGISwapChain*, pSwapChain, const DXGI_MODE_DESC*, pNewTargetParameters) \
 	X(16, HRESULT, GetFrameStatistics, IDXGISwapChain*, pSwapChain, DXGI_FRAME_STATISTICS*, pStats) \
@@ -95,7 +96,39 @@
 	X(196, HRESULT, CopyTileMappings, ID3D11DeviceContext2*, pDeviceContext, ID3D11Resource*, pDestTiledResource, const D3D11_TILED_RESOURCE_COORDINATE*, pDestRegionStartCoordinate, ID3D11Resource*, pSourceTiledResource, const D3D11_TILED_RESOURCE_COORDINATE*, pSourceRegionStartCoordinate, const D3D11_TILE_REGION_SIZE*, pTileRegionSize, UINT, Flags) \
 	X(199, HRESULT, ResizeTilePool, ID3D11DeviceContext2*, pDeviceContext, ID3D11Buffer*, pTilePool, UINT64, NewSizeInBytes) \
 	X(201, BOOL, IsAnnotationEnabled, ID3D11DeviceContext2*, pDeviceContext) \
-	//X(3, HRESULT, SetPrivateData, REFGUID, guid, UINT, DataSize, const void*, pData) \
+	X(15, HRESULT, GetContainingOutput, IDXGISwapChain*, pSwapChain, IDXGIOutput**, ppOutput)\
+	X(17, HRESULT, GetLastPresentCount, UINT*, pLastPresentCount)\
+	X(21, HRESULT, CreateBuffer, ID3D11Device*, pDevice, const D3D11_BUFFER_DESC*, pDesc, const D3D11_SUBRESOURCE_DATA*, pInitialData, ID3D11Buffer**, ppBuffer)\
+	X(22, HRESULT, CreateTexture1D, ID3D11Device*, pDevice, const D3D11_TEXTURE1D_DESC*, pDesc, const D3D11_SUBRESOURCE_DATA*, pInitialData, ID3D11Texture1D**, ppTexture1D)\
+	X(23, HRESULT, CreateTexture2D, ID3D11Device*, pDevice, const D3D11_TEXTURE2D_DESC*, pDesc, const D3D11_SUBRESOURCE_DATA*, pInitialData, ID3D11Texture2D**, ppTexture2D)\
+	X(24, HRESULT, CreateTexture3D, ID3D11Device*, pDevice, const D3D11_TEXTURE3D_DESC*, pDesc, const D3D11_SUBRESOURCE_DATA*, pInitialData, ID3D11Texture3D**, ppTexture3D)\
+	X(25, HRESULT, CreateShaderResourceView, ID3D11Device*, pDevice, ID3D11Resource*, pResource, const D3D11_SHADER_RESOURCE_VIEW_DESC*, pDesc, ID3D11ShaderResourceView**, ppSRView)\
+	X(26, HRESULT, CreateUnorderedAccessView, ID3D11Device*, pDevice, ID3D11Resource*, pResource, const D3D11_UNORDERED_ACCESS_VIEW_DESC*, pDesc, ID3D11UnorderedAccessView**, ppUAView)\
+	X(27, HRESULT, CreateRenderTargetView, ID3D11Device*, pDevice, ID3D11Resource*, pResource, const D3D11_RENDER_TARGET_VIEW_DESC*, pDesc, ID3D11RenderTargetView**, ppRTView)\
+	X(28, HRESULT, CreateDepthStencilView, ID3D11Device*, pDevice, ID3D11Resource*, pResource, const D3D11_DEPTH_STENCIL_VIEW_DESC*, pDesc, ID3D11DepthStencilView**, ppDepthStencilView)\
+	X(29, HRESULT, CreateInputLayout, ID3D11Device*, pDevice, const D3D11_INPUT_ELEMENT_DESC*, pInputElementDesc, UINT, NumElements, const void*, pShaderByteCodeWithInputSignature, SIZE_T, ByteCodeLength, ID3D11InputLayout**, ppInputLayout)\
+	X(30, HRESULT, CreateVertexShader, ID3D11Device*, pDevice, const void*, pShaderByteCode, SIZE_T, BytecodeLength, ID3D11ClassLinkage*, pClassLinkage, ID3D11VertexShader**, ppVertexShader)\
+	X(31, HRESULT, CreateGeometryShader, ID3D11Device*, pDevice, const void*, pShaderByteCode, SIZE_T, BytecodeLength, ID3D11ClassLinkage*, pClassLinkage, ID3D11GeometryShader**, ppGeometryShader)\
+	X(32, HRESULT, CreateGeometryShaderWithStreamOutput, ID3D11Device*, pDevice, const void*, pShaderByteCode, SIZE_T, BytecodeLength, const D3D11_SO_DECLARATION_ENTRY*, pSODeclaration, UINT, NumEntries, const UINT*, pBufferStrides, UINT, NumStrides, UINT, RasterizedStream, ID3D11ClassLinkage*, pClassLinkage, ID3D11GeometryShader**, ppGeometryShader)\
+	X(33, HRESULT, CreatePixelShader, ID3D11Device*, pDevice, const void*, pShaderByteCode, SIZE_T, BytecodeLength,  ID3D11ClassLinkage*, pClassLinkage, ID3D11PixelShader**, ppPixelShader)\
+	X(34, HRESULT, CreateHullShader, ID3D11Device*, pDevice, const void*, pShaderByteCode, SIZE_T, BytecodeLength,  ID3D11ClassLinkage*, pClassLinkage, ID3D11HullShader**, ppHullShader)\
+	X(35, HRESULT, CreateDomainShader, ID3D11Device*, pDevice, const void*, pShaderByteCode, SIZE_T, BytecodeLength,  ID3D11ClassLinkage*, pClassLinkage, ID3D11DomainShader**, ppDomainShader)\
+	X(36, HRESULT, CreateComputeShader, ID3D11Device*, pDevice, const void*, pShaderByteCode, SIZE_T, BytecodeLength,  ID3D11ClassLinkage*, pClassLinkage, ID3D11ComputeShader**, ppComputeShader)\
+	X(38, HRESULT, CreateBlendState, ID3D11Device*, pDevice, const D3D11_BLEND_DESC*, pBlendStateDesc, ID3D11BlendState**, ppBlendState)\
+	X(39, HRESULT, CreateDepthStencilState, ID3D11Device*, pDevice, const D3D11_DEPTH_STENCIL_DESC**, pDepthStencilDesc, ID3D11DepthStencilState**, ppDepthStencilState)\
+	X(40, HRESULT, CreateRasterizerState, ID3D11Device*, pDevice, const D3D11_RASTERIZER_DESC*, pRasterizerDesc, ID3D11RasterizerState**, ppRasterizerState)\
+	X(41, HRESULT, CreateSamplerState, ID3D11Device*, pDevice, const D3D11_SAMPLER_DESC*, pSamplerDesc, ID3D11SamplerState**, ppSamplerState)\
+	X(42, HRESULT, CreateQuery, ID3D11Device*, pDevice,const D3D11_QUERY_DESC*, pQueryDesc, ID3D11Query**, ppQuery)\
+	X(43, HRESULT, CreatePredicate, ID3D11Device*, pDevice, const D3D11_QUERY_DESC*, pPrediacteDesc, ID3D11Predicate**, ppPredicate)\
+	X(44, HRESULT, CreateCounter, ID3D11Device*, pDevice, const D3D11_COUNTER_DESC*, pCounterDesc, ID3D11Counter**, ppCounter)\
+	X(45, HRESULT, CreateDeferredContext, ID3D11Device*, pDevice, UINT, ContextFlags, ID3D11DeviceContext**, ppDeferredContext)\
+	X(46, HRESULT, OpenSharedResource, ID3D11Device*, pDevice, HANDLE, hResource, REFIID, ReturnedInterface, void**, ppResource)\
+	X(50, HRESULT, CheckCounter, ID3D11Device*, pDevice, const D3D11_COUNTER_DESC*, pDesc, D3D11_COUNTER_TYPE*, pType, UINT*, pActiveCounters, LPSTR, szName, UINT*, pNameLength, LPSTR, szUnits, UINT*, pUnitsLength, LPSTR, szDescription, UINT*, pDescriptionLength)\
+	X(52, HRESULT, GetPrivateDataObject, IDXGIObject*, pObject, REFGUID, Name, UINT*, pDataSize, void*, pData)\
+	X(53, HRESULT, SetPrivateDataObject, IDXGIObject*, pObject, REFGUID, Name, UINT, DataSize, const void*, pData)\
+	X(54, HRESULT, SetPrivateDataInterfaceObject, IDXGIObject*, pObject, REFGUID, Name, const IUnknown*, pUnknown)\
+	X(75, HRESULT, Map, ID3D11DeviceContext*, pContext, ID3D11Resource*, pResource, UINT, Subresource, D3D11_MAP, MapType, UINT, MapFlags, D3D11_MAPPED_SUBRESOURCE*, pMappedResource)\
+	X(90, HRESULT, GetData, ID3D11DeviceContext*, pContext, ID3D11Asynchronous*, pAsync, void*, pData, UINT, DataSize, UINT, GetDataFlags)\
 
 #define D3D11_METHODS_VOID \
 	X(49, void, CheckCounterInfo, ID3D11Device*, pDevice, D3D11_COUNTER_INFO*, pCounterinfo) \
@@ -137,3 +170,13 @@
 	X(202, void, SetMarkerInt, ID3D11DeviceContext2*, pDeviceContext, LPCWSTR, pLabel, INT, Data) \
 	X(203, void, BeginEventInt, ID3D11DeviceContext2*, pDeviceContext, LPCWSTR, pLabel, INT, Data) \
 	X(204, void, EndEvent, ID3D11DeviceContext2*, pDeviceContext) \
+	X(12, void, GetDesc, ID3D11Buffer*, pBuffer, D3D11_BUFFER_DESC*, pDesc)\
+	X(78, void, IASetInputLayout, ID3D11DeviceContext*, pContext, ID3D11InputLayout*, pInputLayout)\
+	X(79, void, IASetVertexBuffers, ID3D11DeviceContext*, pContext, UINT, StartSlot, UINT, NumBuffers, ID3D11Buffer *const*, ppVertexBuffers, const UINT*, pStrides, const UINT*, pOffsets)\
+	X(80, void, IASetIndexBuffer, ID3D11DeviceContext*, pContext, ID3D11Buffer*, pIndexBuffer, DXGI_FORMAT, Format, UINT, Offset)\
+	X(91, void, SetPredication, ID3D11DeviceContext*, pContext, ID3D11Predicate*, pPredicate, BOOL, PredicateValue)\
+	X(94, void, OMSetRenderTargets, ID3D11DeviceContext*, pContext, UINT, NumViews, ID3D11RenderTargetView *const*, ppRenderTargetViews, ID3D11DepthStencilView*, pDepthStencilView)\
+	X(95, void, OMSetRenderTargetsAndUnorderedAccessViews, ID3D11DeviceContext*, pContext, UINT, NumRTVs, ID3D11RenderTargetView *const*, ppRenderTargetViews,  ID3D11DepthStencilView*, pDepthStencilView, UINT, UAVStartSlot, UINT, numUAVs, ID3D11UnorderedAccessView *const*, ppUnorderedAccessViews, const UINT*, pUAVInitialCounts)\
+	X(96, void, OMSetBlendState, ID3D11DeviceContext*, pContext, ID3D11BlendState*, pBlendState, const FLOAT*, BlendFactor, UINT, SampleMask)\
+	X(97, void, OMSetDepthStencilState, ID3D11DeviceContext*, pContext, ID3D11DepthStencilState*, pDepthStencilState, UINT, StencilRef)\
+	X(98, void, SOSetTargets, ID3D11DeviceContext*, pContext, UINT, NumBuffers, ID3D11Buffer *const*, ppSOTargets, const UINT*, pOffsets)\
