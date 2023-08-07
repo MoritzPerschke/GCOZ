@@ -180,3 +180,28 @@
 	X(96, void, OMSetBlendState, ID3D11DeviceContext*, pContext, ID3D11BlendState*, pBlendState, const FLOAT*, BlendFactor, UINT, SampleMask)\
 	X(97, void, OMSetDepthStencilState, ID3D11DeviceContext*, pContext, ID3D11DepthStencilState*, pDepthStencilState, UINT, StencilRef)\
 	X(98, void, SOSetTargets, ID3D11DeviceContext*, pContext, UINT, NumBuffers, ID3D11Buffer *const*, ppSOTargets, const UINT*, pOffsets)\
+	X(104, void, RSSetState, ID3D11DeviceContext*, pContext, ID3D11RasterizerState*, pRasterizerState)\
+	X(105, void, RSSetViewports, ID3D11DeviceContext*, pContext, UINT, NumViewports, const D3D11_VIEWPORT*, pViewPorts)\
+	X(106, void, RSSetScissorRects, ID3D11DeviceContext*, pContext, UINT, NumRects, const D3D11_RECT*, pRects)\
+	X(107, void, CopySubresourceRegion, ID3D11DeviceContext*, pContext, ID3D11Resource*, pDstResource, UINT, DstSubresource, UINT, DstX, UINT, DstY, UINT, DstZ, ID3D11Resource*, pSrcResource, UINT, SrcSubResource, const D3D11_BOX*, pSrcBox)\
+	X(109, void, UpdateSubresource, ID3D11DeviceContext*, pContext, ID3D11Resource*, pDstResource, UINT, DstSubresource, const D3D11_BOX*, pDstBox, const void*, pScrData, UINT, SrcRowPitch, UINT, SrcDepthPitch)\
+	X(129, void, CSSetUnorderedAccessViews, ID3D11DeviceContext*, pContext, UINT, StartSlot, UINT, NumUAVs, ID3D11UnorderedAccessView *const*, ppUnorderedAccessViews, const UINT*, pUAVInitialCounts)\
+	X(130, void, CSSetShader, ID3D11DeviceContext*, pContext, ID3D11ComputeShader*, pComputeShader, ID3D11ClassInstance *const*, ppClassInstances, UINT, NumClassInstances)\
+	X(131, void, CSSetSamplers, ID3D11DeviceContext*, pContext, UINT, StartSlot, UINT, NumSamplers, ID3D11SamplerState *const*, ppSamplers)\
+	X(132, void, CSSetConstantBuffers, ID3D11DeviceContext*, pContext, UINT, StartSlot, UINT, NumBuffers, ID3D11Buffer *const*, ppConstantBuffers)\
+	X(133, void, VSGetConstantBuffers, ID3D11DeviceContext*, pContext, UINT, StartSlot, UINT, NumBuffers, ID3D11Buffer**, ppConstantBuffers)\
+	X(134, void, PSGetShaderResources, ID3D11DeviceContext*, pContext, UINT, StartSlot, UINT, NumViews, ID3D11ShaderResourceView**, ppShaderResourceViews)\
+	X(135, void, PSGetShader, ID3D11DeviceContext*, pContext, ID3D11PixelShader**, ppPixelShader, ID3D11ClassInstance**, ppClassInstances, UINT*, pNumClassInstances)\
+	X(136, void, PSGetSamplers, ID3D11DeviceContext*, pContext, UINT, StartSlot, UINT, NumSamplers, ID3D11SamplerState**, ppSamplers)\
+	X(137, void, VSGetShader, ID3D11DeviceContext*, pContext, ID3D11VertexShader**, ppVertexShader, ID3D11ClassInstance**, ppClassInstances, UINT*, pNumClassInstances)\
+	X(138, void, PSGetConstantBuffers, ID3D11DeviceContext*, pContext, UINT, StartSlot, UINT, NumBuffers, ID3D11Buffer**, ppConstantBuffers)\
+	X(140, void, IAGetVertexBuffers, ID3D11DeviceContext*, pContext, UINT, StartSlot, UINT, NumBuffers, ID3D11Buffer**, ppVertexBuffer, UINT*, pStrides, UINT*, pOffsets)\
+	X(141, void, IAGetIndexBuffer, ID3D11DeviceContext*, pContext, ID3D11Buffer**, ppIndexBuffer, DXGI_FORMAT*, Format, UINT*, Offset)\
+	X(142, void, GSGetConstantBuffers, ID3D11DeviceContext*, pContext, UINT, StartSlot, UINT, NumBuffers, ID3D11Buffer**, ppConstantBuffers)\
+	X(143, void, GSGetShader, ID3D11DeviceContext*, pContext, ID3D11GeometryShader**, ppGeometryShader, ID3D11ClassInstance**, ppClassInstances, UINT*, pNumClassInstances)\
+	X(145, void, VSGetShaderResources, ID3D11DeviceContext*, pContext, UINT, StartSlot, UINT, NumViews, ID3D11ShaderResourceView**, ppShaderResourceViews)\
+	X(146, void, VSGetSamplers, ID3D11DeviceContext*, pContext, UINT, StartSlot, UINT, NumSamplers, ID3D11SamplerState**, ppSamplers)\
+	X(147, void, GetPredication, ID3D11DeviceContext*, pContext, ID3D11Predicate**, ppPredicate, BOOL*, pPredicateValue)\
+	X(148, void, GSGetShaderResources, ID3D11DeviceContext*, pContext, UINT, StartSlot, UINT, NumViews, ID3D11ShaderResourceView**, ppShaderResourceViews)\
+	X(149, void, GSGetSamplers, ID3D11DeviceContext*, pContext, UINT, StartSlot, UINT, NumSamplers, ID3D11SamplerState**, ppSamplers)\
+	X(150, void, OMGetRenderTargets, ID3D11DeviceContext*, pContext, UINT, NumViews, ID3D11RenderTargetView**, ppRenderTargetView, ID3D11DepthStencilView**, ppDepthStencilView)\
