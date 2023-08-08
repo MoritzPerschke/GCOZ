@@ -205,3 +205,22 @@
 	X(148, void, GSGetShaderResources, ID3D11DeviceContext*, pContext, UINT, StartSlot, UINT, NumViews, ID3D11ShaderResourceView**, ppShaderResourceViews)\
 	X(149, void, GSGetSamplers, ID3D11DeviceContext*, pContext, UINT, StartSlot, UINT, NumSamplers, ID3D11SamplerState**, ppSamplers)\
 	X(150, void, OMGetRenderTargets, ID3D11DeviceContext*, pContext, UINT, NumViews, ID3D11RenderTargetView**, ppRenderTargetView, ID3D11DepthStencilView**, ppDepthStencilView)\
+	X(151, void, OMGetRenderTargetsAndUnorderedAccessViews, ID3D11DeviceContext*, pContext, UINT, NumRTVs, ID3D11RenderTargetView *const*, ppRenderTargetViews, ID3D11DepthStencilView*, pDepthStencilView, UINT, UAVStartSlot, UINT, NumUAVs, ID3D11UnorderedAccessView *const*, ppUnorderedAccessViews, const UINT*, pUAVInitialCounts)\
+	X(152, void, OMGetBlendState, ID3D11DeviceContext*, pContext, ID3D11BlendState**, ppBlendState, FLOAT*, BlendFactor, UINT*, pSampleMask)\
+	X(153, void, OMGetDepthStencilState, ID3D11DeviceContext*, pContext, ID3D11DepthStencilState**, ppDepthStencilState, UINT*, pStencilRef)\
+	X(154, void, SOGetTargets, ID3D11DeviceContext*, pContext, UINT, NumBuffers, ID3D11Buffer**, ppSOTarets)\
+	X(156, void, RSGetViewports, ID3D11DeviceContext*, pContext, UINT*, pNumViewports, D3D11_VIEWPORT*, pViewports)\
+	X(157, void, RSGetScissorRects, ID3D11DeviceContext*, pContext, UINT*, pNumRects, D3D11_RECT*, pRects)\
+	X(158, void, HSGetShaderResources, ID3D11DeviceContext*, pContext, UINT, StartSlot, UINT, NumViews, ID3D11ShaderResourceView**, ppShaderResourceViews)\
+	X(159, void, HSGetShader, ID3D11DeviceContext*, pContext, ID3D11HullShader**, ppHullShader, ID3D11ClassInstance**, pClassInstances, UINT*, pNumClassInstances)\
+	X(160, void, HSGetSamplers, ID3D11DeviceContext*, pContext, UINT, StartSlot, UINT, NumSamplers, ID3D11SamplerState**, ppSamplers)\
+	X(161, void, HSGetConstantBuffers, ID3D11DeviceContext*, pContext, UINT, StartSlot, UINT, NumBuffers, ID3D11Buffer**, ppConstantBuffers)\
+	X(162, void, DSGetShaderResources, ID3D11DeviceContext*, pContext, UINT, StartSlot, UINT, NumViews, ID3D11ShaderResourceView**, ppShaderResourceViews)\
+	X(163, void, DSGetShader, ID3D11DeviceContext*, pContext, ID3D11DomainShader**, ppDomainShader, ID3D11ClassInstance**, ppClassInstances, UINT*, pNumClassInstances)\
+	X(164, void, DSGetSamplers, ID3D11DeviceContext*, pContext, UINT, StartSlot, UINT, NumSamplers, ID3D11SamplerState**, ppSamplers)\
+	X(165, void, DSGetConstantBuffers, ID3D11DeviceContext*, pContext, UINT, StartSlot, UINT, NumBuffers, ID3D11Buffer**, ppConstantBuffers)\
+	X(166, void, CSGetShaderResources, ID3D11DeviceContext*, pContext, UINT, StartSlot, UINT, NumViews, ID3D11ShaderResourceView**, ppShaderResourceViews)\
+	X(167, void, CSGetUnorderedAccessViews, ID3D11DeviceContext*, pContext, UINT, StartSlot, UINT, NumUAVs, ID3D11UnorderedAccessView**, ppUnorderedAccessViews)\
+	X(168, void, CSGetShader, ID3D11DeviceContext*, pContext, ID3D11ComputeShader**, ppComputeShader, ID3D11ClassInstance**, ppClassInstances, UINT*, pNumClassInstances)\
+	X(169, void, CSGetSamplers, ID3D11DeviceContext*, pContext, UINT, StartSlot, UINT, NumSamplers, ID3D11SamplerState**, ppSamplers)\
+	X(170, void, CSGetConstantBuffers, ID3D11DeviceContext*, pContext, UINT, StartSlot, UINT, NumBuffers, ID3D11Buffer**, ppConstantBuffers)\
