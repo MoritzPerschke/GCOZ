@@ -26,24 +26,27 @@ int main(int argc, char* argv[]) {
 	injector.inject_dll(PID);
 
 	int receivedMsgs = 0;
-	while (true) {
+	while (true) { /// TODO: change this
 		DllMessage msg = com.getMessage();
 		if (msg.valid) {
 			switch (msg.lastStatus) {
-				case ProfilerStatus::GCOZ_MEASURE :
-					std::cout << ok << "Measured method durations:" << std::endl;
-					for (int i = 0; i < msg.durations.size(); i++) {
-						if (msg.durations[i] != std::chrono::nanoseconds(0)) {
-							std::cout << inf << i << ": " << msg.durations[i].count() << std::endl;
-						}
+			case ProfilerStatus::GCOZ_MEASURE:
+				std::cout << ok << "Measured method durations:" << std::endl;
+				for (int i = 0; i < msg.durations.size(); i++) {
+					if (msg.durations[i] != std::chrono::nanoseconds(0)) {
+						std::cout << inf << i << ": " << msg.durations[i].count() << std::endl;
 					}
-					std::cout << std::endl;
-					break;
-				case ProfilerStatus::GCOZ_PROFILE :
-					std::cout << "Length of FrameDurations vector is: " << msg.frameTimepoints.size() << std::endl << std::endl;
-					break;
-				case ProfilerStatus::GCOZ_WAIT : // this should never happen, GCOZ_WAIT doesn't send any messages to profiler
-					break;
+				}
+				std::cout << std::endl;
+				break;
+			case ProfilerStatus::GCOZ_PROFILE:
+				std::cout << ok << "FrameDurations: " << std::endl;
+				for (int i = 0; i < MEASURE_FRAME_COUNT; i++) {
+					std::cout << inf << i << ": " << msg.frameTimepoints[i].count() << std::endl;
+				}
+				break;
+			case ProfilerStatus::GCOZ_WAIT: // this should never happen, GCOZ_WAIT doesn't send any messages to profiler
+				break;
 			} // switch(msg.lastStatus
 		} // if(msg.valid)
 		else {
