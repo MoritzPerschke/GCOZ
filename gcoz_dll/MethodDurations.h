@@ -4,14 +4,16 @@
 #include <algorithm>
 #include <vector>
 
+#include "../gcoz_profiler/Constants.h"
+
 namespace MethodDurations {
 	using Timepoint = std::chrono::steady_clock::time_point;
 	using Duration = std::chrono::duration<double>;
 	using Nanoseconds = std::chrono::nanoseconds;
 
 	// maybe use map here to keep track of all individual times
-	static std::array<int, 205> calls = {};
-	static std::array<Nanoseconds, 205> durations;
+	static std::array<int, D3D11_METHOD_COUNT> calls = {};
+	static std::array<Nanoseconds, D3D11_METHOD_COUNT> durations;
 
 	static Timepoint lastPresentCall;
 	static std::vector<Nanoseconds> presentCallTimes;
@@ -50,9 +52,9 @@ namespace MethodDurations {
 		return _msg.frameTimepoints.size();
 	}
 
-	std::array<std::chrono::nanoseconds, 205> getDurations() {
-		std::array<std::chrono::nanoseconds, 205> returnDurations = durations;
-		for (int i = 0; i < 205; i++) {
+	std::array<std::chrono::nanoseconds, D3D11_METHOD_COUNT> getDurations() {
+		std::array<std::chrono::nanoseconds, D3D11_METHOD_COUNT> returnDurations = durations;
+		for (int i = 0; i < D3D11_METHOD_COUNT; i++) {
 			if (calls[i] != 0) {
 				returnDurations[i] = returnDurations[i] / calls[i];
 			}
