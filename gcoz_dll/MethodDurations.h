@@ -4,17 +4,19 @@
 #include <algorithm>
 #include <vector>
 
+#include "../gcoz_profiler/Constants.h"
+
 namespace MethodDurations {
 	using Timepoint = std::chrono::steady_clock::time_point;
 	using Duration = std::chrono::duration<double>;
 	using Nanoseconds = std::chrono::nanoseconds;
 
 	// maybe use map here to keep track of all individual times
-	static std::array<int, 205> calls = {};
-	static std::array<Nanoseconds, 205> durations;
+	static std::array<int, D3D11_METHOD_COUNT> calls = {};
+	static std::array<Nanoseconds, D3D11_METHOD_COUNT> durations;
 
 	static Timepoint lastPresentCall;
-	static std::vector<Nanoseconds> presentCallTimes;
+	static std::array<Nanoseconds, MEASURE_FRAME_COUNT> presentCallTimes;
 	static std::chrono::steady_clock clock; // https://stackoverflow.com/a/37440647/15005309
 
 	Timepoint now() {
@@ -28,39 +30,30 @@ namespace MethodDurations {
 
 	void presentCalled() {
 		static bool init = false;
+		static int callNr = 0;
 		if (!init) {
 			lastPresentCall = now();
 			init = true;
 		}
 		else {
-			presentCallTimes.push_back(std::chrono::duration_cast<Nanoseconds>(now() - lastPresentCall));
+			presentCallTimes[callNr] = std::chrono::duration_cast<Nanoseconds>(now() - lastPresentCall);
 			lastPresentCall = now();
 		}
 	}
 
-	size_t getPresentTimes(DllMessage _msg) {
-		if (presentCallTimes.size() == 0) {
-			//DisplayErrorBox(L"getPresentTimes()", L"presentCallTimes is empty");
-			return 0;
-		}
-
-		for (const auto& elem : presentCallTimes) {
-			_msg.frameTimepoints.push_back(elem);
-		}
-		return _msg.frameTimepoints.size();
+	void getPresentTimes(DllMessage _msg) {
+		_msg.frameTimepoints = presentCallTimes;
 	}
 
-	std::array<std::chrono::nanoseconds, 205> getDurations() {
-		std::array<std::chrono::nanoseconds, 205> returnDurations = durations;
-		for (int i = 0; i < 205; i++) {
+	void getDurations(DllMessage _msg) {
+		for (int i = 0; i < D3D11_METHOD_COUNT; i++) {
 			if (calls[i] != 0) {
-				returnDurations[i] = returnDurations[i] / calls[i];
+				_msg.durations[i] = _msg.durations[i] / calls[i];
 			}
 			else {
 				Timepoint empty = now();
-				returnDurations[i] = empty - empty;
+				_msg.durations[i] = empty - empty;
 			}
 		}
-		return returnDurations;
 	}
 } // MethodDurations

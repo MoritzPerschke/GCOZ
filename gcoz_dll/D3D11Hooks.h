@@ -10,6 +10,7 @@
 #include "DelayManager.h"
 #include "MethodDurations.h"
 #include "ProfilerStatusManager.h"
+#include "../gcoz_profiler/Constants.h"
 
 namespace D3D11Hooks{
 	DelayManager delays; // not sure if this is the best option, default constructor sets all delays to 0
@@ -90,46 +91,38 @@ namespace D3D11Hooks{
 
 		switch (ProfilerStatusManager::currentStatus) {
 			case ProfilerStatus::GCOZ_MEASURE : // measure times of D3D11 Methods, nothing else
+				if (++callCount == MEASURE_FRAME_COUNT) {
+					callCount = 0;
+					DllMessage send = {};
+					MethodDurations::getPresentTimes(send);
+					MethodDurations::getDurations(send);
+					send.lastStatus = ProfilerStatusManager::currentStatus;
+					send.valid = true;
+					com.sendMessage(send);
+					//ProfilerStatusManager::changeStatus(ProfilerStatus::GCOZ_WAIT);
+				}
 				MethodDurations::presentCalled();
 				start = MethodDurations::now();
 				value = oPresent(pSwapChain, SyncInterval, Flags);
 				MethodDurations::Duration duration = MethodDurations::now() - start;
 				MethodDurations::addDuration(8, duration);
 				
-				if (callCount++ == 500) {
-					callCount = 0;
-					DllMessage send = {};
-					if (MethodDurations::getPresentTimes(send) == 0) { // this does not take, profiler still gets 0-length vector
-						//DisplayErrorBox(L"Sending Message", L"frameTimePoints vector is empty");
-					}
-					send.durations = MethodDurations::getDurations();
-					send.lastStatus = ProfilerStatusManager::currentStatus;
-					send.valid = true;
-					if (!com.sendMessage(send)) {
-						DisplayErrorBox(L"Sending Message to Profiler");
-					}
-					ProfilerStatusManager::changeStatus(ProfilerStatus::GCOZ_WAIT);
-				}
 				break;
 
 			case ProfilerStatus::GCOZ_PROFILE : // apply last received delays and measure FPS
+				if (++callCount == MEASURE_FRAME_COUNT) {
+					callCount = 0;
+					DllMessage send = {};
+					MethodDurations::getPresentTimes(send);
+					MethodDurations::getDurations(send);
+					send.lastStatus = ProfilerStatusManager::currentStatus;
+					send.valid = true;
+					com.sendMessage(send);
+					//ProfilerStatusManager::changeStatus(ProfilerStatus::GCOZ_WAIT);
+				}
 				MethodDurations::presentCalled();
 				std::this_thread::sleep_for(std::chrono::nanoseconds(delays.getDelay(8))); // prob. use Ns here, Ms drops FPS to <1
 				value = oPresent(pSwapChain, SyncInterval, Flags);
-				if (callCount++ == 500) {
-					callCount = 0;
-					DllMessage send = {};
-					if (MethodDurations::getPresentTimes(send) == 0) { // this does not take, profiler still gets 0-length vector
-						//DisplayErrorBox(L"Sending Message", L"frameTimePoints vector is empty");
-					}
-					send.durations = MethodDurations::getDurations();
-					send.lastStatus = ProfilerStatusManager::currentStatus;
-					send.valid = true;
-					if (!com.sendMessage(send)) {
-						DisplayErrorBox(L"Sending Message to Profiler");
-					}
-					ProfilerStatusManager::changeStatus(ProfilerStatus::GCOZ_WAIT);
-				}
 				break;
 
 			case ProfilerStatus::GCOZ_WAIT : // do nothing, wait for message from Profiler

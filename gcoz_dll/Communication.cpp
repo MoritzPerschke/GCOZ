@@ -20,7 +20,7 @@ Communication::Communication(){
 	pSharedMemoryDll = MapViewOfFile( // this is the only one failing
 		hDllFileMapping,
 		FILE_MAP_WRITE, // the writing is the issue
-		0, 0, 20
+		0, 0, 8192
 	); if (pSharedMemoryDll == NULL) {
 		DisplayErrorBox(L"MapViewOfFile Dll");
 	}

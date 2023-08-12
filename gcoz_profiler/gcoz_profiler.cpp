@@ -7,6 +7,7 @@ int main(int argc, char* argv[]) {
 	if (argc < 2) {
 		std::cout << err << "Provide PID";
 	}
+	std::cout << inf << sizeof(DllMessage) << std::endl;
 
 	DWORD PID = atoi(argv[1]);
 
@@ -28,6 +29,7 @@ int main(int argc, char* argv[]) {
 	int receivedMsgs = 0;
 	while (true) { /// TODO: change this
 		DllMessage msg = com.getMessage();
+		int notCalled = 0;
 		if (msg.valid) {
 			switch (msg.lastStatus) {
 			case ProfilerStatus::GCOZ_MEASURE:
@@ -36,8 +38,11 @@ int main(int argc, char* argv[]) {
 					if (msg.durations[i] != std::chrono::nanoseconds(0)) {
 						std::cout << inf << i << ": " << msg.durations[i].count() << std::endl;
 					}
+					else {
+						notCalled++;
+					}
 				}
-				std::cout << std::endl;
+				std::cout << inf << notCalled << " methods not called (time=0)" << std::endl;
 				break;
 			case ProfilerStatus::GCOZ_PROFILE:
 				std::cout << ok << "FrameDurations: " << std::endl;

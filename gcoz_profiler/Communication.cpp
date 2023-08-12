@@ -6,7 +6,7 @@ void Communication::init() {
 		NULL,
 		PAGE_READWRITE,
 		0,
-		2048,
+		8192,
 		L"gcoz_dll_shared_memory"
 	); 
 	if (hDllFileMapping == NULL) {
