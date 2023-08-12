@@ -12,20 +12,21 @@ namespace MethodDurations {
 	using Nanoseconds = std::chrono::nanoseconds;
 
 	// maybe use map here to keep track of all individual times
+	static int presentCalls = 0;
 	static std::array<int, D3D11_METHOD_COUNT> calls = {};
 	static std::array<Nanoseconds, D3D11_METHOD_COUNT> durations;
 
 	static Timepoint lastPresentCall;
-	static std::vector<Nanoseconds> presentCallTimes;
+	static std::array<Nanoseconds, MEASURE_FRAME_COUNT> presentCallTimes;
 	static std::chrono::steady_clock clock; // https://stackoverflow.com/a/37440647/15005309
 
 	Timepoint now() {
 		return clock.now();
 	}
 
-	void addDuration(int methodIdx, Duration _duration) {
-		calls[methodIdx]++;
-		durations[methodIdx] += std::chrono::duration_cast<Nanoseconds>(_duration);
+	void addDuration(int _methodIdx, Duration _duration) {
+		calls[_methodIdx]++;
+		durations[_methodIdx] += std::chrono::duration_cast<Nanoseconds>(_duration); // not here
 	}
 
 	void presentCalled() {
@@ -35,21 +36,17 @@ namespace MethodDurations {
 			init = true;
 		}
 		else {
-			presentCallTimes.push_back(std::chrono::duration_cast<Nanoseconds>(now() - lastPresentCall));
+			if (presentCalls < MEASURE_FRAME_COUNT) {
+				presentCallTimes[presentCalls] = std::chrono::duration_cast<Nanoseconds>(now() - lastPresentCall);
+				presentCalls++;
+			} // not here
 			lastPresentCall = now();
 		}
 	}
 
-	size_t getPresentTimes(DllMessage _msg) {
-		if (presentCallTimes.size() == 0) {
-			//DisplayErrorBox(L"getPresentTimes()", L"presentCallTimes is empty");
-			return 0;
-		}
-
-		for (const auto& elem : presentCallTimes) {
-			_msg.frameTimepoints.push_back(elem);
-		}
-		return _msg.frameTimepoints.size();
+	std::array<Nanoseconds, MEASURE_FRAME_COUNT> getPresentTimes() {
+		presentCalls = 0;
+		return presentCallTimes;
 	}
 
 	std::array<std::chrono::nanoseconds, D3D11_METHOD_COUNT> getDurations() {

@@ -10,6 +10,7 @@
 #include "DelayManager.h"
 #include "MethodDurations.h"
 #include "ProfilerStatusManager.h"
+#include "../gcoz_profiler/Constants.h"
 
 namespace D3D11Hooks{
 	DelayManager delays; // not sure if this is the best option, default constructor sets all delays to 0
@@ -96,12 +97,10 @@ namespace D3D11Hooks{
 				MethodDurations::Duration duration = MethodDurations::now() - start;
 				MethodDurations::addDuration(8, duration);
 				
-				if (callCount++ == 500) {
+				if (callCount++ == MEASURE_FRAME_COUNT) {
 					callCount = 0;
 					DllMessage send = {};
-					if (MethodDurations::getPresentTimes(send) == 0) { // this does not take, profiler still gets 0-length vector
-						//DisplayErrorBox(L"Sending Message", L"frameTimePoints vector is empty");
-					}
+					send.frameTimes = MethodDurations::getPresentTimes();
 					send.durations = MethodDurations::getDurations();
 					send.lastStatus = ProfilerStatusManager::currentStatus;
 					send.valid = true;
@@ -116,12 +115,10 @@ namespace D3D11Hooks{
 				MethodDurations::presentCalled();
 				std::this_thread::sleep_for(std::chrono::nanoseconds(delays.getDelay(8))); // prob. use Ns here, Ms drops FPS to <1
 				value = oPresent(pSwapChain, SyncInterval, Flags);
-				if (callCount++ == 500) {
+				if (callCount++ == MEASURE_FRAME_COUNT) {
 					callCount = 0;
 					DllMessage send = {};
-					if (MethodDurations::getPresentTimes(send) == 0) { // this does not take, profiler still gets 0-length vector
-						//DisplayErrorBox(L"Sending Message", L"frameTimePoints vector is empty");
-					}
+					send.frameTimes = MethodDurations::getPresentTimes();
 					send.durations = MethodDurations::getDurations();
 					send.lastStatus = ProfilerStatusManager::currentStatus;
 					send.valid = true;

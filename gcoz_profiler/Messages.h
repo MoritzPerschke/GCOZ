@@ -20,6 +20,6 @@ struct ProfilerMessage : Message {
 
 struct DllMessage : Message {
 	ProfilerStatus lastStatus;
-	std::vector<Duration> frameTimepoints;
+	std::array<Nanoseconds, MEASURE_FRAME_COUNT> frameTimes;
 	std::array<Nanoseconds, D3D11_METHOD_COUNT> durations;
 };
