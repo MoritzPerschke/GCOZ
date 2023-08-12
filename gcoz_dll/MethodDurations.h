@@ -12,6 +12,7 @@ namespace MethodDurations {
 	using Nanoseconds = std::chrono::nanoseconds;
 
 	// maybe use map here to keep track of all individual times
+	static int presentCalls = 0;
 	static std::array<int, D3D11_METHOD_COUNT> calls = {};
 	static std::array<Nanoseconds, D3D11_METHOD_COUNT> durations;
 
@@ -23,9 +24,9 @@ namespace MethodDurations {
 		return clock.now();
 	}
 
-	void addDuration(int methodIdx, Duration _duration) {
-		calls[methodIdx]++;
-		durations[methodIdx] += std::chrono::duration_cast<Nanoseconds>(_duration);
+	void addDuration(int _methodIdx, Duration _duration) {
+		calls[_methodIdx]++;
+		durations[_methodIdx] += std::chrono::duration_cast<Nanoseconds>(_duration); // not here
 	}
 
 	void presentCalled() {
@@ -36,16 +37,21 @@ namespace MethodDurations {
 			init = true;
 		}
 		else {
-			presentCallTimes[callNr] = std::chrono::duration_cast<Nanoseconds>(now() - lastPresentCall);
+			if (presentCalls < MEASURE_FRAME_COUNT) {
+				presentCallTimes[presentCalls] = std::chrono::duration_cast<Nanoseconds>(now() - lastPresentCall);
+				presentCalls++;
+			} // not here
 			lastPresentCall = now();
 		}
 	}
 
-	void getPresentTimes(DllMessage _msg) {
-		_msg.frameTimepoints = presentCallTimes;
+	std::array<Nanoseconds, MEASURE_FRAME_COUNT> getPresentTimes() {
+		presentCalls = 0;
+		return presentCallTimes;
 	}
 
-	void getDurations(DllMessage _msg) {
+	std::array<std::chrono::nanoseconds, D3D11_METHOD_COUNT> getDurations() {
+		std::array<std::chrono::nanoseconds, D3D11_METHOD_COUNT> returnDurations = durations;
 		for (int i = 0; i < D3D11_METHOD_COUNT; i++) {
 			if (calls[i] != 0) {
 				_msg.durations[i] = _msg.durations[i] / calls[i];

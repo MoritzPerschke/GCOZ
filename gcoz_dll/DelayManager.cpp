@@ -1,5 +1,7 @@
 #include "DelayManager.h"
 
+#include "../gcoz_profiler/Constants.h"
+
 DelayManager::DelayManager() {
 	methodDelays.fill(0);
 }

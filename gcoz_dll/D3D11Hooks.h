@@ -107,14 +107,29 @@ namespace D3D11Hooks{
 				MethodDurations::Duration duration = MethodDurations::now() - start;
 				MethodDurations::addDuration(8, duration);
 				
+				if (callCount++ == MEASURE_FRAME_COUNT) {
+					callCount = 0;
+					DllMessage send = {};
+					send.frameTimes = MethodDurations::getPresentTimes();
+					send.durations = MethodDurations::getDurations();
+					send.lastStatus = ProfilerStatusManager::currentStatus;
+					send.valid = true;
+					if (!com.sendMessage(send)) {
+						DisplayErrorBox(L"Sending Message to Profiler");
+					}
+					ProfilerStatusManager::changeStatus(ProfilerStatus::GCOZ_WAIT);
+				}
 				break;
 
 			case ProfilerStatus::GCOZ_PROFILE : // apply last received delays and measure FPS
-				if (++callCount == MEASURE_FRAME_COUNT) {
+				MethodDurations::presentCalled();
+				std::this_thread::sleep_for(std::chrono::nanoseconds(delays.getDelay(8))); // prob. use Ns here, Ms drops FPS to <1
+				value = oPresent(pSwapChain, SyncInterval, Flags);
+				if (callCount++ == MEASURE_FRAME_COUNT) {
 					callCount = 0;
 					DllMessage send = {};
-					MethodDurations::getPresentTimes(send);
-					MethodDurations::getDurations(send);
+					send.frameTimes = MethodDurations::getPresentTimes();
+					send.durations = MethodDurations::getDurations();
 					send.lastStatus = ProfilerStatusManager::currentStatus;
 					send.valid = true;
 					com.sendMessage(send);

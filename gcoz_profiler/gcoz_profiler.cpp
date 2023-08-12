@@ -7,8 +7,6 @@ int main(int argc, char* argv[]) {
 	if (argc < 2) {
 		std::cout << err << "Provide PID";
 	}
-	std::cout << inf << sizeof(DllMessage) << std::endl;
-
 	DWORD PID = atoi(argv[1]);
 
 	/* Communication */
@@ -47,7 +45,7 @@ int main(int argc, char* argv[]) {
 			case ProfilerStatus::GCOZ_PROFILE:
 				std::cout << ok << "FrameDurations: " << std::endl;
 				for (int i = 0; i < MEASURE_FRAME_COUNT; i++) {
-					std::cout << inf << i << ": " << msg.frameTimepoints[i].count() << std::endl;
+					std::cout << inf << i << ": " << msg.frameTimes[i].count() << std::endl;
 				}
 				break;
 			case ProfilerStatus::GCOZ_WAIT: // this should never happen, GCOZ_WAIT doesn't send any messages to profiler
