@@ -24,33 +24,15 @@ int main(int argc, char* argv[]) {
 	Injector injector = Injector();
 	injector.inject_dll(PID);
 
+	ProfilerStatusManager man;
 	int receivedMsgs = 0;
-	while (true) { /// TODO: change this
+	while (receivedMsgs < 20) { /// TODO: change this
 		DllMessage msg = com.getMessage();
-		int notCalled = 0;
 		if (msg.valid) {
-			switch (msg.lastStatus) {
-			case ProfilerStatus::GCOZ_MEASURE:
-				std::cout << ok << "Measured method durations:" << std::endl;
-				for (int i = 0; i < msg.durations.size(); i++) {
-					if (msg.durations[i] != std::chrono::nanoseconds(0)) {
-						std::cout << inf << i << ": " << msg.durations[i].count() << std::endl;
-					}
-					else {
-						notCalled++;
-					}
-				}
-				std::cout << inf << notCalled << " methods not called (time=0)" << std::endl;
-				break;
-			case ProfilerStatus::GCOZ_PROFILE:
-				std::cout << ok << "FrameDurations: " << std::endl;
-				for (int i = 0; i < MEASURE_FRAME_COUNT; i++) {
-					std::cout << inf << i << ": " << msg.frameTimes[i].count() << std::endl;
-				}
-				break;
-			case ProfilerStatus::GCOZ_WAIT: // this should never happen, GCOZ_WAIT doesn't send any messages to profiler
-				break;
-			} // switch(msg.lastStatus
+			receivedMsgs++;
+			ProfilerMessage nextMsg;
+			man.next(msg, nextMsg);
+			com.sendMessage(nextMsg);
 		} // if(msg.valid)
 		else {
 			std::cout << err << "No message after timeout" << std::endl;

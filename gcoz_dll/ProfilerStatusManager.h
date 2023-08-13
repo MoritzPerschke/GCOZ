@@ -4,7 +4,7 @@
 #include "../gcoz_profiler/ProfilerStatus.h"
 
 namespace ProfilerStatusManager {
-	static ProfilerStatus currentStatus = ProfilerStatus::GCOZ_PROFILE;
+	static ProfilerStatus currentStatus = ProfilerStatus::GCOZ_MEASURE;
 
 	void changeStatus(ProfilerStatus _newStatus) {
 		currentStatus = _newStatus;

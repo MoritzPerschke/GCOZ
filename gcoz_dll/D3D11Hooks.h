@@ -29,6 +29,7 @@ namespace D3D11Hooks{
 	#undef X
 
 	/* expands to hooked d3d11 function */
+	// maybe always measure duration to verify pauses
 	#define X(_IDX, _RETURN_TYPE, _NAME, ...) \
 		_RETURN_TYPE __stdcall hk##_NAME(FUNCTION_SIGNATURE(__VA_ARGS__)){ \
 			_RETURN_TYPE value; \
@@ -91,52 +92,35 @@ namespace D3D11Hooks{
 
 		switch (ProfilerStatusManager::currentStatus) {
 			case ProfilerStatus::GCOZ_MEASURE : // measure times of D3D11 Methods, nothing else
+				MethodDurations::presentCalled();
 				if (++callCount == MEASURE_FRAME_COUNT) {
 					callCount = 0;
 					DllMessage send = {};
-					MethodDurations::getPresentTimes(send);
-					MethodDurations::getDurations(send);
+					send.frameTimes = MethodDurations::getPresentTimes();
+					send.durations = MethodDurations::getDurations();
 					send.lastStatus = ProfilerStatusManager::currentStatus;
 					send.valid = true;
 					com.sendMessage(send);
 					//ProfilerStatusManager::changeStatus(ProfilerStatus::GCOZ_WAIT);
 				}
-				MethodDurations::presentCalled();
 				start = MethodDurations::now();
 				value = oPresent(pSwapChain, SyncInterval, Flags);
 				MethodDurations::Duration duration = MethodDurations::now() - start;
 				MethodDurations::addDuration(8, duration);
-				
-				if (callCount++ == MEASURE_FRAME_COUNT) {
-					callCount = 0;
-					DllMessage send = {};
-					send.frameTimes = MethodDurations::getPresentTimes();
-					send.durations = MethodDurations::getDurations();
-					send.lastStatus = ProfilerStatusManager::currentStatus;
-					send.valid = true;
-					if (!com.sendMessage(send)) {
-						DisplayErrorBox(L"Sending Message to Profiler");
-					}
-					ProfilerStatusManager::changeStatus(ProfilerStatus::GCOZ_WAIT);
-				}
 				break;
 
 			case ProfilerStatus::GCOZ_PROFILE : // apply last received delays and measure FPS
 				MethodDurations::presentCalled();
-				std::this_thread::sleep_for(std::chrono::nanoseconds(delays.getDelay(8))); // prob. use Ns here, Ms drops FPS to <1
-				value = oPresent(pSwapChain, SyncInterval, Flags);
 				if (callCount++ == MEASURE_FRAME_COUNT) {
 					callCount = 0;
 					DllMessage send = {};
 					send.frameTimes = MethodDurations::getPresentTimes();
-					send.durations = MethodDurations::getDurations();
 					send.lastStatus = ProfilerStatusManager::currentStatus;
 					send.valid = true;
 					com.sendMessage(send);
 					//ProfilerStatusManager::changeStatus(ProfilerStatus::GCOZ_WAIT);
 				}
-				MethodDurations::presentCalled();
-				std::this_thread::sleep_for(std::chrono::nanoseconds(delays.getDelay(8))); // prob. use Ns here, Ms drops FPS to <1
+				std::this_thread::sleep_for(std::chrono::nanoseconds(delays.getDelay(8)));
 				value = oPresent(pSwapChain, SyncInterval, Flags);
 				break;
 

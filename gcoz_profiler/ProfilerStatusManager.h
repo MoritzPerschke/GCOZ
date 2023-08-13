@@ -8,5 +8,8 @@
 class ProfilerStatusManager {
 	DelayCalculator calc;
 
+	void newMessage(ProfilerMessage& _msg);
+
+public:
 	ProfilerStatus next(DllMessage _dllMsg, ProfilerMessage& _nextMessage);
 };

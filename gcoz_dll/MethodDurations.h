@@ -54,12 +54,13 @@ namespace MethodDurations {
 		std::array<std::chrono::nanoseconds, D3D11_METHOD_COUNT> returnDurations = durations;
 		for (int i = 0; i < D3D11_METHOD_COUNT; i++) {
 			if (calls[i] != 0) {
-				_msg.durations[i] = _msg.durations[i] / calls[i];
+				returnDurations[i] = returnDurations[i] / calls[i];
 			}
 			else {
 				Timepoint empty = now();
-				_msg.durations[i] = empty - empty;
+				returnDurations[i] = empty - empty;
 			}
 		}
+		return returnDurations;
 	}
 } // MethodDurations
