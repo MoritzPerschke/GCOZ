@@ -101,7 +101,7 @@ namespace D3D11Hooks{
 					send.lastStatus = ProfilerStatusManager::currentStatus;
 					send.valid = true;
 					com.sendMessage(send);
-					//ProfilerStatusManager::changeStatus(ProfilerStatus::GCOZ_WAIT);
+					ProfilerStatusManager::changeStatus(ProfilerStatus::GCOZ_WAIT);
 				}
 				start = MethodDurations::now();
 				value = oPresent(pSwapChain, SyncInterval, Flags);
@@ -118,7 +118,7 @@ namespace D3D11Hooks{
 					send.lastStatus = ProfilerStatusManager::currentStatus;
 					send.valid = true;
 					com.sendMessage(send);
-					//ProfilerStatusManager::changeStatus(ProfilerStatus::GCOZ_WAIT);
+					ProfilerStatusManager::changeStatus(ProfilerStatus::GCOZ_WAIT);
 				}
 				std::this_thread::sleep_for(std::chrono::nanoseconds(delays.getDelay(8)));
 				value = oPresent(pSwapChain, SyncInterval, Flags);

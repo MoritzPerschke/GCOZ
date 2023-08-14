@@ -7,12 +7,13 @@ void ProfilerStatusManager::newMessage(ProfilerMessage& _msg) {
 }
 
 ProfilerStatus ProfilerStatusManager::next(DllMessage _dllMsg, ProfilerMessage& _nextMsg) {
+		long long int newFtAverages = 0;
 	switch (_dllMsg.lastStatus) {
 	case ProfilerStatus::GCOZ_MEASURE :
 		std::cout << ok << "Measured method durations:" << std::endl;
 		for (int i = 0; i < _dllMsg.durations.size(); i++) {
 			if (_dllMsg.durations[i].count() > 0) {
-				std::cout << inf << i << ": " << _dllMsg.durations[i].count() << std::endl;
+				std::cout << inf << std::setw(3) << std::setfill(' ') << i << ": " << std::setw(7) << _dllMsg.durations[i].count() << std::endl;
 			}
 		}
 
@@ -21,10 +22,10 @@ ProfilerStatus ProfilerStatusManager::next(DllMessage _dllMsg, ProfilerMessage& 
 		break;
 
 	case ProfilerStatus::GCOZ_PROFILE :
-		std::cout << ok << "FrameDurations: " << std::endl;
 		for (int i = 0; i < MEASURE_FRAME_COUNT; i++) {
-			std::cout << inf << i << ": " << _dllMsg.frameTimes[i].count() << std::endl;
+			newFtAverages += _dllMsg.frameTimes[i].count() / _dllMsg.frameTimes.size();
 		}
+		std::cout << ok << "Difference in Frametime averages: " << newFtAverages << " - " << calc.getBaselineFt() << " = " << newFtAverages - calc.getBaselineFt();
 
 		calc.addResult(_dllMsg.frameTimes);
 		newMessage(_nextMsg);

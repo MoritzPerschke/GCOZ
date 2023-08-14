@@ -17,14 +17,14 @@ bool DelayCalculator::isNewChoice(int _method, float _speedup) {
 
 void DelayCalculator::printBaseline() {
 	std::cout <<
-		"= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= =" << std::endl <<
+		"= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= =" << std::endl <<
 		"Baseline Method Durations:" << std::endl;
 	for (const auto& dur : baselineDurations) {
 		std::cout << std::setfill(' ') << std::setw(7) << dur.count() << '\t';
 	}
-	std::cout << std::endl <<
+	std::cout << std::endl << std::endl <<
 		"Baseline frame time average: " << baselineAverageFrameTime << std::endl <<
-		"= ======= ======= ======= ======= ======= ======= ======= ======= ======= =" << std::endl;
+		"= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= =" << std::endl;
 }
 
 void DelayCalculator::addBaseline(std::array<Nanoseconds, D3D11_METHOD_COUNT> _durations, std::array <Nanoseconds, MEASURE_FRAME_COUNT> _frameTimes) {
@@ -59,4 +59,9 @@ void DelayCalculator::calculateDelays(std::array<DWORD, D3D11_METHOD_COUNT>& _ms
 void DelayCalculator::addResult(std::array<Nanoseconds, MEASURE_FRAME_COUNT> _frameTimes) {
 	// calculate "speedup"
 	//fpsImprovements[lastMethodProfiled].at(lastMethodSpeedup) = "speedup";
+}
+
+long long int DelayCalculator::getBaselineFt()
+{
+	return baselineAverageFrameTime;
 }

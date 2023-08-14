@@ -26,7 +26,7 @@ int main(int argc, char* argv[]) {
 
 	ProfilerStatusManager man;
 	int receivedMsgs = 0;
-	while (receivedMsgs < 20) { /// TODO: change this
+	while (receivedMsgs < 10) { /// TODO: change this
 		DllMessage msg = com.getMessage();
 		if (msg.valid) {
 			receivedMsgs++;

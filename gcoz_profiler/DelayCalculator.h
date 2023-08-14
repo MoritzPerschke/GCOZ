@@ -40,4 +40,5 @@ public:
 	void addBaseline(std::array<Nanoseconds, D3D11_METHOD_COUNT> _durations, std::array <Nanoseconds, MEASURE_FRAME_COUNT> _frameTimes);
 	void calculateDelays(std::array<DWORD, D3D11_METHOD_COUNT>& _msgDelays);
 	void addResult(std::array <Nanoseconds, MEASURE_FRAME_COUNT> _frameTimes);
+	long long int getBaselineFt();
 };
