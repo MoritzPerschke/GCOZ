@@ -25,7 +25,7 @@ ProfilerStatus ProfilerStatusManager::next(DllMessage _dllMsg, ProfilerMessage& 
 		for (int i = 0; i < MEASURE_FRAME_COUNT; i++) {
 			newFtAverages += _dllMsg.frameTimes[i].count() / _dllMsg.frameTimes.size();
 		}
-		std::cout << ok << "Difference in Frametime averages: " << newFtAverages << " - " << calc.getBaselineFt() << " = " << newFtAverages - calc.getBaselineFt();
+		std::cout << ok << "Difference in Frametime averages: " << newFtAverages << " - " << calc.getBaselineFt() << " = " << newFtAverages - calc.getBaselineFt() << std::endl;
 
 		calc.addResult(_dllMsg.frameTimes);
 		newMessage(_nextMsg);
