@@ -1,7 +1,11 @@
 #include "DelayCalculator.h"
 
 int DelayCalculator::pickMethod() {
-	return method(gen);
+	int picked = method(gen);
+	if (baselineDurations[picked].count() == 0) {
+		picked = pickMethod();
+	}
+	return picked;
 }
 
 float DelayCalculator::pickSpeedup() {
@@ -47,6 +51,9 @@ void DelayCalculator::calculateDelays(std::array<DWORD, D3D11_METHOD_COUNT>& _ms
 		for (int i = 0; i < baselineDurations.size(); i++) {
 			if (i != selectedMethod) {
 				_msgDelays[i]  = baselineDurations[i].count() * selectedSpeedup;
+				if (baselineDurations[i].count() != 0) {
+				std::cout << inf << i << ": " << baselineDurations[i].count() * selectedSpeedup << std::endl;
+				}
 			}
 		}
 	}

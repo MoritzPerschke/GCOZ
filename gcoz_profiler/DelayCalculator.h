@@ -30,6 +30,7 @@ class DelayCalculator {
 
 	int lastMethodProfiled;
 	float lastMethodSpeedup;
+	std::array<Nanoseconds, D3D11_METHOD_COUNT> lastDelaysApplied;
 
 	int pickMethod();
 	float pickSpeedup();
