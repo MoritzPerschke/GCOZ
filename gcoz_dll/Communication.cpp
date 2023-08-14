@@ -33,8 +33,10 @@ Communication::Communication(){
 		DisplayErrorBox(L"MapViewOfFile Profiler");
 	}
 
-	hDllWrittenEvent = OpenEventA(EVENT_ALL_ACCESS, FALSE, "dllWrittenEvent");
-	hProfilerWrittenEvent = OpenEventA(EVENT_ALL_ACCESS, FALSE, "profilerWrittenEvent");
+	hDllWrittenEvent = CreateEventA(NULL, FALSE, FALSE, "dllWrittenEvent");
+	hDllDataReceived = CreateEventA(NULL, FALSE, FALSE, "hDllDataReceived");
+	hProfilerWrittenEvent = CreateEventA(NULL, FALSE, FALSE, "profilerWrittenEvent");
+	hProfilerDataReceived = CreateEventA(NULL, FALSE, FALSE, "hProfilerDataReceived");
 
 	pDllData = static_cast<DllMessage*>(pSharedMemoryDll);
 	pProfilerData = static_cast<ProfilerMessage*>(pSharedMemoryProfiler);
@@ -62,11 +64,12 @@ ProfilerMessage Communication::getMessage(DWORD _waitTimeout) {
 	else {
 		profilerMessage.valid = false;
 	}
-
+	SetEvent(hDllDataReceived);
 	return profilerMessage;
 }
 
 bool Communication::sendMessage(DllMessage _msg) {
 	*pDllData = _msg;
-	return SetEvent(hDllWrittenEvent);
+	SetEvent(hDllWrittenEvent);
+	return WaitForSingleObject(hProfilerDataReceived, 2) == WAIT_OBJECT_0; // not sure about delay here
 }
