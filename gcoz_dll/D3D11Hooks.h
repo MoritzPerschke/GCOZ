@@ -146,12 +146,12 @@ namespace D3D11Hooks{
 	}
 
 	void hookD3D11() {
-		kiero::bind(8, (void**)&oPresent, hkPresent);
 		#define X(idx, returnType, name, ...)\
 				kiero::bind(idx, (void**)&o##name, hk##name);
 			D3D11_METHODS
 			D3D11_METHODS_VOID
 		#undef X
+		kiero::bind(8, (void**)&oPresent, hkPresent);
 		DisplayInfoBox(L"Progress", L"D3D11 functions hooked");
 	}
 } // namespace D3D11Hooks
