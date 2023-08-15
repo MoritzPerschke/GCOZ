@@ -70,12 +70,12 @@ DllMessage Communication::getMessage() {
 		return dllMessage;
 	}
 	dllMessage.valid = false;
-	SetEvent(hProfilerDataReceived);
+	//SetEvent(hProfilerDataReceived);
 	return dllMessage;
 }
 
 bool Communication::sendMessage(ProfilerMessage _msg) {
 	*pProfilerData = _msg;
-	SetEvent(hProfilerWrittenEvent);
-	return WaitForSingleObject(hDllDataReceived, 2) == WAIT_OBJECT_0; // not sure of the delay here
+	return SetEvent(hProfilerWrittenEvent);
+	//return WaitForSingleObject(hDllDataReceived, 2) == WAIT_OBJECT_0; // not sure of the delay here
 }
