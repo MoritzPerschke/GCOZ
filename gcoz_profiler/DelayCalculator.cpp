@@ -33,7 +33,7 @@ void DelayCalculator::printBaseline() {
 		"= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= =" << std::endl <<
 		"Baseline Method Durations:" << std::endl;
 	for (const auto& dur : baselineDurations) {
-		std::cout << std::setfill(' ') << std::setw(7) << dur.count() << '\t';
+		std::cout << std::setfill(' ') << std::setw(8) << dur.count();
 	}
 	std::cout << std::endl << std::endl <<
 		"Baseline frame time average: " << baselineAverageFrameTime << std::endl <<
@@ -57,16 +57,16 @@ void DelayCalculator::calculateDelays(std::array<DWORD, D3D11_METHOD_COUNT>& _ms
 		for (int i = 0; i < baselineDurations.size(); i++) {
 			if (i != selectedMethod) {
 				if (baselineDurations[i].count() != 0) {
-				_msgDelays[i] = static_cast<DWORD>(0);
-				std::cout << inf << i << ": " << baselineDurations[i].count() * selectedSpeedup << std::endl;
+					_msgDelays[i] = static_cast<DWORD>(1 + (baselineDurations[i].count() * selectedSpeedup)); // make sure this is not 0
+					std::cout << std::setw(8) << std::setfill(' ') << i << ": " << _msgDelays[i];
 				}
 				else {
 					_msgDelays[i] = 0; // just in case method wasn't called during measuring
 				}
 			}
 		}
+		std::cout << std::endl;
 	}
-
 	lastMethodProfiled = selectedMethod;
 	lastSpeedup = selectedSpeedup;
 }

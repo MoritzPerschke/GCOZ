@@ -12,22 +12,28 @@
 #include "ProfilerStatusManager.h"
 #include "../gcoz_profiler/Constants.h"
 
-namespace D3D11Hooks{
+namespace D3D11Hooks {
 	DelayManager delays; // not sure if this is the best option, default constructor sets all delays to 0
 	Communication com = Communication();
 
 	/* expands to function pointers for D3D11 methods */
-	#define X(idx, returnType, name, ...) typedef returnType (__stdcall* name)(PARAMETER_TYPES(__VA_ARGS__));
+#define X(idx, returnType, name, ...) typedef returnType (__stdcall* name)(PARAMETER_TYPES(__VA_ARGS__));
+	D3D11_METHODS
+		D3D11_METHODS_VOID
+#undef X
+
+		/* expands to setting previously defined pointers to NULL */
+#define X(idx, returnType, name, ...) static name o##name = NULL;
 		D3D11_METHODS
 		D3D11_METHODS_VOID
-	#undef X
-
-	/* expands to setting previously defined pointers to NULL */
-	#define X(idx, returnType, name, ...) static name o##name = NULL;
-		D3D11_METHODS
-		D3D11_METHODS_VOID
-	#undef X
-
+#undef X
+	void little_sleep(DWORD delay) {
+		auto start = MethodDurations::now();
+		auto end = start + static_cast<Nanoseconds>(delay);
+		do {
+				std::this_thread::yield();
+		} while (MethodDurations::now() < end);
+	}
 	/* expands to hooked d3d11 function */
 	// maybe always measure duration to verify pauses
 	#define X(_IDX, _RETURN_TYPE, _NAME, ...) \
@@ -42,7 +48,7 @@ namespace D3D11Hooks{
 					MethodDurations::addDuration(_IDX, duration); \
 					break; \
 				case ProfilerStatus::GCOZ_PROFILE : \
-					std::this_thread::sleep_for(std::chrono::nanoseconds(delays.getDelay(_IDX))); \
+					little_sleep(delays.getDelay(_IDX)); \
 					value = o##_NAME(PARAMETER_NAMES(__VA_ARGS__)); \
 					break; \
 				case ProfilerStatus::GCOZ_WAIT : \
@@ -69,7 +75,7 @@ namespace D3D11Hooks{
 					MethodDurations::addDuration(_IDX, duration); \
 					break; \
 				case ProfilerStatus::GCOZ_PROFILE : \
-					std::this_thread::sleep_for(std::chrono::nanoseconds(delays.getDelay(_IDX))); \
+					little_sleep(delays.getDelay(_IDX)); \
 					o##_NAME(PARAMETER_NAMES(__VA_ARGS__)); \
 					break; \
 				case ProfilerStatus::GCOZ_WAIT : \

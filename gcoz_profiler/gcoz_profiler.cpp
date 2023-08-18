@@ -24,6 +24,8 @@ int main(int argc, char* argv[]) {
 	Injector injector = Injector();
 	injector.inject_dll(PID);
 
+	std::cout << inf << "Waiting for game to be in steady state" << std::endl;
+	system("pause");
 	ProfilerStatusManager man;
 	int receivedMsgs = 0;
 	while (receivedMsgs < 10) { /// TODO: change this
