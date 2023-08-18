@@ -19,6 +19,15 @@ bool DelayCalculator::isNewChoice(int _method, float _speedup) {
 	return false;
 }
 
+
+long long int averageFrametime(std::array<Nanoseconds, MEASURE_FRAME_COUNT> _frameTimes) {
+	long long int average = 0;
+	for (const auto& frameTime : _frameTimes) {
+		average += frameTime.count() / _frameTimes.size();
+	}
+	return average;
+}
+
 void DelayCalculator::printBaseline() {
 	std::cout <<
 		"= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= =" << std::endl <<
@@ -33,11 +42,8 @@ void DelayCalculator::printBaseline() {
 
 void DelayCalculator::addBaseline(std::array<Nanoseconds, D3D11_METHOD_COUNT> _durations, std::array <Nanoseconds, MEASURE_FRAME_COUNT> _frameTimes) {
 	baselineDurations = _durations; // straight copy
+	baselineAverageFrameTime = averageFrametime(_frameTimes);
 
-	baselineAverageFrameTime = 0; // reset to 0 and recalculate
-	for (const auto& frameTime : _frameTimes) {
-		baselineAverageFrameTime += frameTime.count() / _frameTimes.size();
-	}
 	printBaseline();
 }
 
@@ -50,22 +56,31 @@ void DelayCalculator::calculateDelays(std::array<DWORD, D3D11_METHOD_COUNT>& _ms
 	if (isNewChoice(selectedMethod, selectedSpeedup)) {
 		for (int i = 0; i < baselineDurations.size(); i++) {
 			if (i != selectedMethod) {
-				_msgDelays[i]  = baselineDurations[i].count() * selectedSpeedup;
 				if (baselineDurations[i].count() != 0) {
+				_msgDelays[i] = static_cast<DWORD>(0);
 				std::cout << inf << i << ": " << baselineDurations[i].count() * selectedSpeedup << std::endl;
+				}
+				else {
+					_msgDelays[i] = 0; // just in case method wasn't called during measuring
 				}
 			}
 		}
 	}
 
 	lastMethodProfiled = selectedMethod;
-	lastMethodSpeedup = selectedSpeedup;
-
+	lastSpeedup = selectedSpeedup;
 }
 
 void DelayCalculator::addResult(std::array<Nanoseconds, MEASURE_FRAME_COUNT> _frameTimes) {
 	// calculate "speedup"
-	//fpsImprovements[lastMethodProfiled].at(lastMethodSpeedup) = "speedup";
+	uint64_t newAverage = averageFrametime(_frameTimes);
+	uint64_t theoreticalAverage = static_cast<uint64_t> (baselineAverageFrameTime * (1 + lastSpeedup));
+	float improvement = static_cast<float> (theoreticalAverage - newAverage) / theoreticalAverage;
+
+	std::cout << ok << "Speedup " << lastSpeedup << " of Method " << lastMethodProfiled << " resulted in theoretical improvement of: " << improvement
+		<< "\tBaseline: " << baselineAverageFrameTime << ", new: " << newAverage << ", theoretical: " << theoreticalAverage << std::endl;
+	fpsImprovements[lastMethodProfiled][lastSpeedup] = improvement;
+
 }
 
 long long int DelayCalculator::getBaselineFt()

@@ -7,6 +7,7 @@
 #include <chrono>
 #include <iostream>
 #include <iomanip>
+#include <cstdint>
 #include "Constants.h"
 #include "status.h"
 
@@ -23,13 +24,13 @@ class DelayCalculator {
 	// percentage is tracked
 	// e.g. 10% increase in present results in 5% speedup in frametime -> 
 	// improvements[8].at(0.1) = 0.05
-	std::array<std::map<float, Duration>, D3D11_METHOD_COUNT> fpsImprovements; // tracking this could be moved to seperate class
+	std::array<std::map<float, float>, D3D11_METHOD_COUNT> fpsImprovements; // tracking this could be moved to seperate class
 
-	long long int baselineAverageFrameTime;
+	uint64_t baselineAverageFrameTime;
 	std::array<Nanoseconds, D3D11_METHOD_COUNT> baselineDurations;
 
 	int lastMethodProfiled;
-	float lastMethodSpeedup;
+	float lastSpeedup;
 	std::array<Nanoseconds, D3D11_METHOD_COUNT> lastDelaysApplied;
 
 	int pickMethod();

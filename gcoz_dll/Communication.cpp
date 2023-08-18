@@ -64,12 +64,12 @@ ProfilerMessage Communication::getMessage(DWORD _waitTimeout) {
 	else {
 		profilerMessage.valid = false;
 	}
-	SetEvent(hDllDataReceived);
+	//SetEvent(hDllDataReceived);
 	return profilerMessage;
 }
 
 bool Communication::sendMessage(DllMessage _msg) {
 	*pDllData = _msg;
-	SetEvent(hDllWrittenEvent);
-	return WaitForSingleObject(hProfilerDataReceived, 2) == WAIT_OBJECT_0; // not sure about delay here
+	return SetEvent(hDllWrittenEvent);
+	//return WaitForSingleObject(hProfilerDataReceived, 2) == WAIT_OBJECT_0; // not sure about delay here
 }
