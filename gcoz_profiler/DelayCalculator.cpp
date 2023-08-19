@@ -13,8 +13,11 @@ float DelayCalculator::pickSpeedup() {
 }
 
 bool DelayCalculator::isNewChoice(int _method, float _speedup) {
-	if (fpsImprovements[_method].find(_speedup) == fpsImprovements[_method].end()){
-		return true;
+	if (!allMethodSpeedupsDone) {
+		return frametimeChangesAll.find(_speedup) == frametimeChangesAll.end();
+	}
+	else {
+		return (frametimeChangesSingle[_method].find(_speedup) == frametimeChangesSingle[_method].end());
 	}
 	return false;
 }
@@ -32,10 +35,13 @@ void DelayCalculator::printBaseline() {
 	std::cout <<
 		"= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= =" << std::endl <<
 		"Baseline Method Durations:" << std::endl;
-	for (const auto& dur : baselineDurations) {
-		std::cout << std::setfill(' ') << std::setw(8) << dur.count();
+	for (int i = 0; i < baselineDurations.size(); i++) {
+		std::cout << std::setfill(' ') << std::setw(7) << baselineDurations[i].count();
+		if ((i+1) % 19 == 0) {
+			std::cout << std::endl;
+		}
 	}
-	std::cout << std::endl << std::endl <<
+	std::cout << std::endl <<
 		"Baseline frame time average: " << baselineAverageFrameTime << std::endl <<
 		"= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= =" << std::endl;
 }
@@ -48,42 +54,88 @@ void DelayCalculator::addBaseline(std::array<Nanoseconds, D3D11_METHOD_COUNT> _d
 }
 
 void DelayCalculator::calculateDelays(std::array<DWORD, D3D11_METHOD_COUNT>& _msgDelays) {
-	int selectedMethod = pickMethod();
-	float selectedSpeedup = pickSpeedup();
+	float selectedSpeedup;
+	int selectedMethod;
 
-	std::cout << inf << "Selected Method " << selectedMethod << " with speedup " << selectedSpeedup << std::endl;
+	std::cout << "\nPicking combination speedup/method ";
+	do{
+		selectedSpeedup = pickSpeedup();
+		selectedMethod = 8; /// TODO: revert
+		std::cout << ".";
+	}while (!isNewChoice(selectedMethod, selectedSpeedup));
+	std::cout << inf << "\nSelected Method " << selectedMethod << " with speedup " << selectedSpeedup << std::endl;
 
-	if (isNewChoice(selectedMethod, selectedSpeedup)) {
-		for (int i = 0; i < baselineDurations.size(); i++) {
-			if (i != selectedMethod) {
-				if (baselineDurations[i].count() != 0) {
-					_msgDelays[i] = static_cast<DWORD>(1 + (baselineDurations[i].count() * selectedSpeedup)); // make sure this is not 0
-					std::cout << std::setw(8) << std::setfill(' ') << i << ": " << _msgDelays[i];
-				}
-				else {
-					_msgDelays[i] = 0; // just in case method wasn't called during measuring
-				}
-			}
+
+	/*  calculate delays for methods. This delay is at least 1ms
+		first "if" sets delay for all methods except selectedMethod
+		second "if" set delay for selectedMethod as well if frametimeChangesAll is not full yet
+		third "if" sets delay to basically none, just in case a method that wasn't called during measuring is called during profiling
+	*/
+	for (int i = 0; i < baselineDurations.size(); i++) {
+		if (i != selectedMethod) {
+			_msgDelays[i] = static_cast<DWORD>(1 + (baselineDurations[i].count() * selectedSpeedup));
 		}
-		std::cout << std::endl;
+		else if(!allMethodSpeedupsDone){
+			_msgDelays[i] = static_cast<DWORD>(1 + (baselineDurations[i].count() * selectedSpeedup));
+			std::cout << "not done for all" << std::endl;
+		}
+		else {
+			_msgDelays[i] = 1;
+		}
 	}
+
 	lastMethodProfiled = selectedMethod;
 	lastSpeedup = selectedSpeedup;
 }
 
 void DelayCalculator::addResult(std::array<Nanoseconds, MEASURE_FRAME_COUNT> _frameTimes) {
-	// calculate "speedup"
-	uint64_t newAverage = averageFrametime(_frameTimes);
-	uint64_t theoreticalAverage = static_cast<uint64_t> (baselineAverageFrameTime * (1 + lastSpeedup));
-	float improvement = static_cast<float> (theoreticalAverage - newAverage) / theoreticalAverage;
 
-	std::cout << ok << "Speedup " << lastSpeedup << " of Method " << lastMethodProfiled << " resulted in theoretical improvement of: " << improvement
-		<< "\tBaseline: " << baselineAverageFrameTime << ", new: " << newAverage << ", theoretical: " << theoreticalAverage << std::endl;
-	fpsImprovements[lastMethodProfiled][lastSpeedup] = improvement;
+	long long newAverage = averageFrametime(_frameTimes);
+	std::cout << "new Average: " << newAverage << std::endl;
+	if (!allMethodSpeedupsDone) {
+		frametimeChangesAll[lastSpeedup] = baselineAverageFrameTime - newAverage;
+		if (frametimeChangesAll.size() == amoutSpeedupsMax) {
+			allMethodSpeedupsDone = true;
+			std::cout << ok << "All Frametimes for delays applied to all methods collected" << std::endl;
+		}
+	}
+	else {
+		frametimeChangesSingle[lastMethodProfiled][lastSpeedup] = baselineAverageFrameTime - newAverage;
+		std::cout << "added frametime single at " << lastMethodProfiled << " " << lastSpeedup << std::endl;
+	}
 
 }
 
-long long int DelayCalculator::getBaselineFt()
-{
-	return baselineAverageFrameTime;
+void DelayCalculator::calculateResults() { /// TODO: implement
+	std::cout << ok << "Frametime differences for Delays on all methods:" << std::endl;
+	for (const auto& diff : frametimeChangesAll) {
+		std::cout << std::setw(3) << std::setfill(' ') << diff.first << ": " << std::setw(5) << diff.second;
+	}
+	std::cout << "\n\n" << ok << "Frametime differences for Present:" << "\n" << std::endl;
+	for (const auto& diff : frametimeChangesSingle[8]) {
+		std::cout << std::setw(3) << std::setfill(' ') << diff.first << ": " << std::setw(5) << diff.second;
+	}
+	std::cout << std::endl << "\"Improvement\" for Present:" << std::endl;
+	std::cout << "\t Single/All" << std::endl;
+
+	for (const auto& diff : frametimeChangesAll) {
+		std::cout << std::setw(3) << diff.first << ": " << std::setw(8) << frametimeChangesSingle[8][diff.first] << " / " << diff.second << " = "
+			<< static_cast<double>(frametimeChangesSingle[8][diff.first]) / static_cast<double>(diff.second) << std::endl;
+	}
+}
+
+bool DelayCalculator::allDataCollected() { /// TODO: implement
+
+	int size = frametimeChangesAll.size();
+	std::cout << "\n\nAll: " << std::endl;
+	for (const auto& res : frametimeChangesAll) {
+		std::cout << res.first << ": " << res.second << ' ';
+	}
+	std::cout << "Size: " << size << "\nSingle:\n";
+	size = frametimeChangesSingle[8].size();
+	for (const auto& res : frametimeChangesSingle[8]) {
+		std::cout << res.first << ": " << res.second << ' ';
+	}
+	std::cout << "Size: " << size << "\n\n";
+	return frametimeChangesSingle[8].size() == amoutSpeedupsMax;
 }

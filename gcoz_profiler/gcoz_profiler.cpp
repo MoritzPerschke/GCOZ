@@ -26,9 +26,10 @@ int main(int argc, char* argv[]) {
 
 	std::cout << inf << "Waiting for game to be in steady state" << std::endl;
 	system("pause");
+	std::this_thread::sleep_for(std::chrono::seconds(10)); // wait to get into steady state and wait 10 to tab back into game
 	ProfilerStatusManager man;
 	int receivedMsgs = 0;
-	while (receivedMsgs < 10) { /// TODO: change this
+	while (!man.allDataCollected()) { /// TODO: change this
 		DllMessage msg = com.getMessage();
 		if (msg.valid) {
 			receivedMsgs++;
@@ -40,8 +41,8 @@ int main(int argc, char* argv[]) {
 			std::cout << err << "No message after timeout" << std::endl;
 			break;
 		}
-		
 	}
+	man.getResults();
 	std::cout << ok << "Done, exiting..." << std::endl;
 	return 0;
 }

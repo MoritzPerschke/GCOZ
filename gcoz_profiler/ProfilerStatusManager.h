@@ -12,4 +12,6 @@ class ProfilerStatusManager {
 
 public:
 	ProfilerStatus next(DllMessage _dllMsg, ProfilerMessage& _nextMessage);
+	bool allDataCollected() { return calc.allDataCollected(); }
+	void getResults() { calc.calculateResults(); }
 };
