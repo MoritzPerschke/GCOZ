@@ -28,7 +28,7 @@ namespace D3D11Hooks {
 		D3D11_METHODS_VOID
 #undef X
 
-	void little_sleep(DWORD delay) {
+	void little_sleep(DWORD delay) { // https://stackoverflow.com/a/45571538
 		auto start = MethodDurations::now();
 		auto end = start + static_cast<Nanoseconds>(delay);
 		do {

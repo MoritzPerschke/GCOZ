@@ -32,7 +32,7 @@ int main(int argc, char* argv[]) {
 
 	ProfilerStatusManager man;
 	int receivedMsgs = 0;
-	while (!man.allDataCollected()) { /// TODO: change this
+	while (!man.dataCollected()) { /// TODO: change this
 		DllMessage msg = com.getMessage();
 		if (msg.valid) {
 			receivedMsgs++;

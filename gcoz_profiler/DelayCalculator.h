@@ -42,9 +42,10 @@ class DelayCalculator { // maybe this can be changed to be specific to one speed
 	void printBaseline();
 
 public:
+	bool dataCollectedAllMethods();
+	bool dataCollected();
 	void addBaseline(durationArray _durations, frametimeArray _frameTimes);
-	void calculateDelays(delayArray& _msgDelays);
+	void calculateDelays(float& _speedupPicked, int& _methodPicked, delayArray& _msgDelays);
 	void addResult(frametimeArray _frameTimes);
 	void calculateResults();
-	bool allDataCollected();
 };

@@ -133,6 +133,7 @@
     <ClCompile Include="gcoz_profiler.cpp" />
     <ClCompile Include="Injector.cpp" />
     <ClCompile Include="ProfilerStatusManager.cpp" />
+    <ClCompile Include="ResultsHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Constants.h" />
@@ -143,6 +144,7 @@
     <ClInclude Include="Messages.h" />
     <ClInclude Include="ProfilerStatus.h" />
     <ClInclude Include="ProfilerStatusManager.h" />
+    <ClInclude Include="ResultsHandler.h" />
     <ClInclude Include="status.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

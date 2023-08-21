@@ -1,5 +1,7 @@
 #include "DelayCalculator.h"
 
+bool DelayCalculator::dataCollectedAllMethods() { return allMethodSpeedupsDone; }
+
 int DelayCalculator::pickMethod() {
 	int picked = method(gen);
 	if (baselineDurations[picked].count() == 0) {
@@ -53,7 +55,7 @@ void DelayCalculator::addBaseline(durationArray _durations, frametimeArray _fram
 	printBaseline();
 }
 
-void DelayCalculator::calculateDelays(delayArray& _msgDelays) {
+void DelayCalculator::calculateDelays(float& _speedupPicked, int& _methodPicked, delayArray& _msgDelays) {
 	float selectedSpeedup;
 	int selectedMethod;
 
@@ -124,7 +126,7 @@ void DelayCalculator::calculateResults() { /// TODO: implement
 	}
 }
 
-bool DelayCalculator::allDataCollected() { /// TODO: implement
+bool DelayCalculator::dataCollected() { /// TODO: implement
 
 	size_t size = frametimeChangesAll.size();
 	std::cout << "All: " << std::endl;
