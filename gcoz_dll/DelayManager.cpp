@@ -10,7 +10,7 @@ DWORD DelayManager::getDelay(int methodIndex){
 	return methodDelays[methodIndex];
 }
 
-void DelayManager::updateDelays(std::array<DWORD, D3D11_METHOD_COUNT> _newDelays){
+void DelayManager::updateDelays(delayArray _newDelays){
 	methodDelays = _newDelays;
 }
 

@@ -27,6 +27,7 @@ namespace D3D11Hooks {
 		D3D11_METHODS
 		D3D11_METHODS_VOID
 #undef X
+
 	void little_sleep(DWORD delay) {
 		auto start = MethodDurations::now();
 		auto end = start + static_cast<Nanoseconds>(delay);
@@ -34,6 +35,7 @@ namespace D3D11Hooks {
 				std::this_thread::yield();
 		} while (MethodDurations::now() < end);
 	}
+
 	/* expands to hooked d3d11 function */
 	// maybe always measure duration to verify pauses
 	#define X(_IDX, _RETURN_TYPE, _NAME, ...) \
@@ -126,7 +128,7 @@ namespace D3D11Hooks {
 					com.sendMessage(send);
 					ProfilerStatusManager::changeStatus(ProfilerStatus::GCOZ_WAIT);
 				}
-				std::this_thread::sleep_for(std::chrono::nanoseconds(delays.getDelay(8)));
+				std::this_thread::sleep_for(Nanoseconds(delays.getDelay(8)));
 				value = oPresent(pSwapChain, SyncInterval, Flags);
 				break;
 

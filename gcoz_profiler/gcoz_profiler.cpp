@@ -26,7 +26,10 @@ int main(int argc, char* argv[]) {
 
 	std::cout << inf << "Waiting for game to be in steady state" << std::endl;
 	system("pause");
+	std::cout << inf << "Waiting 10 more seconds" << std::endl;
 	std::this_thread::sleep_for(std::chrono::seconds(10)); // wait to get into steady state and wait 10 to tab back into game
+	std::cout << ok << "Starting profiling" << std::endl;
+
 	ProfilerStatusManager man;
 	int receivedMsgs = 0;
 	while (!man.allDataCollected()) { /// TODO: change this

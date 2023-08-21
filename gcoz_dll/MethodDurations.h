@@ -14,7 +14,7 @@ namespace MethodDurations {
 	// maybe use map here to keep track of all individual times
 	static int presentCalls = 0;
 	static std::array<int, D3D11_METHOD_COUNT> calls = {};
-	static std::array<Nanoseconds, D3D11_METHOD_COUNT> durations;
+	static durationArray durations;
 
 	static Timepoint lastPresentCall;
 	static std::array<Nanoseconds, MEASURE_FRAME_COUNT> presentCallTimes;
@@ -45,13 +45,13 @@ namespace MethodDurations {
 		}
 	}
 
-	std::array<Nanoseconds, MEASURE_FRAME_COUNT> getPresentTimes() {
+	frametimeArray getPresentTimes() {
 		presentCalls = 0;
 		return presentCallTimes;
 	}
 
-	std::array<std::chrono::nanoseconds, D3D11_METHOD_COUNT> getDurations() {
-		std::array<std::chrono::nanoseconds, D3D11_METHOD_COUNT> returnDurations = durations;
+	durationArray getDurations() {
+		durationArray returnDurations = durations;
 		for (int i = 0; i < D3D11_METHOD_COUNT; i++) {
 			if (calls[i] != 0) {
 				returnDurations[i] = returnDurations[i] / calls[i];

@@ -30,11 +30,11 @@ class DelayCalculator { // maybe this can be changed to be specific to one speed
 	bool allMethodSpeedupsDone = false;
 
 	long long baselineAverageFrameTime;
-	std::array<Nanoseconds, D3D11_METHOD_COUNT> baselineDurations;
+	durationArray baselineDurations;
 
 	int lastMethodProfiled;
 	float lastSpeedup;
-	std::array<Nanoseconds, D3D11_METHOD_COUNT> lastDelaysApplied;
+	delayArray lastDelaysApplied;
 
 	int pickMethod();
 	float pickSpeedup();
@@ -42,9 +42,9 @@ class DelayCalculator { // maybe this can be changed to be specific to one speed
 	void printBaseline();
 
 public:
-	void addBaseline(std::array<Nanoseconds, D3D11_METHOD_COUNT> _durations, std::array <Nanoseconds, MEASURE_FRAME_COUNT> _frameTimes);
-	void calculateDelays(std::array<DWORD, D3D11_METHOD_COUNT>& _msgDelays);
-	void addResult(std::array <Nanoseconds, MEASURE_FRAME_COUNT> _frameTimes);
+	void addBaseline(durationArray _durations, frametimeArray _frameTimes);
+	void calculateDelays(delayArray& _msgDelays);
+	void addResult(frametimeArray _frameTimes);
 	void calculateResults();
 	bool allDataCollected();
 };

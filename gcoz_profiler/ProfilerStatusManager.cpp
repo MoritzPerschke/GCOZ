@@ -7,7 +7,6 @@ void ProfilerStatusManager::newMessage(ProfilerMessage& _msg) {
 }
 
 ProfilerStatus ProfilerStatusManager::next(DllMessage _dllMsg, ProfilerMessage& _nextMsg) {
-	long long int newFtAverages = 0;
 	switch (_dllMsg.lastStatus) {
 	case ProfilerStatus::GCOZ_MEASURE :
 		calc.addBaseline(_dllMsg.durations, _dllMsg.frameTimes);
@@ -16,8 +15,9 @@ ProfilerStatus ProfilerStatusManager::next(DllMessage _dllMsg, ProfilerMessage& 
 
 	case ProfilerStatus::GCOZ_PROFILE :
 		calc.addResult(_dllMsg.frameTimes);
-		if (calc.allDataCollected()) { break; }
-		newMessage(_nextMsg);
+		if (!calc.allDataCollected()) { 
+			newMessage(_nextMsg);
+		}
 		break;
 	default :
 		throw std::runtime_error("Unexpected Status in last Message from dll");

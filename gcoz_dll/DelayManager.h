@@ -7,10 +7,10 @@
 
 // maybe this can be a namespace
 class DelayManager {
-	std::array<DWORD, D3D11_METHOD_COUNT> methodDelays;
+	delayArray methodDelays;
 public:
 	DelayManager();
 	DWORD getDelay(int methodIndex);
-	void updateDelays(std::array<DWORD, D3D11_METHOD_COUNT> _newDelays);
+	void updateDelays(delayArray _newDelays);
 	void resetDelays();
 };

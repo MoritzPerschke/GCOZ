@@ -23,7 +23,7 @@ bool DelayCalculator::isNewChoice(int _method, float _speedup) {
 }
 
 
-long long int averageFrametime(std::array<Nanoseconds, MEASURE_FRAME_COUNT> _frameTimes) {
+long long int averageFrametime(frametimeArray _frameTimes) {
 	long long int average = 0;
 	for (const auto& frameTime : _frameTimes) {
 		average += frameTime.count() / _frameTimes.size();
@@ -46,14 +46,14 @@ void DelayCalculator::printBaseline() {
 		"= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= =" << std::endl;
 }
 
-void DelayCalculator::addBaseline(std::array<Nanoseconds, D3D11_METHOD_COUNT> _durations, std::array <Nanoseconds, MEASURE_FRAME_COUNT> _frameTimes) {
+void DelayCalculator::addBaseline(durationArray _durations, frametimeArray _frameTimes) {
 	baselineDurations = _durations; // straight copy
 	baselineAverageFrameTime = averageFrametime(_frameTimes);
 
 	printBaseline();
 }
 
-void DelayCalculator::calculateDelays(std::array<DWORD, D3D11_METHOD_COUNT>& _msgDelays) {
+void DelayCalculator::calculateDelays(delayArray& _msgDelays) {
 	float selectedSpeedup;
 	int selectedMethod;
 
@@ -88,19 +88,19 @@ void DelayCalculator::calculateDelays(std::array<DWORD, D3D11_METHOD_COUNT>& _ms
 	lastSpeedup = selectedSpeedup;
 }
 
-void DelayCalculator::addResult(std::array<Nanoseconds, MEASURE_FRAME_COUNT> _frameTimes) {
+void DelayCalculator::addResult(frametimeArray _frameTimes) { /// TODO move this
 
 	long long newAverage = averageFrametime(_frameTimes);
 	std::cout << "new Average: " << newAverage << std::endl;
 	if (!allMethodSpeedupsDone) {
-		frametimeChangesAll[lastSpeedup] = baselineAverageFrameTime - newAverage;
+		frametimeChangesAll[lastSpeedup] = newAverage - baselineAverageFrameTime;
 		if (frametimeChangesAll.size() == amoutSpeedupsMax) {
 			allMethodSpeedupsDone = true;
 			std::cout << ok << "All Frametimes for delays applied to all methods collected" << std::endl;
 		}
 	}
 	else {
-		frametimeChangesSingle[lastMethodProfiled][lastSpeedup] = baselineAverageFrameTime - newAverage;
+		frametimeChangesSingle[lastMethodProfiled][lastSpeedup] = newAverage - baselineAverageFrameTime;
 		std::cout << "added frametime single at " << lastMethodProfiled << " " << lastSpeedup << std::endl;
 	}
 
@@ -126,8 +126,8 @@ void DelayCalculator::calculateResults() { /// TODO: implement
 
 bool DelayCalculator::allDataCollected() { /// TODO: implement
 
-	int size = frametimeChangesAll.size();
-	std::cout << "\n\nAll: " << std::endl;
+	size_t size = frametimeChangesAll.size();
+	std::cout << "All: " << std::endl;
 	for (const auto& res : frametimeChangesAll) {
 		std::cout << res.first << ": " << res.second << ' ';
 	}
