@@ -6,10 +6,14 @@ void ProfilerStatusManager::newMessage(ProfilerMessage& _msg) {
 	_msg.valid = true;
 }
 
+ProfilerStatusManager::ProfilerStatusManager(string& _processName){
+	resultsHandler = ResultsHandler(_processName);
+}
+
 ProfilerStatus ProfilerStatusManager::next(DllMessage _dllMsg, ProfilerMessage& _nextMsg) {
 	switch (_dllMsg.lastStatus) {
 	case ProfilerStatus::GCOZ_MEASURE :
-		resultsHandler.exportBaseline(_dllMsg.frameTimes);
+		resultsHandler.addBaseline(_dllMsg.frameTimes);
 		calc.addBaseline(_dllMsg.durations, _dllMsg.frameTimes);
 		newMessage(_nextMsg);
 		break;

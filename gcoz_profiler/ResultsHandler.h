@@ -4,19 +4,31 @@
 #include <array>
 #include <vector>
 #include <map>
+#include <filesystem>
+#include <Psapi.h>
+#include <nlohmann/json.hpp>
 #include "Constants.h"
+#include "status.h"
+
+#include <iostream>
+
+namespace fs = std::filesystem;
+using json = nlohmann::json;
+using std::copy;
+using std::to_string;
+using std::string;
 
 class ResultsHandler {
-	static std::vector<frametimeArray> allResults;
-	static std::map<int, std::map<float, frametimeArray>> singleResults;
-
-	void exportResultSingle();
-	void exportResultAll();
+	fs::path filePath;
+	json outputJson;
+	/*void exportResultSingle(frametimeArray _resultingTimes, int _methodIndex, float _speedup);
+	void exportResultAll(frametimeArray _resultingTimes, float _speedup);*/
 
 public:
-	void exportBaseline(frametimeArray _baselineTimes);
+	ResultsHandler();
+	ResultsHandler(string& _processName);
+	void addBaseline(frametimeArray _baselineTimes);
 	void addResultSingle(frametimeArray _frameTimes, int _methodIndex, float _speedup);
 	void addResultAll(frametimeArray _frameTimes, float _speedup);
 	void exportResults();
-
 };

@@ -16,6 +16,7 @@ class ProfilerStatusManager {
 	void newMessage(ProfilerMessage& _msg);
 
 public:
+	ProfilerStatusManager(string& _processName);
 	ProfilerStatus next(DllMessage _dllMsg, ProfilerMessage& _nextMessage);
 	bool dataCollected() { return calc.dataCollected(); }
 	void getResults() { calc.calculateResults(); }

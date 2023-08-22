@@ -4,10 +4,11 @@
 int main(int argc, char* argv[]) {
 
 	// using switch here is dumb
-	if (argc < 2) {
-		std::cout << err << "Provide PID";
+	if (argc < 3) {
+		std::cout << err << "Usage: .\\gcoz_profiler.exe <Name of Game> <PID>";
 	}
-	DWORD PID = atoi(argv[1]);
+	DWORD PID = atoi(argv[2]);
+	string processName = string(argv[1]);
 
 	/* Communication */
 	Communication com;
@@ -28,14 +29,12 @@ int main(int argc, char* argv[]) {
 	system("pause");
 	std::cout << inf << "Waiting 10 more seconds" << std::endl;
 	std::this_thread::sleep_for(std::chrono::seconds(10)); // wait to get into steady state and wait 10 to tab back into game
-	std::cout << ok << "Starting profiling" << std::endl;
 
-	ProfilerStatusManager man;
-	int receivedMsgs = 0;
-	while (!man.dataCollected()) { /// TODO: change this
+	ProfilerStatusManager man = ProfilerStatusManager(processName);
+	while (!man.dataCollected()) {
+		std::cout << ok << "Starting profiling" << std::endl;
 		DllMessage msg = com.getMessage();
 		if (msg.valid) {
-			receivedMsgs++;
 			ProfilerMessage nextMsg;
 			man.next(msg, nextMsg);
 			com.sendMessage(nextMsg);
@@ -45,7 +44,9 @@ int main(int argc, char* argv[]) {
 			break;
 		}
 	}
+
 	man.getResults();
+
 	std::cout << ok << "Done, exiting..." << std::endl;
 	return 0;
 }
