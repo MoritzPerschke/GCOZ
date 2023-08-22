@@ -17,18 +17,18 @@ namespace D3D11Hooks {
 	Communication com = Communication();
 
 	/* expands to function pointers for D3D11 methods */
-#define X(idx, returnType, name, ...) typedef returnType (__stdcall* name)(PARAMETER_TYPES(__VA_ARGS__));
-	D3D11_METHODS
-		D3D11_METHODS_VOID
-#undef X
-
-		/* expands to setting previously defined pointers to NULL */
-#define X(idx, returnType, name, ...) static name o##name = NULL;
+	#define X(idx, returnType, name, ...) typedef returnType (__stdcall* name)(PARAMETER_TYPES(__VA_ARGS__));
 		D3D11_METHODS
 		D3D11_METHODS_VOID
-#undef X
+	#undef X
 
-		void little_sleep(DWORD delay) { // https://stackoverflow.com/a/45571538
+		/* expands to setting previously defined pointers to NULL */
+	#define X(idx, returnType, name, ...) static name o##name = NULL;
+		D3D11_METHODS
+		D3D11_METHODS_VOID
+	#undef X
+
+	void little_sleep(DWORD delay) { // https://stackoverflow.com/a/45571538
 		auto start = MethodDurations::now();
 		auto end = start + static_cast<Nanoseconds>(delay);
 		do {
@@ -102,7 +102,7 @@ namespace D3D11Hooks {
 
 		switch (ProfilerStatusManager::currentStatus) {
 			case ProfilerStatus::GCOZ_MEASURE : // measure times of D3D11 Methods, nothing else
-				MethodDurations::presentCalled(); // i think problems with results come from here
+				MethodDurations::presentCalled();
 				start = MethodDurations::now();
 				value = oPresent(pSwapChain, SyncInterval, Flags);
 				MethodDurations::Duration duration = MethodDurations::now() - start;
@@ -120,7 +120,6 @@ namespace D3D11Hooks {
 				break;
 
 			case ProfilerStatus::GCOZ_PROFILE : // apply last received delays and measure FPS
-				MethodDurations::presentCalled();
 				if (callCount++ == MEASURE_FRAME_COUNT) {
 					callCount = 0;
 					DllMessage send = {};
@@ -130,6 +129,7 @@ namespace D3D11Hooks {
 					com.sendMessage(send);
 					ProfilerStatusManager::changeStatus(ProfilerStatus::GCOZ_WAIT);
 				}
+				MethodDurations::presentCalled(); // i think problems with results come from here
 				std::this_thread::sleep_for(Nanoseconds(delays.getDelay(8)));
 				value = oPresent(pSwapChain, SyncInterval, Flags);
 				break;
