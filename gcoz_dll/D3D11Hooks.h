@@ -101,7 +101,7 @@ namespace D3D11Hooks {
 		switch (ProfilerStatusManager::currentStatus) {
 			case ProfilerStatus::GCOZ_MEASURE : // measure times of D3D11 Methods, nothing else
 				MethodDurations::presentCalled();
-				if (++callCount == MEASURE_FRAME_COUNT) {
+				if (callCount++ == MEASURE_FRAME_COUNT) {
 					callCount = 0;
 					DllMessage send = {};
 					send.frameTimes = MethodDurations::getPresentTimes();
