@@ -69,19 +69,19 @@ void ResultsHandler::addBaseline(frametimeArray _baselineTimes){
 
 void ResultsHandler::addResultSingle(frametimeArray _frameTimes, int _methodIndex, float _speedup){
 	string locM = "method" + to_string(_methodIndex);
-	string locS = to_string(_speedup);
+	string locS = to_string(static_cast<int>(_speedup * 100));
 
 	json j_vector(getTimeVector(_frameTimes));
 	outputJson[locM][locS] = j_vector;
-	std::cout << ok << "Results for single method(" << _methodIndex << ") added with delay " << _speedup << std::endl;
+	std::cout << ok << "Results for single method(" << _methodIndex << ") added with delay " << static_cast<int>(_speedup * 100) << "%" << std::endl;
 }
 
-void ResultsHandler::addResultAll(frametimeArray _frameTimes, float _speedup){
+void ResultsHandler::addResultAll(frametimeArray _frameTimes, float _speedup) {
 	string locM = "all";
-	string locS = to_string(_speedup);
+	string locS = to_string(static_cast<int>(_speedup * 100));
 	json j_vector(getTimeVector(_frameTimes));
 	outputJson[locM][locS] = j_vector;
-	std::cout << ok << "Results for all methods added with delay " << _speedup << std::endl;
+	std::cout << ok << "Results for all methods added with delay " << static_cast<int>(_speedup * 100) << "%" << std::endl;
 }
 
 void ResultsHandler::exportResults(){

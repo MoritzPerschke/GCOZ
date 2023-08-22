@@ -56,6 +56,9 @@ void DelayCalculator::addBaseline(durationArray _durations, frametimeArray _fram
 }
 
 void DelayCalculator::calculateDelays(float& _speedupPicked, int& _methodPicked, delayArray& _msgDelays) {
+	float selectedSpeedup;
+	int selectedMethod;
+
 	std::cout << "\nPicking combination speedup/method ";
 	do{
 		selectedSpeedup = pickSpeedup();
@@ -83,8 +86,8 @@ void DelayCalculator::calculateDelays(float& _speedupPicked, int& _methodPicked,
 		}
 	}
 
-	lastMethodProfiled = selectedMethod;
-	lastSpeedup = selectedSpeedup;
+	_methodPicked = lastMethodProfiled = selectedMethod;
+	_speedupPicked = lastSpeedup = selectedSpeedup;
 }
 
 void DelayCalculator::addResult(frametimeArray _frameTimes) { /// TODO move this
