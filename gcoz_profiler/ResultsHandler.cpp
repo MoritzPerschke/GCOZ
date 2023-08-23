@@ -1,24 +1,5 @@
 #include "ResultsHandler.h"
 
-std::wstring getProcessName(DWORD _pid) {
-	std::wstring result = L"";
-	HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, _pid);
-	TCHAR buffer[MAX_PATH];
-	if (hProcess){
-		std::cout << "Got Handle to process" << std::endl;
-		if(GetModuleFileNameEx(hProcess, 0, buffer, MAX_PATH)) {
-			std::cout << "Got Process Name" << std::endl;
-			for (char c : buffer) {
-				result += c;
-				std::cout << c;
-			}
-			std::cout << std::endl;
-		}
-		CloseHandle(hProcess);
-	}
-	return result;
-}
-
 string uniqueFileName(fs::path& _dir) {
 	string base = "data";
 	string ext = ".json";
@@ -42,12 +23,12 @@ ResultsHandler::ResultsHandler(string& _processName){
 	// create data dir if it does not exist
 	fs::path targetPath = "../../../data";
 	fs::create_directories(targetPath);
-	std::cout << ok << "Data folder found" << std::endl;
+	std::cout << ok << "[ResultsHandler] Data folder found" << std::endl;
 
 	// create folder for game if it does not exist
 	fs::path folderPath = targetPath / _processName;
 	fs::create_directories(folderPath);
-	std::cout << ok << "Game folder found" << std::endl;
+	std::cout << ok << "[ResultsHandler] Game folder found" << std::endl;
 
 	// build file path to save to
 	filePath = folderPath / uniqueFileName(folderPath);
@@ -64,7 +45,7 @@ std::vector<long long> getTimeVector(frametimeArray _times) {
 void ResultsHandler::addBaseline(frametimeArray _baselineTimes){
 	json j_vector(getTimeVector(_baselineTimes));
 	outputJson["baseline"] = j_vector;
-	std::cout << ok << "Baseline times added" << std::endl;
+	std::cout << ok << "[ResultsHandler] Baseline times added" << std::endl;
 }
 
 void ResultsHandler::addResultSingle(frametimeArray _frameTimes, int _methodIndex, float _speedup){
@@ -73,7 +54,7 @@ void ResultsHandler::addResultSingle(frametimeArray _frameTimes, int _methodInde
 
 	json j_vector(getTimeVector(_frameTimes));
 	outputJson[locM][locS] = j_vector;
-	std::cout << ok << "Results for single method(" << _methodIndex << ") added with delay " << static_cast<int>(_speedup * 100) << "%" << std::endl;
+	std::cout << ok << "[ResultsHandler] Results for single method(" << _methodIndex << ") added with delay " << static_cast<int>(_speedup * 100) << "%" << std::endl;
 }
 
 void ResultsHandler::addResultAll(frametimeArray _frameTimes, float _speedup) {
@@ -81,12 +62,14 @@ void ResultsHandler::addResultAll(frametimeArray _frameTimes, float _speedup) {
 	string locS = to_string(static_cast<int>(_speedup * 100));
 	json j_vector(getTimeVector(_frameTimes));
 	outputJson[locM][locS] = j_vector;
-	std::cout << ok << "Results for all methods added with delay " << static_cast<int>(_speedup * 100) << "%" << std::endl;
+	std::cout << ok << "[ResultsHandler] Results for all methods added with delay " << static_cast<int>(_speedup * 100) << "%" << std::endl;
 }
 
 void ResultsHandler::exportResults(){
-	std::ofstream outputFile(filePath.string(), std::ios::out | std::ios::trunc);
-	std::cout << "Resulting Data: " << std::endl;
-	std::cout << outputJson.dump();
+	std::cout << inf << "[ResultsHandler] Writing Data to: " << filePath << std::endl;
+	std::ofstream outputFile;
+	outputFile.open(filePath.string(), std::ios::out | std::ios::trunc);
 	outputFile << outputJson.dump();
+	outputFile.close();
+	std::cout << ok << "[ResultsHandler] Done" << std::endl;
 }

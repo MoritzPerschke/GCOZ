@@ -2,12 +2,14 @@
 #include <Windows.h>
 #include <map>
 #include <array>
+#include <deque>
 #include <format>
 #include <random>
 #include <chrono>
 #include <iostream>
 #include <iomanip>
 #include <cstdint>
+#include <time.h>
 #include "Constants.h"
 #include "status.h"
 
@@ -16,29 +18,28 @@ using Nanoseconds = std::chrono::nanoseconds;
 
 static std::random_device rd;
 static std::mt19937 gen(rd());
-static std::uniform_int_distribution<int> method(0, D3D11_METHOD_COUNT);
-static std::uniform_int_distribution<int> speedup(0, 9);
+//static std::uniform_int_distribution<int> method(0, (D3D11_METHOD_COUNT-1));
+//static std::uniform_int_distribution<int> speedup(0, 9);
 
-class DelayCalculator { // maybe this can be changed to be specific to one speedup/method combo or sth, make it more readable
-	// ugly, but: a map where all the frametime improvement per speedup
-	// percentage is tracked
-	// e.g. 10% increase in present results in 5% speedup in frametime -> 
-	// improvements[8].at(0.1) = 0.05
-	std::array<std::map<float, long long>, D3D11_METHOD_COUNT> frametimeChangesSingle; // tracking this could be moved to seperate class
-	std::map<float, long long> frametimeChangesAll;
+class DelayCalculator {
+
+	struct choice {
+		int method;
+		float speedup;
+	};
+	
+	std::deque<choice> choices;
 	int amoutSpeedupsMax = 10; // 0.1 - 0.9 in .1 increments
-	bool allMethodSpeedupsDone = false;
+	bool allMethodSpeedupsDone = false; // all 10 different "speedups" applied to all methods at once
+	durationArray baselineDurations; // these are used to calculate delays
+	int lastMethodProfiled; // when a new msg is received from dll, this method was profiled
+	float lastSpeedup; // same as above for speedup
 
-	long long baselineAverageFrameTime;
-	durationArray baselineDurations;
+	/* Tracks wether "speedup" float has been applied to all methods. If element at "speedup" exists, it has been done*/
+	std::map<float, bool> frametimeChangesAll;
+	/* Tracks for all methods wether "speedup" float has been applied, works same as above*/
+	std::array<std::map<float, bool>, D3D11_METHOD_COUNT> frametimeChangesSingle;
 
-	int lastMethodProfiled;
-	float lastSpeedup;
-	delayArray lastDelaysApplied;
-
-	int pickMethod();
-	float pickSpeedup();
-	bool isNewChoice(int _method, float _speedup);
 	void printBaseline();
 
 public:
@@ -46,6 +47,5 @@ public:
 	bool dataCollected();
 	void addBaseline(durationArray _durations, frametimeArray _frameTimes);
 	void calculateDelays(float& _speedupPicked, int& _methodPicked, delayArray& _msgDelays);
-	void addResult(frametimeArray _frameTimes);
-	void calculateResults();
+	void measurementDone();
 };

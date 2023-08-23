@@ -5,7 +5,7 @@ int main(int argc, char* argv[]) {
 
 	// using switch here is dumb
 	if (argc < 3) {
-		std::cout << err << "Usage: .\\gcoz_profiler.exe <Name of Game> <PID>";
+		std::cout << err << "Usage: .\\gcoz_profiler.exe </data subdirectory> <PID>";
 	}
 	DWORD PID = atoi(argv[2]);
 	string processName = string(argv[1]);
@@ -26,31 +26,26 @@ int main(int argc, char* argv[]) {
 	injector.inject_dll(PID);
 
 	/* Main profiling loop */
-	char profile;
-	do{
-		std::cout << inf << "Waiting for game to be in steady state" << std::endl;
-		system("pause");
-		std::cout << inf << "Waiting 10 more seconds" << std::endl;
-		std::this_thread::sleep_for(std::chrono::seconds(10)); // wait to get into steady state and wait 10 to tab back into game
+	std::cout << inf << "Waiting for game to be in steady state" << std::endl;
+	system("pause");
+	std::cout << inf << "Waiting 10 more seconds" << std::endl;
+	std::this_thread::sleep_for(std::chrono::seconds(10)); // wait to get into steady state and wait 10 to tab back into game
 
-		ProfilerStatusManager man = ProfilerStatusManager(processName);
-		while (!man.dataCollected()) {
-			std::cout << ok << "Starting profiling" << std::endl;
-			DllMessage msg = com.getMessage();
-			if (msg.valid) {
-				ProfilerMessage nextMsg;
-				man.next(msg, nextMsg);
-				com.sendMessage(nextMsg);
-			} // if(msg.valid)
-			else {
-				std::cout << err << "No message after timeout" << std::endl;
-				break;
-			}
+	ProfilerStatusManager man = ProfilerStatusManager(processName);
+	std::cout << ok << "Starting profiling" << std::endl;
+	do {
+		DllMessage msg = com.getMessage();
+		if (msg.valid) {
+			ProfilerMessage nextMsg;
+			man.next(msg, nextMsg);
+			com.sendMessage(nextMsg);
+		} // if(msg.valid)
+		else {
+			std::cout << err << "No message after timeout" << std::endl;
+			break;
 		}
-		man.~ProfilerStatusManager();
-		std::cout << ok << "Run done, go again? Y/N" << std::endl;
-		std::cin >> profile;
-	} while (!std::cin.fail() && (profile == 'Y' || profile == 'y'));
+	} while (!man.dataCollected());
+	man.finish();
 
 	std::cout << ok << "Done, exiting..." << std::endl;
 	return 0;
