@@ -4,11 +4,11 @@
 int main(int argc, char* argv[]) {
 
 	// using switch here is dumb
-	if (argc < 2) {
-		std::cout << err << "Provide PID";
+	if (argc < 3) {
+		std::cout << err << "Usage: .\\gcoz_profiler.exe </data subdirectory> <PID>";
 	}
-
-	DWORD PID = atoi(argv[1]);
+	DWORD PID = atoi(argv[2]);
+	string processName = string(argv[1]);
 
 	/* Communication */
 	Communication com;
@@ -25,33 +25,28 @@ int main(int argc, char* argv[]) {
 	Injector injector = Injector();
 	injector.inject_dll(PID);
 
-	int receivedMsgs = 0;
-	while (true) {
+	/* Main profiling loop */
+	std::cout << inf << "Waiting for game to be in steady state" << std::endl;
+	system("pause");
+	std::cout << inf << "Waiting 10 more seconds" << std::endl;
+	std::this_thread::sleep_for(std::chrono::seconds(10)); // wait to get into steady state and wait 10 to tab back into game
+
+	ProfilerStatusManager man = ProfilerStatusManager(processName);
+	std::cout << ok << "Starting profiling" << std::endl;
+	do {
 		DllMessage msg = com.getMessage();
 		if (msg.valid) {
-			switch (msg.lastStatus) {
-				case ProfilerStatus::GCOZ_MEASURE :
-					std::cout << ok << "Measured method durations:" << std::endl;
-					for (int i = 0; i < msg.durations.size(); i++) {
-						if (msg.durations[i] != std::chrono::nanoseconds(0)) {
-							std::cout << inf << i << ": " << msg.durations[i].count() << std::endl;
-						}
-					}
-					std::cout << std::endl;
-					break;
-				case ProfilerStatus::GCOZ_PROFILE :
-					std::cout << "Length of FrameDurations vector is: " << msg.frameTimepoints.size() << std::endl << std::endl;
-					break;
-				case ProfilerStatus::GCOZ_WAIT : // this should never happen, GCOZ_WAIT doesn't send any messages to profiler
-					break;
-			} // switch(msg.lastStatus
+			ProfilerMessage nextMsg;
+			man.next(msg, nextMsg);
+			com.sendMessage(nextMsg);
 		} // if(msg.valid)
 		else {
 			std::cout << err << "No message after timeout" << std::endl;
 			break;
 		}
-		
-	}
+	} while (!man.dataCollected());
+	man.finish();
+
 	std::cout << ok << "Done, exiting..." << std::endl;
 	return 0;
 }

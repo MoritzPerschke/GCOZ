@@ -3,13 +3,14 @@
 #include <chrono>
 #include <array>
 #include "Communication.h"
+#include "../gcoz_profiler/Constants.h"
 
 // maybe this can be a namespace
 class DelayManager {
-	std::array<DWORD, 205> methodDelays;
+	delayArray methodDelays;
 public:
 	DelayManager();
 	DWORD getDelay(int methodIndex);
-	void updateDelays(std::array<DWORD, 205> _newDelays);
+	void updateDelays(delayArray _newDelays);
 	void resetDelays();
 };

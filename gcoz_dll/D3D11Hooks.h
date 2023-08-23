@@ -10,8 +10,9 @@
 #include "DelayManager.h"
 #include "MethodDurations.h"
 #include "ProfilerStatusManager.h"
+#include "../gcoz_profiler/Constants.h"
 
-namespace D3D11Hooks{
+namespace D3D11Hooks {
 	DelayManager delays; // not sure if this is the best option, default constructor sets all delays to 0
 	Communication com = Communication();
 
@@ -21,13 +22,24 @@ namespace D3D11Hooks{
 		D3D11_METHODS_VOID
 	#undef X
 
-	/* expands to setting previously defined pointers to NULL */
+		/* expands to setting previously defined pointers to NULL */
 	#define X(idx, returnType, name, ...) static name o##name = NULL;
 		D3D11_METHODS
 		D3D11_METHODS_VOID
 	#undef X
 
+	void little_sleep(DWORD delay) { // https://stackoverflow.com/a/45571538
+		auto start = MethodDurations::now();
+		auto end = start + static_cast<Nanoseconds>(delay);
+		do {
+			if ((MethodDurations::now() - end) > std::chrono::milliseconds(1)){
+				std::this_thread::yield();
+			}
+		} while (MethodDurations::now() < end);
+	}
+
 	/* expands to hooked d3d11 function */
+	// maybe always measure duration to verify pauses
 	#define X(_IDX, _RETURN_TYPE, _NAME, ...) \
 		_RETURN_TYPE __stdcall hk##_NAME(FUNCTION_SIGNATURE(__VA_ARGS__)){ \
 			_RETURN_TYPE value; \
@@ -40,7 +52,7 @@ namespace D3D11Hooks{
 					MethodDurations::addDuration(_IDX, duration); \
 					break; \
 				case ProfilerStatus::GCOZ_PROFILE : \
-					std::this_thread::sleep_for(std::chrono::nanoseconds(delays.getDelay(_IDX))); \
+					little_sleep(delays.getDelay(_IDX)); \
 					value = o##_NAME(PARAMETER_NAMES(__VA_ARGS__)); \
 					break; \
 				case ProfilerStatus::GCOZ_WAIT : \
@@ -67,7 +79,7 @@ namespace D3D11Hooks{
 					MethodDurations::addDuration(_IDX, duration); \
 					break; \
 				case ProfilerStatus::GCOZ_PROFILE : \
-					std::this_thread::sleep_for(std::chrono::nanoseconds(delays.getDelay(_IDX))); \
+					little_sleep(delays.getDelay(_IDX)); \
 					o##_NAME(PARAMETER_NAMES(__VA_ARGS__)); \
 					break; \
 				case ProfilerStatus::GCOZ_WAIT : \
@@ -95,41 +107,31 @@ namespace D3D11Hooks{
 				value = oPresent(pSwapChain, SyncInterval, Flags);
 				MethodDurations::Duration duration = MethodDurations::now() - start;
 				MethodDurations::addDuration(8, duration);
-				
-				if (callCount++ == 500) {
+				if (callCount++ == MEASURE_FRAME_COUNT) { // this could prob be done in seperate thread
 					callCount = 0;
 					DllMessage send = {};
-					if (MethodDurations::getPresentTimes(send) == 0) { // this does not take, profiler still gets 0-length vector
-						//DisplayErrorBox(L"Sending Message", L"frameTimePoints vector is empty");
-					}
+					send.frameTimes = MethodDurations::getPresentTimes();
 					send.durations = MethodDurations::getDurations();
 					send.lastStatus = ProfilerStatusManager::currentStatus;
 					send.valid = true;
-					if (!com.sendMessage(send)) {
-						DisplayErrorBox(L"Sending Message to Profiler");
-					}
+					com.sendMessage(send);
 					ProfilerStatusManager::changeStatus(ProfilerStatus::GCOZ_WAIT);
 				}
 				break;
 
 			case ProfilerStatus::GCOZ_PROFILE : // apply last received delays and measure FPS
-				MethodDurations::presentCalled();
-				std::this_thread::sleep_for(std::chrono::nanoseconds(delays.getDelay(8))); // prob. use Ns here, Ms drops FPS to <1
-				value = oPresent(pSwapChain, SyncInterval, Flags);
-				if (callCount++ == 500) {
+				if (callCount++ == MEASURE_FRAME_COUNT) {
 					callCount = 0;
 					DllMessage send = {};
-					if (MethodDurations::getPresentTimes(send) == 0) { // this does not take, profiler still gets 0-length vector
-						//DisplayErrorBox(L"Sending Message", L"frameTimePoints vector is empty");
-					}
-					send.durations = MethodDurations::getDurations();
+					send.frameTimes = MethodDurations::getPresentTimes();
 					send.lastStatus = ProfilerStatusManager::currentStatus;
 					send.valid = true;
-					if (!com.sendMessage(send)) {
-						DisplayErrorBox(L"Sending Message to Profiler");
-					}
+					com.sendMessage(send);
 					ProfilerStatusManager::changeStatus(ProfilerStatus::GCOZ_WAIT);
 				}
+				MethodDurations::presentCalled(); // i think problems with results come from here
+				std::this_thread::sleep_for(Nanoseconds(delays.getDelay(8)));
+				value = oPresent(pSwapChain, SyncInterval, Flags);
 				break;
 
 			case ProfilerStatus::GCOZ_WAIT : // do nothing, wait for message from Profiler
@@ -154,12 +156,12 @@ namespace D3D11Hooks{
 	}
 
 	void hookD3D11() {
-		kiero::bind(8, (void**)&oPresent, hkPresent);
 		#define X(idx, returnType, name, ...)\
 				kiero::bind(idx, (void**)&o##name, hk##name);
 			D3D11_METHODS
 			D3D11_METHODS_VOID
 		#undef X
+		kiero::bind(8, (void**)&oPresent, hkPresent);
 		DisplayInfoBox(L"Progress", L"D3D11 functions hooked");
 	}
 } // namespace D3D11Hooks

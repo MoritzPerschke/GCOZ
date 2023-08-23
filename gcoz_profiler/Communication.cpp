@@ -6,7 +6,7 @@ void Communication::init() {
 		NULL,
 		PAGE_READWRITE,
 		0,
-		2048,
+		8192,
 		L"gcoz_dll_shared_memory"
 	); 
 	if (hDllFileMapping == NULL) {
@@ -41,7 +41,9 @@ void Communication::init() {
 	}
 
 	hDllWrittenEvent = CreateEventA(NULL, FALSE, FALSE, "dllWrittenEvent");
+	hDllDataReceived = CreateEventA(NULL, FALSE, FALSE, "hDllDataReceived");
 	hProfilerWrittenEvent = CreateEventA(NULL, FALSE, FALSE, "profilerWrittenEvent");
+	hProfilerDataReceived = CreateEventA(NULL, FALSE, FALSE, "hProfilerDataReceived");
 
 	pDllData = static_cast<DllMessage*>(pSharedMemoryDll);
 	pProfilerData = static_cast<ProfilerMessage*>(pSharedMemoryProfiler);
@@ -60,7 +62,7 @@ Communication::~Communication() {
 }
 
 DllMessage Communication::getMessage() {
-	DWORD dWaitResult = WaitForSingleObject(hDllWrittenEvent, 60000);
+	DWORD dWaitResult = WaitForSingleObject(hDllWrittenEvent, INFINITE);
 	DllMessage dllMessage;
 	
 	if (dWaitResult == WAIT_OBJECT_0) {
@@ -68,10 +70,12 @@ DllMessage Communication::getMessage() {
 		return dllMessage;
 	}
 	dllMessage.valid = false;
+	//SetEvent(hProfilerDataReceived);
 	return dllMessage;
 }
 
 bool Communication::sendMessage(ProfilerMessage _msg) {
 	*pProfilerData = _msg;
 	return SetEvent(hProfilerWrittenEvent);
+	//return WaitForSingleObject(hDllDataReceived, 2) == WAIT_OBJECT_0; // not sure of the delay here
 }

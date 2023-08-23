@@ -2,7 +2,9 @@
 #include <chrono>
 #include <array>
 #include <vector>
+#include <algorithm>
 #include "ProfilerStatus.h"
+#include "Constants.h"
 
 using Timepoint = std::chrono::steady_clock::time_point;
 using Duration = std::chrono::duration<double>;
@@ -12,12 +14,12 @@ struct Message {
 };
 
 struct ProfilerMessage : Message {
-	std::array<DWORD, 205> delays;
+	delayArray delays;
 	ProfilerStatus status;
 };
 
 struct DllMessage : Message {
 	ProfilerStatus lastStatus;
-	std::vector<Duration> frameTimepoints;
-	std::array<std::chrono::nanoseconds, 205> durations;
+	frametimeArray frameTimes;
+	durationArray durations;
 };
