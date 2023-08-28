@@ -30,7 +30,7 @@ namespace D3D11Hooks {
 
 	void little_sleep(DWORD delay) { // https://stackoverflow.com/a/45571538
 		auto start = MethodDurations::now();
-		auto end = start + static_cast<Nanoseconds>(delay);
+		auto end = start + static_cast<Microseconds>(delay);
 		do {
 			if ((MethodDurations::now() - end) > std::chrono::milliseconds(1)){
 				std::this_thread::yield();
@@ -130,7 +130,7 @@ namespace D3D11Hooks {
 					ProfilerStatusManager::changeStatus(ProfilerStatus::GCOZ_WAIT);
 				}
 				MethodDurations::presentCalled(); // i think problems with results come from here
-				std::this_thread::sleep_for(Nanoseconds(delays.getDelay(8)));
+				little_sleep(delays.getDelay(8));
 				value = oPresent(pSwapChain, SyncInterval, Flags);
 				break;
 

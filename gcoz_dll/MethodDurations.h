@@ -9,7 +9,7 @@
 namespace MethodDurations {
 	using Timepoint = std::chrono::steady_clock::time_point;
 	using Duration = std::chrono::duration<double>;
-	using Nanoseconds = std::chrono::nanoseconds;
+	using Microseconds = std::chrono::microseconds;
 
 	// maybe use map here to keep track of all individual times
 	static int presentCalls = 0;
@@ -17,7 +17,7 @@ namespace MethodDurations {
 	static durationArray durations;
 
 	static Timepoint lastPresentCall;
-	static std::array<Nanoseconds, MEASURE_FRAME_COUNT> presentCallTimes;
+	static std::array<Microseconds, MEASURE_FRAME_COUNT> presentCallTimes;
 	static std::chrono::steady_clock clock; // https://stackoverflow.com/a/37440647/15005309
 
 	Timepoint now() {
@@ -26,7 +26,7 @@ namespace MethodDurations {
 
 	void addDuration(int _methodIdx, Duration _duration) {
 		calls[_methodIdx]++;
-		durations[_methodIdx] += std::chrono::duration_cast<Nanoseconds>(_duration); // not here
+		durations[_methodIdx] += std::chrono::duration_cast<Microseconds>(_duration); // not here
 	}
 
 	void presentCalled() {
@@ -38,7 +38,7 @@ namespace MethodDurations {
 		}
 		else {
 			if (presentCalls < MEASURE_FRAME_COUNT) {
-				presentCallTimes[presentCalls] = std::chrono::duration_cast<Nanoseconds>(now() - lastPresentCall);
+				presentCallTimes[presentCalls] = std::chrono::duration_cast<Microseconds>(now() - lastPresentCall);
 				presentCalls++;
 			} // not here
 			lastPresentCall = now();
@@ -58,7 +58,7 @@ namespace MethodDurations {
 			}
 			else {
 				Timepoint empty = now();
-				returnDurations[i] = empty - empty;
+				returnDurations[i] = std::chrono::duration_cast<Microseconds>(empty - empty);
 			}
 		}
 		return returnDurations;

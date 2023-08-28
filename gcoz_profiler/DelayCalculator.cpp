@@ -29,7 +29,7 @@ void DelayCalculator::addBaseline(durationArray _durations, frametimeArray _fram
 	baselineDurations = _durations;
 
 	for (int i = 0; i < D3D11_METHOD_COUNT; i++) {
-		if (baselineDurations[i].count() != 0) {
+		if (baselineDurations[i] != Microseconds(0)) {
 			choice current;
 			current.method = i;
 			for (int j = 0; j < amoutSpeedupsMax; j++) {
@@ -45,15 +45,15 @@ void DelayCalculator::addBaseline(durationArray _durations, frametimeArray _fram
 }
 
 void DelayCalculator::calculateDelays(float& _speedupPicked, int& _methodPicked, delayArray& _msgDelays) {
-	static float allSpeedup = -0.1;
-	allSpeedup += .1;
+	static float allSpeedup = static_cast<float>(-0.1);
+	allSpeedup += static_cast<float>(0.1);
 
 	choice newChoice = { 0, .0 };
 	float selectedSpeedup;
 	int selectedMethod;
 
 	if (allMethodSpeedupsDone && choices.size() > 0) {
-		while (baselineDurations[choices.front().method] == Nanoseconds(0)) {
+		while (baselineDurations[choices.front().method] == Microseconds(0)) {
 			choices.pop_front();
 		}
 		newChoice = choices.front();
