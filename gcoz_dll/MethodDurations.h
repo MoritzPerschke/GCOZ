@@ -13,6 +13,7 @@ namespace MethodDurations {
 
 	// maybe use map here to keep track of all individual times
 	static int presentCalls = 0;
+	static bool presentCalledInit = false;
 	static std::array<int, D3D11_METHOD_COUNT> calls = {};
 	static durationArray durations;
 
@@ -29,24 +30,23 @@ namespace MethodDurations {
 		durations[_methodIdx] += std::chrono::duration_cast<Microseconds>(_duration); // not here
 	}
 
-	void presentCalled() {
-		static bool init = false;
-		static int callNr = 0;
-		if (!init) {
-			lastPresentCall = now();
-			init = true;
-		}
-		else {
+	void presentStart() {
+		if (presentCalledInit) {
 			if (presentCalls < MEASURE_FRAME_COUNT) {
 				presentCallTimes[presentCalls] = std::chrono::duration_cast<Microseconds>(now() - lastPresentCall);
 				presentCalls++;
-			} // not here
-			lastPresentCall = now();
+			}
 		}
+	}
+
+	void presentEnd() {
+		lastPresentCall = now();
+		if (!presentCalledInit) { presentCalledInit = true; }
 	}
 
 	frametimeArray getPresentTimes() {
 		presentCalls = 0;
+		presentCalledInit = false;
 		return presentCallTimes;
 	}
 

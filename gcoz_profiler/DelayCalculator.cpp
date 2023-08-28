@@ -72,10 +72,10 @@ void DelayCalculator::calculateDelays(float& _speedupPicked, int& _methodPicked,
 	*/
 	for (int i = 0; i < baselineDurations.size(); i++) {
 		if (i != selectedMethod) {
-			_msgDelays[i] = static_cast<DWORD>(1 + (baselineDurations[i].count() * selectedSpeedup));
+			_msgDelays[i] = static_cast<DWORD>(1 + (static_cast<float>(baselineDurations[i].count()) * selectedSpeedup));
 		}
-		else if(!allMethodSpeedupsDone){
-			_msgDelays[i] = static_cast<DWORD>(1 + (baselineDurations[i].count() * selectedSpeedup));
+		else if (!allMethodSpeedupsDone) {
+			_msgDelays[i] = static_cast<DWORD>(1 + (static_cast<float>(baselineDurations[i].count()) * selectedSpeedup));
 		}
 		else {
 			_msgDelays[i] = 1;

@@ -102,11 +102,7 @@ namespace D3D11Hooks {
 
 		switch (ProfilerStatusManager::currentStatus) {
 			case ProfilerStatus::GCOZ_MEASURE : // measure times of D3D11 Methods, nothing else
-				MethodDurations::presentCalled();
-				start = MethodDurations::now();
-				value = oPresent(pSwapChain, SyncInterval, Flags);
-				MethodDurations::Duration duration = MethodDurations::now() - start;
-				MethodDurations::addDuration(8, duration);
+				MethodDurations::presentStart();
 				if (callCount++ == MEASURE_FRAME_COUNT) { // this could prob be done in seperate thread
 					callCount = 0;
 					DllMessage send = {};
@@ -117,9 +113,15 @@ namespace D3D11Hooks {
 					com.sendMessage(send);
 					ProfilerStatusManager::changeStatus(ProfilerStatus::GCOZ_WAIT);
 				}
+				start = MethodDurations::now();
+				value = oPresent(pSwapChain, SyncInterval, Flags);
+				MethodDurations::Duration duration = MethodDurations::now() - start;
+				MethodDurations::addDuration(8, duration);
+				MethodDurations::presentEnd();
 				break;
 
 			case ProfilerStatus::GCOZ_PROFILE : // apply last received delays and measure FPS
+				MethodDurations::presentStart(); // i think problems with results come from here
 				if (callCount++ == MEASURE_FRAME_COUNT) {
 					callCount = 0;
 					DllMessage send = {};
@@ -129,9 +131,9 @@ namespace D3D11Hooks {
 					com.sendMessage(send);
 					ProfilerStatusManager::changeStatus(ProfilerStatus::GCOZ_WAIT);
 				}
-				MethodDurations::presentCalled(); // i think problems with results come from here
 				little_sleep(delays.getDelay(8));
 				value = oPresent(pSwapChain, SyncInterval, Flags);
+				MethodDurations::presentEnd();
 				break;
 
 			case ProfilerStatus::GCOZ_WAIT : // do nothing, wait for message from Profiler
