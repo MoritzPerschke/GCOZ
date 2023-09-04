@@ -25,10 +25,10 @@ ProfilerStatus ProfilerStatusManager::next(DllMessage _dllMsg, ProfilerMessage& 
 
 	case ProfilerStatus::GCOZ_PROFILE :
 		if (!calc.dataCollectedAllMethods()) {
-			resultsHandler.addResultAll(_dllMsg.frameTimes, lastSpeedup);
+			resultsHandler.addResultAll(_dllMsg.frameTimes, _dllMsg.frameRates, lastSpeedup);
 		}
 		else {
-			resultsHandler.addResultSingle(_dllMsg.frameTimes, lastMethodIndex, lastSpeedup);
+			resultsHandler.addResultSingle(_dllMsg.frameTimes, _dllMsg.frameRates, lastMethodIndex, lastSpeedup);
 		} // if delays on all methods done
 		calc.measurementDone();
 

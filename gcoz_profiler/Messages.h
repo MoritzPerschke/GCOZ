@@ -21,5 +21,6 @@ struct ProfilerMessage : Message {
 struct DllMessage : Message {
 	ProfilerStatus lastStatus;
 	frametimeArray frameTimes;
+	frametimeArray frameRates;
 	durationArray durations;
 };

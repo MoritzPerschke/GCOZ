@@ -29,7 +29,7 @@ void DelayCalculator::addBaseline(durationArray _durations, frametimeArray _fram
 	baselineDurations = _durations;
 
 	for (int i = 0; i < D3D11_METHOD_COUNT; i++) {
-		if (baselineDurations[i] != Microseconds(0)) {
+		if (baselineDurations[i] != Nanoseconds(0)) {
 			choice current;
 			current.method = i;
 			for (int j = 0; j < amoutSpeedupsMax; j++) {
@@ -53,7 +53,7 @@ void DelayCalculator::calculateDelays(float& _speedupPicked, int& _methodPicked,
 	int selectedMethod;
 
 	if (allMethodSpeedupsDone && choices.size() > 0) {
-		while (baselineDurations[choices.front().method] == Microseconds(0)) {
+		while (baselineDurations[choices.front().method] == Nanoseconds(0)) {
 			choices.pop_front();
 		}
 		newChoice = choices.front();
@@ -71,14 +71,19 @@ void DelayCalculator::calculateDelays(float& _speedupPicked, int& _methodPicked,
 		third "if" sets delay to basically none, just in case a method that wasn't called during measuring is called during profiling
 	*/
 	for (int i = 0; i < baselineDurations.size(); i++) {
-		if (i != selectedMethod) {
-			_msgDelays[i] = static_cast<DWORD>(1 + (static_cast<float>(baselineDurations[i].count()) * selectedSpeedup));
-		}
-		else if (!allMethodSpeedupsDone) {
-			_msgDelays[i] = static_cast<DWORD>(1 + (static_cast<float>(baselineDurations[i].count()) * selectedSpeedup));
+		if (baselineDurations[i].count() > 1000) { // use chrono
+			if (i != selectedMethod) {
+				_msgDelays[i] = static_cast<DWORD>((static_cast<float>(baselineDurations[i].count()) * selectedSpeedup));
+			}
+			else if (!allMethodSpeedupsDone) {
+				_msgDelays[i] = static_cast<DWORD>((static_cast<float>(baselineDurations[i].count()) * selectedSpeedup));
+			}
+			else {
+				_msgDelays[i] = 0;
+			}
 		}
 		else {
-			_msgDelays[i] = 1;
+			_msgDelays[i] = 0;
 		}
 	}
 

@@ -9,7 +9,7 @@
 namespace MethodDurations {
 	using Timepoint = std::chrono::steady_clock::time_point;
 	using Duration = std::chrono::duration<double>;
-	using Microseconds = std::chrono::microseconds;
+	using Nanoseconds = std::chrono::microseconds;
 
 	// maybe use map here to keep track of all individual times
 	static int presentCalls = 0;
@@ -17,8 +17,10 @@ namespace MethodDurations {
 	static std::array<int, D3D11_METHOD_COUNT> calls = {};
 	static durationArray durations;
 
-	static Timepoint lastPresentCall;
-	static std::array<Microseconds, MEASURE_FRAME_COUNT> presentCallTimes;
+	static Timepoint lastPresentEnd;
+	static Timepoint lastPresentStart;
+	frametimeArray presentCallTimes;
+	frametimeArray frameRates;
 	static std::chrono::steady_clock clock; // https://stackoverflow.com/a/37440647/15005309
 
 	Timepoint now() {
@@ -27,21 +29,28 @@ namespace MethodDurations {
 
 	void addDuration(int _methodIdx, Duration _duration) {
 		calls[_methodIdx]++;
-		durations[_methodIdx] += std::chrono::duration_cast<Microseconds>(_duration); // not here
+		durations[_methodIdx] += std::chrono::duration_cast<Nanoseconds>(_duration); // not here
 	}
 
 	void presentStart() {
 		if (presentCalledInit) {
 			if (presentCalls < MEASURE_FRAME_COUNT) {
-				presentCallTimes[presentCalls] = std::chrono::duration_cast<Microseconds>(now() - lastPresentCall);
+				frameRates[presentCalls] = std::chrono::duration_cast<Nanoseconds>(now() - lastPresentStart);
+				lastPresentStart = now();
+
+				presentCallTimes[presentCalls] = std::chrono::duration_cast<Nanoseconds>(now() - lastPresentEnd);
 				presentCalls++;
 			}
 		}
 	}
 
 	void presentEnd() {
-		lastPresentCall = now();
+		lastPresentEnd = now();
 		if (!presentCalledInit) { presentCalledInit = true; }
+	}
+
+	frametimeArray getFrameRates() {
+		return frameRates;
 	}
 
 	frametimeArray getPresentTimes() {
@@ -58,7 +67,7 @@ namespace MethodDurations {
 			}
 			else {
 				Timepoint empty = now();
-				returnDurations[i] = std::chrono::duration_cast<Microseconds>(empty - empty);
+				returnDurations[i] = std::chrono::duration_cast<Nanoseconds>(empty - empty);
 			}
 		}
 		return returnDurations;

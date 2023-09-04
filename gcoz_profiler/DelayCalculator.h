@@ -14,7 +14,6 @@
 #include "status.h"
 
 using Duration = std::chrono::duration<double>;
-using Microseconds = std::chrono::microseconds;
 
 static std::random_device rd;
 static std::mt19937 gen(rd());

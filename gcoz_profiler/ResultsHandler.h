@@ -19,8 +19,10 @@ using std::to_string;
 using std::string;
 
 class ResultsHandler {
-	fs::path filePath;
-	json outputJson;
+	fs::path filePathTimes;
+	fs::path filePathRates;
+	json outputJsonRates;
+	json outputJsonTimes;
 	/*void exportResultSingle(frametimeArray _resultingTimes, int _methodIndex, float _speedup);
 	void exportResultAll(frametimeArray _resultingTimes, float _speedup);*/
 
@@ -28,7 +30,7 @@ public:
 	ResultsHandler();
 	ResultsHandler(string& _processName);
 	void addBaseline(frametimeArray _baselineTimes);
-	void addResultSingle(frametimeArray _frameTimes, int _methodIndex, float _speedup);
-	void addResultAll(frametimeArray _frameTimes, float _speedup);
+	void addResultSingle(frametimeArray _frameTimes, frametimeArray _frameRates, int _methodIndex, float _speedup);
+	void addResultAll(frametimeArray _frameTimes, frametimeArray _frameRates, float _speedup);
 	void exportResults();
 };
