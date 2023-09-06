@@ -39,16 +39,21 @@ void printDelays(delayArray& _delays) { // this probably won't be needed anymore
 		"= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= =" << std::endl;
 }
 
-void DelayCalculator::addBaseline(durationArray _durations, frametimeArray _frameTimes) {
+void DelayCalculator::addBaseline(durationArray _durations, frametimeArray _frameTimes, std::array<int, D3D11_METHOD_COUNT> _calls) {
 	baselineDurations = _durations;
+	baselineCalls = _calls;
 
 	for (int i = 0; i < D3D11_METHOD_COUNT; i++) {
-		if (baselineDurations[i] > Nanoseconds(1000)) {
-			choice current;
-			current.method = i;
-			for (int j = 0; j < amoutSpeedupsMax; j++) {
-				current.speedup = static_cast<float>(j) / 10;
-				choices.push_back(current);
+		if (baselineCalls[i] > 0) {
+			baselineDurations[i] = baselineDurations[i] / baselineCalls[i];
+
+			if (baselineDurations[i] > Nanoseconds(1000)) {
+				choice current;
+				current.method = i;
+				for (int j = 0; j < amoutSpeedupsMax; j++) {
+					current.speedup = static_cast<float>(j) / 10;
+					choices.push_back(current);
+				}
 			}
 		}
 	}

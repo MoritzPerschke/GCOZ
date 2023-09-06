@@ -30,6 +30,7 @@ class DelayCalculator {
 	std::deque<choice> choices;
 	int amoutSpeedupsMax = 10; // 0.1 - 0.9 in .1 increments
 	bool allMethodSpeedupsDone = false; // all 10 different "speedups" applied to all methods at once
+	std::array<int, D3D11_METHOD_COUNT> baselineCalls;
 	durationArray baselineDurations; // these are used to calculate delays
 	int lastMethodProfiled; // when a new msg is received from dll, this method was profiled
 	float lastSpeedup; // same as above for speedup
@@ -44,7 +45,7 @@ class DelayCalculator {
 public:
 	bool dataCollectedAllMethods();
 	bool dataCollected();
-	void addBaseline(durationArray _durations, frametimeArray _frameTimes);
+	void addBaseline(durationArray _durations, frametimeArray _frameTimes, std::array<int, D3D11_METHOD_COUNT> _calls);
 	void calculateDelays(float& _speedupPicked, int& _methodPicked, delayArray& _msgDelays);
 	void measurementDone();
 };

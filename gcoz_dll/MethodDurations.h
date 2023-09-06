@@ -66,10 +66,7 @@ namespace MethodDurations {
 	durationArray getDurations() {
 		durationArray returnDurations = durations;
 		for (int i = 0; i < D3D11_METHOD_COUNT; i++) {
-			if (calls[i] != 0) {
-				returnDurations[i] = returnDurations[i] / calls[i];
-			}
-			else {
+			if(calls[i] == 0){
 				Timepoint empty = now();
 				returnDurations[i] = std::chrono::duration_cast<Nanoseconds>(empty - empty);
 			}
