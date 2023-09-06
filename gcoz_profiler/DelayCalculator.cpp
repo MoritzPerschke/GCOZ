@@ -25,11 +25,25 @@ void DelayCalculator::printBaseline() { // this probably won't be needed anymore
 		"= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= =" << std::endl;
 }
 
+void printDelays(delayArray& _delays) { // this probably won't be needed anymore
+	std::cout <<
+		"= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= =" << std::endl <<
+		"Baseline Method Durations:" << std::endl;
+	for (int i = 0; i < _delays.size(); i++) {
+		std::cout << std::setfill(' ') << std::setw(7) << _delays[i].count() << "ns";
+		if ((i + 1) % 19 == 0) {
+			std::cout << std::endl;
+		}
+	}
+	std::cout << std::endl <<
+		"= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= =" << std::endl;
+}
+
 void DelayCalculator::addBaseline(durationArray _durations, frametimeArray _frameTimes) {
 	baselineDurations = _durations;
 
 	for (int i = 0; i < D3D11_METHOD_COUNT; i++) {
-		if (baselineDurations[i] != Nanoseconds(0)) {
+		if (baselineDurations[i] > Nanoseconds(1000)) {
 			choice current;
 			current.method = i;
 			for (int j = 0; j < amoutSpeedupsMax; j++) {
@@ -53,7 +67,7 @@ void DelayCalculator::calculateDelays(float& _speedupPicked, int& _methodPicked,
 	int selectedMethod;
 
 	if (allMethodSpeedupsDone && choices.size() > 0) {
-		while (baselineDurations[choices.front().method] == Nanoseconds(0)) {
+		while (baselineDurations[choices.front().method] < Nanoseconds(1000)) {
 			choices.pop_front();
 		}
 		newChoice = choices.front();
@@ -71,21 +85,23 @@ void DelayCalculator::calculateDelays(float& _speedupPicked, int& _methodPicked,
 		third "if" sets delay to basically none, just in case a method that wasn't called during measuring is called during profiling
 	*/
 	for (int i = 0; i < baselineDurations.size(); i++) {
-		if (baselineDurations[i].count() > 1000) { // use chrono
+		if (baselineDurations[i] > Nanoseconds(1000)) { // 100ns == resolution of high_resolution_clock
 			if (i != selectedMethod) {
-				_msgDelays[i] = static_cast<DWORD>((static_cast<float>(baselineDurations[i].count()) * selectedSpeedup));
+				_msgDelays[i] = std::chrono::duration_cast<Nanoseconds>(baselineDurations[i] * selectedSpeedup);
 			}
 			else if (!allMethodSpeedupsDone) {
-				_msgDelays[i] = static_cast<DWORD>((static_cast<float>(baselineDurations[i].count()) * selectedSpeedup));
+				_msgDelays[i] = std::chrono::duration_cast<Nanoseconds>(baselineDurations[i] * selectedSpeedup);
 			}
 			else {
-				_msgDelays[i] = 0;
+				_msgDelays[i] = Nanoseconds(0);
 			}
 		}
 		else {
-			_msgDelays[i] = 0;
+			_msgDelays[i] = Nanoseconds(0);
 		}
 	}
+
+	//printDelays(_msgDelays);
 
 	_methodPicked = lastMethodProfiled = selectedMethod;
 	_speedupPicked = lastSpeedup = selectedSpeedup;

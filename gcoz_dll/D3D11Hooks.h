@@ -28,9 +28,9 @@ namespace D3D11Hooks {
 		D3D11_METHODS_VOID
 	#undef X
 
-	void little_sleep(DWORD delay) { // https://stackoverflow.com/a/45571538
+	void little_sleep(Nanoseconds _delay) { // https://stackoverflow.com/a/45571538
 		auto start = MethodDurations::now();
-		auto end = start + static_cast<Nanoseconds>(delay);
+		auto end = start + _delay;
 		while (MethodDurations::now() < end) {
 			if ((MethodDurations::now() - end) > std::chrono::milliseconds(1)){
 				std::this_thread::yield();
@@ -109,6 +109,7 @@ namespace D3D11Hooks {
 					send.frameTimes = MethodDurations::getPresentTimes();
 					send.durations = MethodDurations::getDurations();
 					send.frameRates = MethodDurations::getFrameRates();
+					send.methodCalls = MethodDurations::getCallAmounts();
 					send.lastStatus = ProfilerStatusManager::currentStatus;
 					send.valid = true;
 					com.sendMessage(send);

@@ -3,10 +3,10 @@
 #include "../gcoz_profiler/Constants.h"
 
 DelayManager::DelayManager() {
-	methodDelays.fill(0);
+	methodDelays.fill(Nanoseconds(0));
 }
 
-DWORD DelayManager::getDelay(int methodIndex){
+Nanoseconds DelayManager::getDelay(int methodIndex){
 	return methodDelays[methodIndex];
 }
 
@@ -15,5 +15,5 @@ void DelayManager::updateDelays(delayArray _newDelays){
 }
 
 void DelayManager::resetDelays() {
-	methodDelays.fill(0);
+	methodDelays.fill(Nanoseconds(0));
 }

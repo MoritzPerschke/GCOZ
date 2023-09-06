@@ -23,4 +23,5 @@ struct DllMessage : Message {
 	frametimeArray frameTimes;
 	frametimeArray frameRates;
 	durationArray durations;
+	std::array<int, D3D11_METHOD_COUNT> methodCalls;
 };

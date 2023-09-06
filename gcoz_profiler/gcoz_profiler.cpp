@@ -5,6 +5,7 @@ int main(int argc, char* argv[]) {
 
 	// using switch here is dumb
 	if (argc < 3) {
+		std::cout << inf << "Size of DllMessage: " << sizeof(DllMessage) << std::endl;
 		std::cout << err << "Usage: .\\gcoz_profiler.exe </data subdirectory> <PID>";
 	}
 	DWORD PID = atoi(argv[2]);

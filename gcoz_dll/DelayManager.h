@@ -10,7 +10,7 @@ class DelayManager {
 	delayArray methodDelays;
 public:
 	DelayManager();
-	DWORD getDelay(int methodIndex);
+	Nanoseconds getDelay(int methodIndex);
 	void updateDelays(delayArray _newDelays);
 	void resetDelays();
 };

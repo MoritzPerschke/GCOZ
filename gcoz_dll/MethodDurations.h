@@ -53,6 +53,10 @@ namespace MethodDurations {
 		return frameRates;
 	}
 
+	std::array<int, D3D11_METHOD_COUNT> getCallAmounts() {
+		return calls;
+	}
+
 	frametimeArray getPresentTimes() {
 		presentCalls = 0;
 		presentCalledInit = false;

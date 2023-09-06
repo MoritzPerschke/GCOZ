@@ -18,7 +18,7 @@ ProfilerStatusManager::ProfilerStatusManager(string& _processName){
 ProfilerStatus ProfilerStatusManager::next(DllMessage _dllMsg, ProfilerMessage& _nextMsg) {
 	switch (_dllMsg.lastStatus) {
 	case ProfilerStatus::GCOZ_MEASURE :
-		resultsHandler.addBaseline(_dllMsg.frameTimes);
+		resultsHandler.addBaseline(_dllMsg.frameTimes, _dllMsg.durations, _dllMsg.methodCalls);
 		calc.addBaseline(_dllMsg.durations, _dllMsg.frameTimes);
 		newMessage(_nextMsg);
 		break;
