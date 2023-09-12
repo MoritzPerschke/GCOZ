@@ -13,7 +13,7 @@ class ProfilerStatusManager {
 	DelayCalculator calc;
 	ResultsHandler resultsHandler;
 
-	void newMessage(ProfilerMessage& _msg);
+	void nextMessage(ProfilerMessage& _msg);
 	void finalMessage(ProfilerMessage& _msg);
 
 public:
