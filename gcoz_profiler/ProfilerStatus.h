@@ -1,7 +1,8 @@
 #pragma once
 
 enum ProfilerStatus {
-	GCOZ_MEASURE,
+	GCOZ_MEASURE_METHODS,
+	GCOZ_COLLECT_THREAD_IDS,
 	GCOZ_PROFILE,
 	GCOZ_WAIT
 };

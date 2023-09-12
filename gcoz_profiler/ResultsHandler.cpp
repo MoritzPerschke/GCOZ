@@ -16,6 +16,7 @@ string uniqueFileName(fs::path& _dir, string _base) {
 }
 
 ResultsHandler::ResultsHandler() {
+	throw std::runtime_error("ResultsHandler Constructor called without parameters");
 }
 
 ResultsHandler::ResultsHandler(string& _processName){
@@ -78,6 +79,15 @@ void ResultsHandler::addResultAll(frametimeArray _frameTimes, frametimeArray _fr
 	outputJsonRates[locM][locS] = r_vector;
 
 	std::cout << ok << "[ResultsHandler] Results for all methods added with delay " << static_cast<int>(_speedup * 100) << "%" << std::endl;
+}
+
+void ResultsHandler::addThreadIDs(std::map<int, std::vector<long long>> _ids){
+	for (const auto& elem : _ids) {
+		std::cout << inf << "Method " << methodNames[elem.first] << " called by " << elem.second.size() << " different threads" << std::endl;
+		for (const auto& thread : elem.second) {
+			outputJsonBaseline["threads"][methodNames[elem.first]].push_back(thread);
+		}
+	}
 }
 
 void ResultsHandler::exportResults(){

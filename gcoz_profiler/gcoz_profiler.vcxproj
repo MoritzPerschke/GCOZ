@@ -131,6 +131,7 @@
     <ClCompile Include="Communication.cpp" />
     <ClCompile Include="DelayCalculator.cpp" />
     <ClCompile Include="gcoz_profiler.cpp" />
+    <ClCompile Include="IdCollector.cpp" />
     <ClCompile Include="Injector.cpp" />
     <ClCompile Include="ProfilerStatusManager.cpp" />
     <ClCompile Include="ResultsHandler.cpp" />
@@ -140,6 +141,7 @@
     <ClInclude Include="DelayCalculator.h" />
     <ClInclude Include="gcoz_profiler.h" />
     <ClInclude Include="Communication.h" />
+    <ClInclude Include="IdCollector.h" />
     <ClInclude Include="Injector.h" />
     <ClInclude Include="Messages.h" />
     <ClInclude Include="ProfilerStatus.h" />

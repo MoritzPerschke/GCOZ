@@ -46,7 +46,7 @@ namespace D3D11Hooks {
 			_RETURN_TYPE value; \
 			MethodDurations::Timepoint start; \
 			switch (ProfilerStatusManager::currentStatus) { \
-				case ProfilerStatus::GCOZ_MEASURE : \
+				case ProfilerStatus::GCOZ_MEASURE_METHODS: \
 					start = MethodDurations::now(); \
 					value = o##_NAME(PARAMETER_NAMES(__VA_ARGS__)); \
 					MethodDurations::Duration duration = MethodDurations::now() - start; \
@@ -70,7 +70,7 @@ namespace D3D11Hooks {
 		_RETURN_TYPE __stdcall hk##_NAME(FUNCTION_SIGNATURE(__VA_ARGS__)){ \
 			MethodDurations::Timepoint start; \
 			switch (ProfilerStatusManager::currentStatus) { \
-				case ProfilerStatus::GCOZ_MEASURE : \
+				case ProfilerStatus::GCOZ_MEASURE_METHODS: \
 					start = MethodDurations::now(); \
 					o##_NAME(PARAMETER_NAMES(__VA_ARGS__)); \
 					MethodDurations::Duration duration = MethodDurations::now() - start; \
@@ -96,7 +96,7 @@ namespace D3D11Hooks {
 		MethodDurations::Timepoint start;
 
 		switch (ProfilerStatusManager::currentStatus) {
-			case ProfilerStatus::GCOZ_MEASURE : // measure times of D3D11 Methods, nothing else
+			case ProfilerStatus::GCOZ_MEASURE_METHODS : // measure times of D3D11 Methods, nothing else
 				MethodDurations::presentStart();
 				if (callCount++ == MEASURE_FRAME_COUNT) { // this could prob be done in seperate thread
 					callCount = 0;

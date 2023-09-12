@@ -5,16 +5,17 @@
 #include "ResultsHandler.h"
 #include "DelayCalculator.h"
 #include "Messages.h"
+#include "IdCollector.h"
 
 class ProfilerStatusManager {
 	float lastSpeedup;
 	int lastMethodIndex;
 
-	DelayCalculator calc;
 	ResultsHandler resultsHandler;
+	DelayCalculator calc;
+	IdCollector ids;
 
 	void nextMessage(ProfilerMessage& _msg);
-	void finalMessage(ProfilerMessage& _msg);
 
 public:
 	ProfilerStatusManager(string& _processName);

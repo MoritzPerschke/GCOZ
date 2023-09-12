@@ -3,15 +3,18 @@
 #ifndef _CONSTANT_VALUES
 #define _CONSTANT_VALUES
 #include <chrono>
+#include <thread>
 
 #define D3D11_METHOD_COUNT 205
 #define MEASURE_FRAME_COUNT 500 // need the same fc for measuring/profiling since switching to array
+#define METHOD_ID_ARRAY_SIZE 200
 
 using Nanoseconds = std::chrono::nanoseconds;
 
 typedef std::array<Nanoseconds, MEASURE_FRAME_COUNT> frametimeArray;
 typedef std::array<Nanoseconds, D3D11_METHOD_COUNT> durationArray;
 typedef std::array<Nanoseconds, D3D11_METHOD_COUNT> delayArray;
+
 
 #define D3D11_METHOD_NAMES \
     X(QueryInterface)\
@@ -219,5 +222,12 @@ typedef std::array<Nanoseconds, D3D11_METHOD_COUNT> delayArray;
     X(SetMarkerInt)\
     X(BeginEventInt)\
     X(EndEvent)
+
+const static std::array<std::string, D3D11_METHOD_COUNT> methodNames = {
+#define X(_MethodName)\
+	#_MethodName,
+    D3D11_METHOD_NAMES
+#undef X
+};
 
 #endif // !_CONSTANT_VALUES

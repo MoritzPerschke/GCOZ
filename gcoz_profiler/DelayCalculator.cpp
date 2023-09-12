@@ -9,6 +9,14 @@ std::string getTime() {
 	return "["+ std::string(buffer) + "]";
 }
 
+DelayCalculator::DelayCalculator() {
+	throw std::runtime_error("DelayCalculator Constructor called without arguments");
+}
+
+DelayCalculator::DelayCalculator(ResultsHandler& _handler){
+	handler = _handler;
+}
+
 bool DelayCalculator::dataCollectedAllMethods() { return allMethodSpeedupsDone; }
 
 void DelayCalculator::printBaseline() { // this probably won't be needed anymore
@@ -42,7 +50,7 @@ void printDelays(delayArray& _delays) { // this probably won't be needed anymore
 void DelayCalculator::addBaseline(durationArray _durations, frametimeArray _frameTimes, std::array<int, D3D11_METHOD_COUNT> _calls) {
 	baselineDurations = _durations;
 	baselineCalls = _calls;
-
+	handler.addBaseline(_frameTimes, _durations, _calls);
 	for (int i = 0; i < D3D11_METHOD_COUNT; i++) {
 		if (baselineCalls[i] > 0) {
 			baselineDurations[i] = baselineDurations[i] / baselineCalls[i];

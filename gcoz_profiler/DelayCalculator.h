@@ -10,6 +10,7 @@
 #include <iomanip>
 #include <cstdint>
 #include <time.h>
+#include "ResultsHandler.h"
 #include "Constants.h"
 #include "status.h"
 
@@ -26,6 +27,8 @@ class DelayCalculator {
 		int method;
 		float speedup;
 	};
+
+	ResultsHandler handler;
 	
 	std::deque<choice> choices;
 	int amoutSpeedupsMax = 10; // 0.1 - 0.9 in .1 increments
@@ -43,6 +46,8 @@ class DelayCalculator {
 	void printBaseline();
 
 public:
+	DelayCalculator();
+	DelayCalculator(ResultsHandler& _handler);
 	bool dataCollectedAllMethods();
 	bool dataCollected();
 	void addBaseline(durationArray _durations, frametimeArray _frameTimes, std::array<int, D3D11_METHOD_COUNT> _calls);

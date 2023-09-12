@@ -2,24 +2,39 @@
 
 ProfilerStatusManager::ProfilerStatusManager(string& _processName){
 	resultsHandler = ResultsHandler(_processName);
+	calc = DelayCalculator(resultsHandler);
+	ids = IdCollector();
 }
 
 void ProfilerStatusManager::nextMessage(ProfilerMessage& _msg) {
-	_msg.status = ProfilerStatus::GCOZ_PROFILE;
-	calc.calculateDelays(lastSpeedup, lastMethodIndex, _msg.delays);
-	_msg.valid = true;
-}
-
-void ProfilerStatusManager::finalMessage(ProfilerMessage& _msg) {
-	_msg.status = ProfilerStatus::GCOZ_WAIT;
-	_msg.valid = true;
+	if (!ids.isDone()) {
+		_msg.status = ProfilerStatus::GCOZ_COLLECT_THREAD_IDS;
+		_msg.methodID = ids.nextMethod();
+	}
+	else if (!calc.dataCollected()) {
+		_msg.status = ProfilerStatus::GCOZ_PROFILE;
+		calc.calculateDelays(lastSpeedup, lastMethodIndex, _msg.delays);
+		_msg.valid = true;
+	}
+	else {
+		_msg.status = ProfilerStatus::GCOZ_WAIT;
+		_msg.valid  = true;
+	}
+	std::cout << inf << "Next status: " << _msg.status << std::endl;
 }
 
 ProfilerStatus ProfilerStatusManager::next(DllMessage _dllMsg, ProfilerMessage& _nextMsg) {
 	switch (_dllMsg.lastStatus) {
-	case ProfilerStatus::GCOZ_MEASURE:
-		resultsHandler.addBaseline(_dllMsg.frameTimes, _dllMsg.durations, _dllMsg.methodCalls);
+	case ProfilerStatus::GCOZ_MEASURE_METHODS:
 		calc.addBaseline(_dllMsg.durations, _dllMsg.frameTimes, _dllMsg.methodCalls);
+		nextMessage(_nextMsg);
+		break;
+
+	case ProfilerStatus::GCOZ_COLLECT_THREAD_IDS:
+		ids.addIDs(_dllMsg.threadIDs);
+		if (ids.isDone()) {
+			ids.finish();
+		}
 		nextMessage(_nextMsg);
 		break;
 
@@ -36,7 +51,7 @@ ProfilerStatus ProfilerStatusManager::next(DllMessage _dllMsg, ProfilerMessage& 
 			nextMessage(_nextMsg);
 		}
 		else {
-			finalMessage(_nextMsg);
+			nextMessage(_nextMsg);
 		} // if data collection complete
 		break;
 
