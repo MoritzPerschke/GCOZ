@@ -5,8 +5,6 @@
   https://stackoverflow.com/questions/9183993/msvc-variadic-macro-expansion
 */
 
-#include <d3d11shader.h>
-
 // https://stackoverflow.com/questions/45756920/c-c-preprocessor-extract-every-second-variadic-parameter
 #define EVERY_SECOND0(...)
 

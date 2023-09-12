@@ -9,7 +9,7 @@
 namespace MethodDurations {
 	using Timepoint = std::chrono::steady_clock::time_point;
 	using Duration = std::chrono::duration<double>;
-	using Nanoseconds = std::chrono::microseconds;
+	//using Nanoseconds = std::chrono::microseconds; // when this line is active, results look good?
 
 	// maybe use map here to keep track of all individual times
 	static int presentCalls = 0;

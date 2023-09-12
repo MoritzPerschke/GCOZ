@@ -106,8 +106,6 @@ void DelayCalculator::calculateDelays(float& _speedupPicked, int& _methodPicked,
 		}
 	}
 
-	//printDelays(_msgDelays);
-
 	_methodPicked = lastMethodProfiled = selectedMethod;
 	_speedupPicked = lastSpeedup = selectedSpeedup;
 }

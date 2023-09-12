@@ -123,7 +123,7 @@ namespace D3D11Hooks {
 				break;
 
 			case ProfilerStatus::GCOZ_PROFILE : // apply last received delays and measure FPS
-				MethodDurations::presentStart(); // i think problems with results come from here
+				MethodDurations::presentStart();
 				if (callCount++ == MEASURE_FRAME_COUNT) {
 					callCount = 0;
 					DllMessage send = {};
