@@ -16,18 +16,6 @@ namespace D3D11Hooks {
 	DelayManager delays; // not sure if this is the best option, default constructor sets all delays to 0
 	Communication com = Communication();
 
-	/* expands to function pointers for D3D11 methods */
-	#define X(idx, returnType, name, ...) typedef returnType (__stdcall* name)(PARAMETER_TYPES(__VA_ARGS__));
-		D3D11_METHODS
-		D3D11_METHODS_VOID
-	#undef X
-
-		/* expands to setting previously defined pointers to NULL */
-	#define X(idx, returnType, name, ...) static name o##name = NULL;
-		D3D11_METHODS
-		D3D11_METHODS_VOID
-	#undef X
-
 	void little_sleep(Nanoseconds _delay) { // https://stackoverflow.com/a/45571538
 		auto start = MethodDurations::now();
 		auto end = start + _delay;
@@ -37,6 +25,19 @@ namespace D3D11Hooks {
 			}
 		}
 	}
+
+
+	/* expands to function pointers for D3D11 methods */
+	#define X(idx, returnType, name, ...) typedef returnType (__stdcall* name)(PARAMETER_TYPES(__VA_ARGS__));
+		D3D11_METHODS
+		D3D11_METHODS_VOID
+	#undef X
+
+	/* expands to setting previously defined pointers to NULL */
+	#define X(idx, returnType, name, ...) static name o##name = NULL;
+		D3D11_METHODS
+		D3D11_METHODS_VOID
+	#undef X
 
 	/* expands to hooked d3d11 function */
 	// maybe always measure duration to verify pauses
@@ -52,14 +53,11 @@ namespace D3D11Hooks {
 					MethodDurations::addDuration(_IDX, duration); \
 					break; \
 				case ProfilerStatus::GCOZ_PROFILE : \
-					little_sleep(delays.getDelay(_IDX)); \
 					value = o##_NAME(PARAMETER_NAMES(__VA_ARGS__)); \
+					little_sleep(delays.getDelay(_IDX)); \
 					break; \
 				case ProfilerStatus::GCOZ_WAIT : \
 					value = o##_NAME(PARAMETER_NAMES(__VA_ARGS__));	\
-					break; \
-				default : \
-					value = o##_NAME(PARAMETER_NAMES(__VA_ARGS__)); \
 					break; \
 			} \
 			return value; \
@@ -79,14 +77,11 @@ namespace D3D11Hooks {
 					MethodDurations::addDuration(_IDX, duration); \
 					break; \
 				case ProfilerStatus::GCOZ_PROFILE : \
-					little_sleep(delays.getDelay(_IDX)); \
 					o##_NAME(PARAMETER_NAMES(__VA_ARGS__)); \
+					little_sleep(delays.getDelay(_IDX)); \
 					break; \
 				case ProfilerStatus::GCOZ_WAIT : \
 					o##_NAME(PARAMETER_NAMES(__VA_ARGS__));	\
-					break; \
-				default : \
-					o##_NAME(PARAMETER_NAMES(__VA_ARGS__)); \
 					break; \
 			} \
 		}
@@ -106,19 +101,17 @@ namespace D3D11Hooks {
 				if (callCount++ == MEASURE_FRAME_COUNT) { // this could prob be done in seperate thread
 					callCount = 0;
 					DllMessage send = {};
-					send.frameTimes = MethodDurations::getPresentTimes();
+					// remove measurement of frametimes, use allMethods[0%] as baseline
+					//send.frameTimes = MethodDurations::getPresentTimes();
+					//send.frameRates = MethodDurations::getFrameRates();
 					send.durations = MethodDurations::getDurations();
-					send.frameRates = MethodDurations::getFrameRates();
 					send.methodCalls = MethodDurations::getCallAmounts();
 					send.lastStatus = ProfilerStatusManager::currentStatus;
 					send.valid = true;
 					com.sendMessage(send);
 					ProfilerStatusManager::changeStatus(ProfilerStatus::GCOZ_WAIT);
 				}
-				start = MethodDurations::now();
 				value = oPresent(pSwapChain, SyncInterval, Flags);
-				MethodDurations::Duration duration = MethodDurations::now() - start;
-				MethodDurations::addDuration(8, duration);
 				MethodDurations::presentEnd();
 				break;
 
@@ -127,8 +120,8 @@ namespace D3D11Hooks {
 				if (callCount++ == MEASURE_FRAME_COUNT) {
 					callCount = 0;
 					DllMessage send = {};
-					send.frameTimes = MethodDurations::getPresentTimes();
 					send.lastStatus = ProfilerStatusManager::currentStatus;
+					send.frameTimes = MethodDurations::getPresentTimes();
 					send.frameRates = MethodDurations::getFrameRates();
 					send.valid = true;
 					com.sendMessage(send);
@@ -142,19 +135,18 @@ namespace D3D11Hooks {
 				delays.resetDelays();
 				ProfilerMessage profilerResponse = com.getMessage(1);
 				if (profilerResponse.valid) {
-					delays.updateDelays(profilerResponse.delays);
+					if (profilerResponse.status == ProfilerStatus::GCOZ_PROFILE) {
+						delays.updateDelays(profilerResponse.delays); // in case status is any measure, set these to 0
+					}
 					if (profilerResponse.status != ProfilerStatusManager::currentStatus) {
 						ProfilerStatusManager::changeStatus(profilerResponse.status);
 					}
 				}
 				else {
-					//DisplayErrorBox(L"Updating Delays", L"Failed to get updated delays from profiler");
+					DisplayErrorBox(L"Updating Delays", L"Failed to get updated delays from profiler");
 				}
 				value = oPresent(pSwapChain, SyncInterval, Flags);
 				break;
-
-			default:
-				value = oPresent(pSwapChain, SyncInterval, Flags);
 		} // switch(ProfilerStatusManager::currentStatus)
 		return value;
 	}
@@ -168,6 +160,7 @@ namespace D3D11Hooks {
 		kiero::bind(8, (void**)&oPresent, hkPresent);
 		DisplayInfoBox(L"Progress", L"D3D11 functions hooked");
 	}
+
 } // namespace D3D11Hooks
 
 

@@ -32,8 +32,8 @@ int main(int argc, char* argv[]) {
 		std::cout << inf << "Waiting 10 more seconds" << std::endl;
 		std::this_thread::sleep_for(std::chrono::seconds(10)); // wait to get into steady state and wait 10 to tab back into game
 
-		ProfilerStatusManager man = ProfilerStatusManager(processName);
 		std::cout << ok << "Starting profiling" << std::endl;
+		ProfilerStatusManager man = ProfilerStatusManager(processName);
 		do {
 			DllMessage msg = com.getMessage();
 			if (msg.valid) {
