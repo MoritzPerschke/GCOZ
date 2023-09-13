@@ -9,6 +9,7 @@
 #include "HelperMacros.h"
 #include "DelayManager.h"
 #include "MethodDurations.h"
+#include "ThreadIDs.h"
 #include "ProfilerStatusManager.h"
 #include "../gcoz_profiler/Constants.h"
 
@@ -56,6 +57,10 @@ namespace D3D11Hooks {
 					value = o##_NAME(PARAMETER_NAMES(__VA_ARGS__)); \
 					little_sleep(delays.getDelay(_IDX)); \
 					break; \
+				case ProfilerStatus::GCOZ_COLLECT_THREAD_IDS:\
+					value = o##_NAME(PARAMETER_NAMES(__VA_ARGS__)); \
+					ThreadIDs::addID(_IDX);\
+					break; \
 				case ProfilerStatus::GCOZ_WAIT : \
 					value = o##_NAME(PARAMETER_NAMES(__VA_ARGS__));	\
 					break; \
@@ -63,10 +68,10 @@ namespace D3D11Hooks {
 			return value; \
 		}
 		D3D11_METHODS
-	#undef X
+#undef X
 
-	/* same as above just for void functions (no return)*/
-	#define X(_IDX, _RETURN_TYPE, _NAME, ...) \
+			/* same as above just for void functions (no return)*/
+#define X(_IDX, _RETURN_TYPE, _NAME, ...) \
 		_RETURN_TYPE __stdcall hk##_NAME(FUNCTION_SIGNATURE(__VA_ARGS__)){ \
 			MethodDurations::Timepoint start; \
 			switch (ProfilerStatusManager::currentStatus) { \
@@ -79,6 +84,10 @@ namespace D3D11Hooks {
 				case ProfilerStatus::GCOZ_PROFILE : \
 					o##_NAME(PARAMETER_NAMES(__VA_ARGS__)); \
 					little_sleep(delays.getDelay(_IDX)); \
+					break; \
+				case ProfilerStatus::GCOZ_COLLECT_THREAD_IDS:\
+					o##_NAME(PARAMETER_NAMES(__VA_ARGS__)); \
+					ThreadIDs::addID(_IDX);\
 					break; \
 				case ProfilerStatus::GCOZ_WAIT : \
 					o##_NAME(PARAMETER_NAMES(__VA_ARGS__));	\
@@ -131,6 +140,18 @@ namespace D3D11Hooks {
 				MethodDurations::presentEnd();
 				break;
 
+			case ProfilerStatus::GCOZ_COLLECT_THREAD_IDS:
+				MethodDurations::presentStart();
+				if (callCount++ == MEASURE_FRAME_COUNT) {
+					callCount = 0;
+					DllMessage send = {};
+					send.lastStatus = ProfilerStatusManager::currentStatus;
+					ThreadIDs::getIDs();
+					/// TODO: finish
+				}
+				value = oPresent(pSwapChain, SyncInterval, Flags);
+				break;
+
 			case ProfilerStatus::GCOZ_WAIT : // do nothing, wait for message from Profiler
 				delays.resetDelays();
 				ProfilerMessage profilerResponse = com.getMessage(1);
@@ -143,7 +164,7 @@ namespace D3D11Hooks {
 					}
 				}
 				else {
-					DisplayErrorBox(L"Updating Delays", L"Failed to get updated delays from profiler");
+					//DisplayErrorBox(L"Updating Delays", L"Failed to get updated delays from profiler");
 				}
 				value = oPresent(pSwapChain, SyncInterval, Flags);
 				break;

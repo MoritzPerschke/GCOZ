@@ -1,9 +1,14 @@
 #include "ProfilerStatusManager.h"
 
 ProfilerStatusManager::ProfilerStatusManager(string& _processName){
-	resultsHandler = ResultsHandler(_processName);
-	calc = DelayCalculator(resultsHandler);
-	ids = IdCollector();
+	try {
+		resultsHandler = ResultsHandler(_processName);
+		calc = DelayCalculator(resultsHandler);
+		ids = IdCollector();
+	}
+	catch (const std::runtime_error& e) {
+		throw std::runtime_error(e.what() + std::string(" in ProfilerStatusManager"));
+	}
 }
 
 void ProfilerStatusManager::nextMessage(ProfilerMessage& _msg) {

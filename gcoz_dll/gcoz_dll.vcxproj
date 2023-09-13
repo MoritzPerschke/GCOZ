@@ -160,6 +160,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="ProfilerStatusManager.h" />
     <ClInclude Include="status.hpp" />
+    <ClInclude Include="ThreadIDs.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Communication.cpp" />

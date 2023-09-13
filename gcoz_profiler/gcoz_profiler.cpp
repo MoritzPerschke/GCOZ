@@ -11,7 +11,7 @@ int main(int argc, char* argv[]) {
 	DWORD PID = atoi(argv[2]);
 	string processName = string(argv[1]);
 
-	try {
+	//try {
 		/* Communication */
 		Communication com;
 		com.init();
@@ -43,11 +43,11 @@ int main(int argc, char* argv[]) {
 			} while (!man.dataCollected());
 			man.finish();
 
-	}
-	catch (const std::runtime_error& error) {
-		std::cout << err << error.what() << std::endl;
-		return 1;
-	}
+	//}
+	//catch (const std::runtime_error& error) {
+	//	std::cout << err << error.what() << std::endl;
+	//	return 1;
+	//}
 
 	std::cout << ok << "Done, exiting..." << std::endl;
 	return 0;
