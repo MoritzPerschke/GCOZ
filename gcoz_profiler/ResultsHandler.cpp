@@ -16,7 +16,6 @@ string uniqueFileName(fs::path& _dir, string _base) {
 }
 
 ResultsHandler::ResultsHandler() {
-	throw std::runtime_error("ResultsHandler Constructor called without parameters");
 }
 
 ResultsHandler::ResultsHandler(string& _processName){

@@ -1,24 +1,25 @@
 #include "IdCollector.h"
 
 IdCollector::IdCollector() {
-	throw std::runtime_error("IdCollector Contructor called without arguments");
+	this->lastMethod = -1;
+	std::cout << err << "[IDCollector] Constructor called without arguments" << std::endl;
 }
 
+// never gets called?
 IdCollector::IdCollector(ResultsHandler& _handler) {
-	lastMethod = 0;
+	std::cout << ok << "[IDCollector] Constructor called properly" << std::endl;
+	this->lastMethod = -1;
 	this->handler = _handler;
 }
 
 void IdCollector::addIDs(std::array<long long, METHOD_ID_ARRAY_SIZE> _threadIDs) {
-	std::cout << inf << "Added Thread Id's for method" << methodNames[lastMethod] << "(" << lastMethod << ")" << std::endl;
-	for (const auto& elem : _threadIDs) {
-		if (elem != 0) {
-			ids[lastMethod].push_back(elem);
-		}
+	for (const auto& id : _threadIDs) {
+		this->ids[lastMethod].push_back(id);
 	}
 }
 
 int IdCollector::nextMethod() {
+	std::cout << "[IdCollector] nextMethod() called, lastMethod:" << lastMethod << std::endl;
 	return ++lastMethod;
 }
 
@@ -27,5 +28,5 @@ bool IdCollector::isDone() {
 }
 
 void IdCollector::finish() {
-	this->handler.addThreadIDs(ids);
+	this->handler.addThreadIDs(this->ids);
 }

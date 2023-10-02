@@ -10,7 +10,6 @@ std::string getTime() {
 }
 
 DelayCalculator::DelayCalculator() {
-	throw std::runtime_error("DelayCalculator Constructor called without arguments");
 }
 
 DelayCalculator::DelayCalculator(ResultsHandler& _handler){

@@ -1,17 +1,13 @@
 #include "ProfilerStatusManager.h"
 
 ProfilerStatusManager::ProfilerStatusManager(string& _processName){
-	try {
 		resultsHandler = ResultsHandler(_processName);
 		calc = DelayCalculator(resultsHandler);
-		ids = IdCollector();
-	}
-	catch (const std::runtime_error& e) {
-		throw std::runtime_error(e.what() + std::string(" in ProfilerStatusManager"));
-	}
+		ids = IdCollector(); // prob revert this
 }
 
 void ProfilerStatusManager::nextMessage(ProfilerMessage& _msg) {
+	std::cout << "Ids done: " << ids.isDone() << std::endl;
 	if (!ids.isDone()) {
 		_msg.status = ProfilerStatus::GCOZ_COLLECT_THREAD_IDS;
 		_msg.methodID = ids.nextMethod();
@@ -22,6 +18,7 @@ void ProfilerStatusManager::nextMessage(ProfilerMessage& _msg) {
 		_msg.valid = true;
 	}
 	else {
+		std::cout << "[ProfilerStatusManaer::nextMessage]: IDs: " << ids.isDone() << "; calc: " << calc.dataCollected() << std::endl;
 		_msg.status = ProfilerStatus::GCOZ_WAIT;
 		_msg.valid  = true;
 	}
@@ -30,16 +27,16 @@ void ProfilerStatusManager::nextMessage(ProfilerMessage& _msg) {
 
 ProfilerStatus ProfilerStatusManager::next(DllMessage _dllMsg, ProfilerMessage& _nextMsg) {
 	switch (_dllMsg.lastStatus) {
-	case ProfilerStatus::GCOZ_MEASURE_METHODS:
-		calc.addBaseline(_dllMsg.durations, _dllMsg.frameTimes, _dllMsg.methodCalls);
-		nextMessage(_nextMsg);
-		break;
-
 	case ProfilerStatus::GCOZ_COLLECT_THREAD_IDS:
 		ids.addIDs(_dllMsg.threadIDs);
 		if (ids.isDone()) {
 			ids.finish();
 		}
+		nextMessage(_nextMsg);
+		break;
+
+	case ProfilerStatus::GCOZ_MEASURE_METHODS:
+		calc.addBaseline(_dllMsg.durations, _dllMsg.frameTimes, _dllMsg.methodCalls);
 		nextMessage(_nextMsg);
 		break;
 

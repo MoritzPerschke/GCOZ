@@ -21,5 +21,5 @@ public:
 	ProfilerStatusManager(string& _processName);
 	ProfilerStatus next(DllMessage _dllMsg, ProfilerMessage& _nextMessage);
 	void finish();
-	bool dataCollected() { return calc.dataCollected(); }
+	bool dataCollected() { return calc.dataCollected() && ids.isDone(); }
 };

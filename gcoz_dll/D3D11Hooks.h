@@ -146,8 +146,10 @@ namespace D3D11Hooks {
 					callCount = 0;
 					DllMessage send = {};
 					send.lastStatus = ProfilerStatusManager::currentStatus;
-					ThreadIDs::getIDs();
-					/// TODO: finish
+					send.threadIDs = ThreadIDs::getIDs();
+					send.valid = true;
+					com.sendMessage(send);
+					ProfilerStatusManager::changeStatus(ProfilerStatus::GCOZ_WAIT);
 				}
 				value = oPresent(pSwapChain, SyncInterval, Flags);
 				break;
@@ -158,6 +160,9 @@ namespace D3D11Hooks {
 				if (profilerResponse.valid) {
 					if (profilerResponse.status == ProfilerStatus::GCOZ_PROFILE) {
 						delays.updateDelays(profilerResponse.delays); // in case status is any measure, set these to 0
+					}
+					if (profilerResponse.status == ProfilerStatus::GCOZ_COLLECT_THREAD_IDS) {
+						ThreadIDs::collect = profilerResponse.methodID;
 					}
 					if (profilerResponse.status != ProfilerStatusManager::currentStatus) {
 						ProfilerStatusManager::changeStatus(profilerResponse.status);

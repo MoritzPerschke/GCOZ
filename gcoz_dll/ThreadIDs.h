@@ -25,32 +25,37 @@ namespace ThreadIDs {
 
 	std::mutex mutex;
 	std::unordered_map<threadID, std::vector<int>> threadMethods;
+	int collect = 0;
 
 	//void addID(threadID _id, int _methodIdx) {
 	void addID(int _methodIdx) {
-		//std::lock_guard<std::mutex> guard(mutex);
-		//threadMethods[std::this_thread::get_id()].push_back(_methodIdx); // does this work as intended??
-		//MessageBoxW(NULL, L"body", L"debug", MB_OK | MB_SETFOREGROUND);
+		std::lock_guard<std::mutex> guard(mutex);
+		threadMethods[std::this_thread::get_id()].push_back(_methodIdx); // does this work as intended??
 	}
 
 	/* 
 	  iterate map<methodIdx, threadsIDs>, iterate threadIDs vector; add index of threadID in temp vector to return map[methodIdx]
 	*/
 	/// TODO: change actual return value
-	void getIDs() {
-		//std::map<int, std::vector<int>> threadINT;
-		//std::vector<threadID> temp;
+	std::array<long long, METHOD_ID_ARRAY_SIZE> getIDs() {
+		std::map<int, std::vector<int>> threadINT;
+		std::vector<threadID> temp;
 
-		//for (const auto& it : threadMethods) {
-		//	// first  == threadID
-		//	// second == vector of methods called by thread
-		//	if (std::find(temp.begin(), temp.end(), it.first) != temp.end()) {
-		//		temp.push_back(it.first);
-		//	}
-		//	std::copy(it.second.begin(), it.second.end(), threadMethods[it.first].begin());
-		//}
+		for (const auto& it : threadMethods) {
+			// first  == threadID
+			// second == vector of methods called by thread
+			if (std::find(temp.begin(), temp.end(), it.first) != temp.end()) {
+				temp.push_back(it.first);
+			}
+			std::copy(it.second.begin(), it.second.end(), threadMethods[it.first].begin());
+		}
 
+		std::array<long long, METHOD_ID_ARRAY_SIZE> result = { -1 };
+		for (int i = 0; i < threadINT[collect].size(); i++) {
+			result[i] = threadINT[collect][i];
+		}
 		///// TEMP: build string of integer thread ids to show in msg box
+		//MessageBoxW(NULL, L"Starting build of ID Messageboxes", L"Debug", MB_SETFOREGROUND);
 		//for (const auto& it : threadINT) {
 		//	// first  == id of thread
 		//	// second == list of called methods
@@ -65,5 +70,6 @@ namespace ThreadIDs {
 		//		MessageBoxW(NULL, bodyString.c_str(), titleString.c_str(), MB_OK | MB_SETFOREGROUND);
 		//	}
 		//}
+		return result;
 	}
 }
