@@ -26,16 +26,6 @@ namespace D3D11Hooks {
 		}
 	}
 
-	void hookD3D11() {
-		#define X(idx, returnType, name, ...)\
-				kiero::bind(idx, (void**)&o##name, hk##name);
-			D3D11_METHODS
-			D3D11_METHODS_VOID
-		#undef X
-		kiero::bind(8, (void**)&oPresent, hkPresent);
-		DisplayInfoBox(L"Progress", L"D3D11 functions hooked");
-	}
-
 	/* expands to function pointers for D3D11 methods */
 	#define X(idx, returnType, name, ...) typedef returnType (__stdcall* name)(PARAMETER_TYPES(__VA_ARGS__));
 		D3D11_METHODS
@@ -152,12 +142,22 @@ namespace D3D11Hooks {
 					}
 				}
 				else {
-					DisplayErrorBox(L"Updating Delays", L"Failed to get updated delays from profiler");
+					//DisplayErrorBox(L"Updating Delays", L"Failed to get updated delays from profiler");
 				}
 				value = oPresent(pSwapChain, SyncInterval, Flags);
 				break;
 		} // switch(ProfilerStatusManager::currentStatus)
 		return value;
+	}
+
+	void hookD3D11() {
+		#define X(idx, returnType, name, ...)\
+				kiero::bind(idx, (void**)&o##name, hk##name);
+			D3D11_METHODS
+			D3D11_METHODS_VOID
+		#undef X
+		kiero::bind(8, (void**)&oPresent, hkPresent);
+		DisplayInfoBox(L"Progress", L"D3D11 functions hooked");
 	}
 
 } // namespace D3D11Hooks
