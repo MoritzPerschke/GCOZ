@@ -1,12 +1,20 @@
 #pragma once
 
 #include <Windows.h>
+#include "Communication.h"
 #include "../gcoz_profiler/ProfilerStatus.h"
 
-namespace ProfilerStatusManager {
-	static ProfilerStatus currentStatus = ProfilerStatus::GCOZ_MEASURE;
+class ProfilerStatusManager {
+	HANDLE mutex;
+	HANDLE hStatusWrittenEvent;
+	Communication com;
+	ProfilerStatus* pSharedMemoryStatus;
+	int* pSharedMemoryMethod;
 
-	void changeStatus(ProfilerStatus _newStatus) {
-		currentStatus = _newStatus;
-	}
-}
+public:
+	ProfilerStatusManager();
+	ProfilerStatus getStatus();
+	void changeStatus(ProfilerStatus _newStatus);
+	void setStatus(ProfilerStatus _status);
+	int getMethod();
+};

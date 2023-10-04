@@ -13,9 +13,12 @@ public:
 	HANDLE hDllWrittenEvent, hProfilerWrittenEvent, hDllDataReceived, hProfilerDataReceived;
 	ProfilerMessage* pProfilerData;
 	DllMessage* pDllData;
+
 	Communication();
+	Communication(HANDLE mutex);
 	~Communication();
 
-	ProfilerMessage getMessage(DWORD _waitTimeout);
+	ProfilerMessage getMessage();
+	bool newDataAvailable();
 	bool sendMessage(DllMessage _msg);
 };

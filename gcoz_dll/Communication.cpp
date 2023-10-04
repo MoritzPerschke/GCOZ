@@ -1,6 +1,8 @@
 #include "Communication.h"
 
-Communication::Communication(){
+Communication::Communication() {}
+
+Communication::Communication(HANDLE mutex){
 	hDllFileMapping = OpenFileMapping(
 		FILE_MAP_ALL_ACCESS,
 		FALSE,
@@ -17,9 +19,9 @@ Communication::Communication(){
 		DisplayErrorBox(L"OpenFileMapping Profiler");
 	}
 
-	pSharedMemoryDll = MapViewOfFile( // this is the only one failing
+	pSharedMemoryDll = MapViewOfFile(
 		hDllFileMapping,
-		FILE_MAP_WRITE, // the writing is the issue
+		FILE_MAP_WRITE,
 		0, 0, 16384
 	); if (pSharedMemoryDll == NULL) {
 		DisplayErrorBox(L"MapViewOfFile Dll");
@@ -54,18 +56,19 @@ Communication::~Communication() {
 }
 
 /* get Message from profiler, _waitTimeout in ms */
-ProfilerMessage Communication::getMessage(DWORD _waitTimeout) {
-	DWORD dWaitResult = WaitForSingleObject(hProfilerWrittenEvent, _waitTimeout);
-	ProfilerMessage profilerMessage;
+ProfilerMessage Communication::getMessage() {
+	/* options:
+	1. waitforsingleobject using timeout 0
+	2. static profilermessage, update if static != *pProfilerData
+	  current: straight read shared mem, check if new available elsewhere
+	*/
+	ProfilerMessage newData = *pProfilerData;
+	SetEvent(hDllDataReceived);
+	return newData;
+}
 
-	if (dWaitResult == WAIT_OBJECT_0) {
-		profilerMessage = *pProfilerData;
-	}
-	else {
-		profilerMessage.valid = false;
-	}
-	//SetEvent(hDllDataReceived);
-	return profilerMessage;
+bool Communication::newDataAvailable(){
+	return WaitForSingleObject(hProfilerWrittenEvent, 0) == WAIT_OBJECT_0;
 }
 
 bool Communication::sendMessage(DllMessage _msg) {

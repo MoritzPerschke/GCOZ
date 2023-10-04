@@ -14,7 +14,8 @@
 
 namespace D3D11Hooks {
 	DelayManager delays; // not sure if this is the best option, default constructor sets all delays to 0
-	Communication com = Communication();
+	ProfilerStatusManager man;
+	Communication com;
 
 	void little_sleep(Nanoseconds _delay) { // https://stackoverflow.com/a/45571538
 		auto start = MethodDurations::now();
@@ -44,7 +45,7 @@ namespace D3D11Hooks {
 		_RETURN_TYPE __stdcall hk##_NAME(FUNCTION_SIGNATURE(__VA_ARGS__)){ \
 			_RETURN_TYPE value; \
 			MethodDurations::Timepoint start; \
-			switch (ProfilerStatusManager::currentStatus) { \
+			switch (man.getStatus()) { \
 				case ProfilerStatus::GCOZ_MEASURE : \
 					start = MethodDurations::now(); \
 					value = o##_NAME(PARAMETER_NAMES(__VA_ARGS__)); \
@@ -68,7 +69,7 @@ namespace D3D11Hooks {
 	#define X(_IDX, _RETURN_TYPE, _NAME, ...) \
 		_RETURN_TYPE __stdcall hk##_NAME(FUNCTION_SIGNATURE(__VA_ARGS__)){ \
 			MethodDurations::Timepoint start; \
-			switch (ProfilerStatusManager::currentStatus) { \
+			switch (man.getStatus()) { \
 				case ProfilerStatus::GCOZ_MEASURE : \
 					start = MethodDurations::now(); \
 					o##_NAME(PARAMETER_NAMES(__VA_ARGS__)); \
@@ -94,21 +95,21 @@ namespace D3D11Hooks {
 		HRESULT value;
 		MethodDurations::Timepoint start;
 
-		switch (ProfilerStatusManager::currentStatus) {
+		switch (man.getStatus()) {
 			case ProfilerStatus::GCOZ_MEASURE : // measure times of D3D11 Methods, nothing else
 				MethodDurations::presentStart();
 				if (callCount++ == MEASURE_FRAME_COUNT) { // this could prob be done in seperate thread
 					callCount = 0;
-					DllMessage send = {};
+					Measurement send = {};
 					// remove measurement of frametimes, use allMethods[0%] as baseline
 					//send.frameTimes = MethodDurations::getPresentTimes();
 					//send.frameRates = MethodDurations::getFrameRates();
 					send.durations = MethodDurations::getDurations();
 					send.methodCalls = MethodDurations::getCallAmounts();
-					send.lastStatus = ProfilerStatusManager::currentStatus;
 					send.valid = true;
 					com.sendMessage(send);
-					ProfilerStatusManager::changeStatus(ProfilerStatus::GCOZ_WAIT);
+					delays.resetDelays();
+					man.setStatus(ProfilerStatus::GCOZ_WAIT);
 				}
 				value = oPresent(pSwapChain, SyncInterval, Flags);
 				MethodDurations::presentEnd();
@@ -118,27 +119,24 @@ namespace D3D11Hooks {
 				MethodDurations::presentStart();
 				if (callCount++ == MEASURE_FRAME_COUNT) {
 					callCount = 0;
-					DllMessage send = {};
-					send.lastStatus = ProfilerStatusManager::currentStatus;
+					Result send = {};
 					send.frameTimes = MethodDurations::getPresentTimes();
 					send.frameRates = MethodDurations::getFrameRates();
 					send.valid = true;
 					com.sendMessage(send);
-					ProfilerStatusManager::changeStatus(ProfilerStatus::GCOZ_WAIT);
+					delays.resetDelays();
+					man.setStatus(ProfilerStatus::GCOZ_WAIT);
 				}
 				value = oPresent(pSwapChain, SyncInterval, Flags);
 				MethodDurations::presentEnd();
 				break;
 
 			case ProfilerStatus::GCOZ_WAIT : // do nothing, wait for message from Profiler
-				delays.resetDelays();
-				ProfilerMessage profilerResponse = com.getMessage(1);
-				if (profilerResponse.valid) {
-					if (profilerResponse.status == ProfilerStatus::GCOZ_PROFILE) {
-						delays.updateDelays(profilerResponse.delays); // in case status is any measure, set these to 0
-					}
-					if (profilerResponse.status != ProfilerStatusManager::currentStatus) {
-						ProfilerStatusManager::changeStatus(profilerResponse.status);
+				//ProfilerMessage profilerResponse = com.getMessage();
+				if (com.newDataAvailable()) {
+					ProfilerMessage newData = com.getMessage();
+					if (newData.valid) {
+						delays.updateDelays(newData.delays);
 					}
 				}
 				else {
