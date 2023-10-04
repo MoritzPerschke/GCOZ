@@ -9,7 +9,6 @@ std::string getTime() {
 	return "["+ std::string(buffer) + "]";
 }
 
-bool DelayCalculator::dataCollectedAllMethods() { return allMethodSpeedupsDone; }
 
 void DelayCalculator::printBaseline() { // this probably won't be needed anymore
 	std::cout <<
@@ -39,7 +38,7 @@ void printDelays(delayArray& _delays) { // this probably won't be needed anymore
 		"= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= =" << std::endl;
 }
 
-void DelayCalculator::addBaseline(durationArray _durations, frametimeArray _frameTimes, std::array<int, D3D11_METHOD_COUNT> _calls) {
+void DelayCalculator::addBaseline(frametimeArray _frameTimes, durationArray _durations, std::array<int, D3D11_METHOD_COUNT> _calls) {
 	baselineDurations = _durations;
 	baselineCalls = _calls;
 
@@ -106,22 +105,23 @@ void DelayCalculator::calculateDelays(float& _speedupPicked, int& _methodPicked,
 		}
 	}
 
-	_methodPicked = lastMethodProfiled = selectedMethod;
-	_speedupPicked = lastSpeedup = selectedSpeedup;
+	_methodPicked = selectedMethod;
+	_speedupPicked= selectedSpeedup;
 }
 
-void DelayCalculator::measurementDone() {
-
-	if (!allMethodSpeedupsDone) {
-		frametimeChangesAll[lastSpeedup] = true;
-		if (frametimeChangesAll.size() == amoutSpeedupsMax) {
-			allMethodSpeedupsDone = true;
-		}
+void DelayCalculator::measurementDoneAll(float _speedup) {
+	frametimeChangesAll[_speedup] = true;
+	if (frametimeChangesAll.size() == amoutSpeedupsMax) {
+		allMethodSpeedupsDone = true;
 	}
-	else {
-		frametimeChangesSingle[lastMethodProfiled][lastSpeedup] = true;
-	}
+}
 
+void DelayCalculator::measurementDoneSingle(float _speedup, int _method) {
+	frametimeChangesSingle[_method][_speedup] = true;
+}
+
+bool DelayCalculator::dataCollectedAllMethods() { 
+	return allMethodSpeedupsDone;
 }
 
 bool DelayCalculator::dataCollected() {

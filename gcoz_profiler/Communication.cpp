@@ -61,14 +61,36 @@ Communication::~Communication() {
 	std::cout << "[*] Communication Destructor called" << std::endl;
 }
 
-DllMessage Communication::getMessage() {
-	DWORD dWaitResult = WaitForSingleObject(hDllWrittenEvent, INFINITE);
+DllMessage Communication::getMessage(ProfilerStatus _status) {
 	DllMessage dllMessage;
-	
-	if (dWaitResult == WAIT_OBJECT_0) {
-		dllMessage = *pDllData;
-		return dllMessage;
+	Measurement measurement;
+	Measurement* measurementShared;
+	Result result;
+	Result* resultShared;
+
+	switch(_status) {
+	case ProfilerStatus::GCOZ_MEASURE:
+		measurementShared = static_cast<Measurement*>(pDllData);
+		measurement.durations = measurementShared->durations;
+		measurement.frameTimes = measurementShared->frameTimes;
+		measurement.methodCalls = measurementShared->methodCalls;
+		measurement.valid = measurementShared->valid;
+		return measurement;
+		break;
+	case ProfilerStatus::GCOZ_PROFILE:
+		resultShared = static_cast<Result*>(pDllData);
+		result.frameRates = resultShared->frameRates;
+		result.frameTimes = resultShared->frameTimes;
+		result.valid = resultShared->valid;
+		return result;
+	case ProfilerStatus::GCOZ_WAIT:
+		// shouldn't happen
+		break;
+	case ProfilerStatus::GCOZ_FINISH:
+		// also shouldn't happen
+		break;
 	}
+
 	dllMessage.valid = false;
 	//SetEvent(hProfilerDataReceived);
 	return dllMessage;
@@ -77,5 +99,13 @@ DllMessage Communication::getMessage() {
 bool Communication::sendMessage(ProfilerMessage _msg) {
 	*pProfilerData = _msg;
 	return SetEvent(hProfilerWrittenEvent);
-	//return WaitForSingleObject(hDllDataReceived, 2) == WAIT_OBJECT_0; // not sure of the delay here
+}
+
+DWORD Communication::waitMsg()
+{
+	return WaitForSingleObject(hDllWrittenEvent, INFINITE);
+}
+
+DWORD Communication::waitRecv(){
+	return WaitForSingleObject(hDllDataReceived, INFINITE); // infinite wait might be problematic
 }
