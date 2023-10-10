@@ -10,14 +10,14 @@ class Communication {
 	LPVOID pSharedMemoryDll, pSharedMemoryProfiler;
 	HANDLE hDllWrittenEvent, hProfilerWrittenEvent, hDllDataReceived, hProfilerDataReceived;
 	ProfilerMessage* pProfilerData;
-	DllMessage* pDllData;
 
 public:
 	~Communication();
 	void init();
 
-	DllMessage getMessage(ProfilerStatus _status);
 	bool sendMessage(ProfilerMessage _msg);
 	DWORD waitMsg();
 	DWORD waitRecv();
+	Measurement getMeasurement();
+	Result getResult();
 };

@@ -102,12 +102,12 @@ namespace D3D11Hooks {
 					callCount = 0;
 					Measurement send = {};
 					// remove measurement of frametimes, use allMethods[0%] as baseline
-					//send.frameTimes = MethodDurations::getPresentTimes();
+					send.frameTimes = MethodDurations::getPresentTimes();
 					//send.frameRates = MethodDurations::getFrameRates();
 					send.durations = MethodDurations::getDurations();
 					send.methodCalls = MethodDurations::getCallAmounts();
 					send.valid = true;
-					com.sendMessage(send);
+					com.sendMeasurement(send);
 					delays.resetDelays();
 					man.setStatus(ProfilerStatus::GCOZ_WAIT);
 				}
@@ -123,7 +123,7 @@ namespace D3D11Hooks {
 					send.frameTimes = MethodDurations::getPresentTimes();
 					send.frameRates = MethodDurations::getFrameRates();
 					send.valid = true;
-					com.sendMessage(send);
+					com.sendResult(send);
 					delays.resetDelays();
 					man.setStatus(ProfilerStatus::GCOZ_WAIT);
 				}

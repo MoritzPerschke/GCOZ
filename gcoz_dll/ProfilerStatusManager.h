@@ -2,6 +2,7 @@
 
 #include <Windows.h>
 #include "Communication.h"
+#include "ErrorMessage.h"
 #include "../gcoz_profiler/ProfilerStatus.h"
 
 class ProfilerStatusManager {

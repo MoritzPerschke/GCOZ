@@ -5,6 +5,7 @@ int main(int argc, char* argv[]) {
 
 	// using switch here is dumb
 	if (argc < 3) {
+		std::cout << inf << "Sizes:\n\tProfilerStatus: " << sizeof(ProfilerStatus) << "\n\tMethod: " << sizeof(int) << std::endl;
 		std::cout << err << "Usage: .\\gcoz_profiler.exe </data subdirectory> <PID>";
 		return 1;
 	}
@@ -21,8 +22,11 @@ int main(int argc, char* argv[]) {
 		return 1;
 	}
 
+	ProfilerStatusManager statusManager = ProfilerStatusManager(processName);
+	statusManager.setStatus(ProfilerStatus::GCOZ_WAIT);
+
 	/* Injection */
-	// this HAS TO happen after Communication is initialized
+	// this HAS TO happen after Communication AND ProfilerStatusManager is initialized
 	Injector injector = Injector();
 	injector.inject_dll(PID);
 
@@ -33,33 +37,37 @@ int main(int argc, char* argv[]) {
 		std::this_thread::sleep_for(std::chrono::seconds(10)); // wait to get into steady state and wait 10 to tab back into game
 
 		std::cout << ok << "Starting profiling" << std::endl;
-		ProfilerStatusManager statusManager = ProfilerStatusManager(processName);
 		MessageHandler messageHandler;
 		bool profilingDone = false;
+		statusManager.setStatus(ProfilerStatus::GCOZ_MEASURE);
 		do {
 
 			DWORD waitResult = com.waitMsg();
 			if (waitResult == WAIT_OBJECT_0) {
 				switch (statusManager.getPreviousStatus()) {
 				case ProfilerStatus::GCOZ_MEASURE:
-					Measurement measurement = static_cast<Measurement>(com.getMessage(statusManager.getPreviousStatus()));
+					Measurement measurement = com.getMeasurement();
 					// add baseline stuff and next method
 					messageHandler.handleMeasurement(measurement);
+					std::cout << ok << "Received Measurement" << std::endl;
 					break;
 
 				case ProfilerStatus::GCOZ_PROFILE:
 					// all methods slowed results ? choose first method : choose next slowdown
-					Result result = static_cast<Result>(com.getMessage(statusManager.getPreviousStatus()));
+					Result result = com.getResult();
 					messageHandler.handleResult(result);
+					std::cout << ok << "Received Results" << std::endl;
 					break;
 
 				// case ProfilerStatus::GCOZ_COLLECT_THREADID:
 				case ProfilerStatus::GCOZ_WAIT:
 					// should not happen?
+					std::cout << err << "Received message during WAIT" << std::endl;
 					break;
 					
 				case ProfilerStatus::GCOZ_FINISH:
 					// end
+					std::cout << err << "Received message during FINISH" << std::endl;
 					break;
 				}
 			}

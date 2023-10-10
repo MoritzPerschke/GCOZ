@@ -15,10 +15,10 @@ public:
 	DllMessage* pDllData;
 
 	Communication();
-	Communication(HANDLE mutex);
 	~Communication();
 
 	ProfilerMessage getMessage();
 	bool newDataAvailable();
-	bool sendMessage(DllMessage _msg);
+	bool sendMeasurement(const Measurement& _msg);
+	bool sendResult(const Result& _msg);
 };

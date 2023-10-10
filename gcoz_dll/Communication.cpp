@@ -1,8 +1,6 @@
 #include "Communication.h"
 
-Communication::Communication() {}
-
-Communication::Communication(HANDLE mutex){
+Communication::Communication(){
 	hDllFileMapping = OpenFileMapping(
 		FILE_MAP_ALL_ACCESS,
 		FALSE,
@@ -35,10 +33,10 @@ Communication::Communication(HANDLE mutex){
 		DisplayErrorBox(L"MapViewOfFile Profiler");
 	}
 
-	hDllWrittenEvent = CreateEventA(NULL, FALSE, FALSE, "dllWrittenEvent");
-	hDllDataReceived = CreateEventA(NULL, FALSE, FALSE, "hDllDataReceived");
-	hProfilerWrittenEvent = CreateEventA(NULL, FALSE, FALSE, "profilerWrittenEvent");
-	hProfilerDataReceived = CreateEventA(NULL, FALSE, FALSE, "hProfilerDataReceived");
+	hDllWrittenEvent = OpenEventA(EVENT_ALL_ACCESS, FALSE, "gcoz_DllWrittenEvent");
+	hDllDataReceived = OpenEventA(EVENT_ALL_ACCESS, FALSE, "gcoz_DllDataReceived");
+	hProfilerWrittenEvent = OpenEventA(EVENT_ALL_ACCESS, FALSE, "gcoz_ProfilerWrittenEvent");
+	hProfilerDataReceived = OpenEventA(EVENT_ALL_ACCESS, FALSE, "gcoz_ProfilerDataReceived");
 
 	pDllData = static_cast<DllMessage*>(pSharedMemoryDll);
 	pProfilerData = static_cast<ProfilerMessage*>(pSharedMemoryProfiler);
@@ -71,8 +69,30 @@ bool Communication::newDataAvailable(){
 	return WaitForSingleObject(hProfilerWrittenEvent, 0) == WAIT_OBJECT_0;
 }
 
-bool Communication::sendMessage(DllMessage _msg) {
-	*pDllData = _msg;
-	return SetEvent(hDllWrittenEvent);
-	//return WaitForSingleObject(hProfilerDataReceived, 2) == WAIT_OBJECT_0; // not sure about delay here
+bool Communication::sendMeasurement(const Measurement& _msg) {
+	if (pDllData != NULL) {
+		Measurement* shared = static_cast<Measurement*> (pDllData);
+		*shared = _msg; // EXCEPTION_ACCESS_VIOLATION, this is NULL?
+	}
+	else {
+		DisplayErrorBox(L"[Communication.cpp::sendMeasurement] pDllData == NULL");
+	}
+	if (!SetEvent(hDllWrittenEvent)) {
+		DisplayErrorBox(L"Failed to set hDllWrittenEvent");
+	}
+	return WaitForSingleObject(hProfilerDataReceived, 2) == WAIT_OBJECT_0; // not sure about delay here
+}
+
+bool Communication::sendResult(const Result& _msg) {
+	if (pDllData != NULL) {
+		Result* shared = static_cast<Result*> (pDllData);
+		*shared = _msg; // EXCEPTION_ACCESS_VIOLATION, this is NULL?
+	}
+	else {
+		DisplayErrorBox(L"[Communication.cpp::sendResult] pDllData == NULL");
+	}
+	if (!SetEvent(hDllWrittenEvent)) {
+		DisplayErrorBox(L"Failed to set hDllWrittenEvent");
+	}
+	return WaitForSingleObject(hProfilerDataReceived, 2) == WAIT_OBJECT_0; // not sure about delay here
 }

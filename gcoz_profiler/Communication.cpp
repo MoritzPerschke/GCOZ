@@ -1,6 +1,27 @@
 #include "Communication.h"
 
 void Communication::init() {
+	/* Profiler -> Dll Communication */
+	hProfilerFileMapping = CreateFileMapping(
+		INVALID_HANDLE_VALUE,
+		NULL,
+		PAGE_READWRITE,
+		0,
+		2048,
+		L"gcoz_profiler_shared_memory"
+	); if (hProfilerFileMapping == NULL) {
+		throw std::runtime_error("hProfilerFileMapping creation failed");
+	}
+	pSharedMemoryProfiler = MapViewOfFile(
+		hProfilerFileMapping,
+		FILE_MAP_ALL_ACCESS,
+		0, 0, 0
+	); if (pSharedMemoryProfiler == NULL) {
+		throw std::runtime_error("pSharedMemoryProfiler File Mapping failed");
+	}
+	pProfilerData = static_cast<ProfilerMessage*>(pSharedMemoryProfiler);
+
+	/* Dll -> Profiler Communication */
 	hDllFileMapping = CreateFileMapping(
 		INVALID_HANDLE_VALUE,
 		NULL,
@@ -12,18 +33,6 @@ void Communication::init() {
 	if (hDllFileMapping == NULL) {
 		throw std::runtime_error("hDllFileMapping creation failed");
 	}
-
-	hProfilerFileMapping = CreateFileMapping(
-		INVALID_HANDLE_VALUE,
-		NULL,
-		PAGE_READWRITE,
-		0,
-		2048,
-		L"gcoz_profiler_shared_memory"
-	); if (hProfilerFileMapping == NULL) {
-		throw std::runtime_error("hProfilerFileMapping creation failed");
-	}
-
 	pSharedMemoryDll = MapViewOfFile(
 		hDllFileMapping,
 		FILE_MAP_ALL_ACCESS,
@@ -32,27 +41,18 @@ void Communication::init() {
 		throw std::runtime_error("pSharedMemoryDll File Mapping failed");
 	}
 
-	pSharedMemoryProfiler = MapViewOfFile(
-		hProfilerFileMapping,
-		FILE_MAP_ALL_ACCESS,
-		0, 0, 0
-	); if (pSharedMemoryProfiler == NULL) {
-		throw std::runtime_error("pSharedMemoryProfiler File Mapping failed");
-	}
+	/* Synchronization Events */
+	hDllWrittenEvent = CreateEventA(NULL, FALSE, FALSE, "gcoz_DllWrittenEvent");
+	hDllDataReceived = CreateEventA(NULL, FALSE, FALSE, "gcoz_DllDataReceived");
+	hProfilerWrittenEvent = CreateEventA(NULL, FALSE, FALSE, "gcoz_ProfilerWrittenEvent");
+	hProfilerDataReceived = CreateEventA(NULL, FALSE, FALSE, "gcoz_ProfilerDataReceived");
 
-	hDllWrittenEvent = CreateEventA(NULL, FALSE, FALSE, "dllWrittenEvent");
-	hDllDataReceived = CreateEventA(NULL, FALSE, FALSE, "hDllDataReceived");
-	hProfilerWrittenEvent = CreateEventA(NULL, FALSE, FALSE, "profilerWrittenEvent");
-	hProfilerDataReceived = CreateEventA(NULL, FALSE, FALSE, "hProfilerDataReceived");
-
-	pDllData = static_cast<DllMessage*>(pSharedMemoryDll);
-	pProfilerData = static_cast<ProfilerMessage*>(pSharedMemoryProfiler);
 }
 
 Communication::~Communication() {
 	UnmapViewOfFile(hDllFileMapping);
 	UnmapViewOfFile(hProfilerFileMapping);
-	 
+
 	CloseHandle(pSharedMemoryDll);
 	CloseHandle(pSharedMemoryProfiler);
 
@@ -61,39 +61,22 @@ Communication::~Communication() {
 	std::cout << "[*] Communication Destructor called" << std::endl;
 }
 
-DllMessage Communication::getMessage(ProfilerStatus _status) {
-	DllMessage dllMessage;
-	Measurement measurement;
-	Measurement* measurementShared;
-	Result result;
-	Result* resultShared;
-
-	switch(_status) {
-	case ProfilerStatus::GCOZ_MEASURE:
-		measurementShared = static_cast<Measurement*>(pDllData);
-		measurement.durations = measurementShared->durations;
-		measurement.frameTimes = measurementShared->frameTimes;
-		measurement.methodCalls = measurementShared->methodCalls;
-		measurement.valid = measurementShared->valid;
-		return measurement;
-		break;
-	case ProfilerStatus::GCOZ_PROFILE:
-		resultShared = static_cast<Result*>(pDllData);
-		result.frameRates = resultShared->frameRates;
-		result.frameTimes = resultShared->frameTimes;
-		result.valid = resultShared->valid;
-		return result;
-	case ProfilerStatus::GCOZ_WAIT:
-		// shouldn't happen
-		break;
-	case ProfilerStatus::GCOZ_FINISH:
-		// also shouldn't happen
-		break;
+Measurement Communication::getMeasurement() {
+	Measurement* shared = static_cast<Measurement*>(pSharedMemoryDll);
+	Measurement result = *shared;
+	if (result.valid) {
+		SetEvent(hProfilerDataReceived);
 	}
+	return result;
+}
 
-	dllMessage.valid = false;
-	//SetEvent(hProfilerDataReceived);
-	return dllMessage;
+Result Communication::getResult() {
+	Result* shared = static_cast<Result*>(pSharedMemoryDll);
+	Result result = *shared;
+	if (result.valid) {
+		SetEvent(hProfilerDataReceived);
+	}
+	return result;
 }
 
 bool Communication::sendMessage(ProfilerMessage _msg) {
@@ -101,9 +84,9 @@ bool Communication::sendMessage(ProfilerMessage _msg) {
 	return SetEvent(hProfilerWrittenEvent);
 }
 
-DWORD Communication::waitMsg()
-{
-	return WaitForSingleObject(hDllWrittenEvent, INFINITE);
+DWORD Communication::waitMsg(){
+	DWORD result = WaitForSingleObject(hDllWrittenEvent, INFINITE);
+	return result;
 }
 
 DWORD Communication::waitRecv(){
