@@ -16,6 +16,8 @@ public:
 	ProfilerStatusManager();
 	ProfilerStatus getStatus();
 	void changeStatus(ProfilerStatus _newStatus);
+	void announceStatusChange();
+	void waitNewStatus();
 	void setStatus(ProfilerStatus _status);
 	int getMethod();
 };

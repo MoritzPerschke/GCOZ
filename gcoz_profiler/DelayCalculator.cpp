@@ -59,12 +59,11 @@ void DelayCalculator::addBaseline(frametimeArray _frameTimes, durationArray _dur
 	std::shuffle(choices.begin(), choices.end(), gen);
 	std::cout << ok << getTime() << "[DelayCalculator] created " << choices.size() << "combinations of method/speedup" << std::endl;
 	printBaseline();
+	baselineAdded = true;
 
 }
 
 void DelayCalculator::calculateDelays(float& _speedupPicked, int& _methodPicked, delayArray& _msgDelays) {
-	static float allSpeedup = static_cast<float>(-0.1);
-	allSpeedup += static_cast<float>(0.1);
 
 	choice newChoice = { 0, .0 };
 	float selectedSpeedup;
@@ -77,9 +76,14 @@ void DelayCalculator::calculateDelays(float& _speedupPicked, int& _methodPicked,
 		newChoice = choices.front();
 		choices.pop_front();
 	}
+	else {
+		std::cout << inf << "Delaying all methods" << std::endl;
+	}
 	
+	static float allSpeedup = static_cast<float>(0.0);
 	selectedSpeedup= allMethodSpeedupsDone ? newChoice.speedup : allSpeedup;
 	selectedMethod = allMethodSpeedupsDone ? newChoice.method : -1;
+	allSpeedup += static_cast<float>(0.1);
 
 	std::cout << "\n" << inf << getTime() << "[DelayCalculator] Selected: " << selectedMethod << " with speedup " << selectedSpeedup << ", " <<  choices.size() << " combinations remaining" << std::endl;
 

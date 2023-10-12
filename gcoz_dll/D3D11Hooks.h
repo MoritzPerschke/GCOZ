@@ -92,7 +92,6 @@ namespace D3D11Hooks {
 	static Present oPresent = NULL;
 	HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT Flags) {
 		static unsigned long long int callCount = 0;
-		HRESULT value;
 		MethodDurations::Timepoint start;
 
 		switch (man.getStatus()) {
@@ -110,8 +109,8 @@ namespace D3D11Hooks {
 					com.sendMeasurement(send);
 					delays.resetDelays();
 					man.setStatus(ProfilerStatus::GCOZ_WAIT);
+					man.announceStatusChange();
 				}
-				value = oPresent(pSwapChain, SyncInterval, Flags);
 				MethodDurations::presentEnd();
 				break;
 
@@ -126,26 +125,34 @@ namespace D3D11Hooks {
 					com.sendResult(send);
 					delays.resetDelays();
 					man.setStatus(ProfilerStatus::GCOZ_WAIT);
+					man.announceStatusChange();
 				}
-				value = oPresent(pSwapChain, SyncInterval, Flags);
 				MethodDurations::presentEnd();
 				break;
 
 			case ProfilerStatus::GCOZ_WAIT : // do nothing, wait for message from Profiler
-				//ProfilerMessage profilerResponse = com.getMessage();
 				if (com.newDataAvailable()) {
 					ProfilerMessage newData = com.getMessage();
 					if (newData.valid) {
-						delays.updateDelays(newData.delays);
+						man.waitNewStatus();
+						if (man.getStatus() == ProfilerStatus::GCOZ_MEASURE) {
+							try {
+								delays.updateDelays(newData.delays);
+							}
+							catch (...){
+								DisplayErrorBox(L"Dll Main");
+							}
+						}
 					}
 				}
-				else {
-					//DisplayErrorBox(L"Updating Delays", L"Failed to get updated delays from profiler");
-				}
-				value = oPresent(pSwapChain, SyncInterval, Flags);
+				break;
+			case ProfilerStatus::GCOZ_FINISH :
+				//DisplayInfoBox(L"Dll Main", L"finish case in Present switch");
+			default:
+				//DisplayInfoBox(L"Dll Main", L"default case in Present switch");
 				break;
 		} // switch(ProfilerStatusManager::currentStatus)
-		return value;
+		return oPresent(pSwapChain, SyncInterval, Flags);
 	}
 
 	void hookD3D11() {

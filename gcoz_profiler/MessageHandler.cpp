@@ -11,14 +11,14 @@ ProfilerStatus MessageHandler::nextStatus() {
 	if (!calc.isBaselineAdded()) {
 		return ProfilerStatus::GCOZ_MEASURE;
 	}
-	else if (calc.dataCollectedAllMethods()){
+	else if (!calc.dataCollectedAllMethods()){
 		return ProfilerStatus::GCOZ_PROFILE;
 	}
-	else if (calc.dataCollected()) {
+	else if (!calc.dataCollected()) {
 		return ProfilerStatus::GCOZ_PROFILE;
 	}
 	else {
-		return ProfilerStatus::GCOZ_FAIL;
+		return ProfilerStatus::GCOZ_FINISH;
 	}
 }
 

@@ -44,18 +44,7 @@ ProfilerStatusManager::ProfilerStatusManager(){
 }
 
 ProfilerStatus ProfilerStatusManager::getStatus() {
-	static ProfilerStatus lastStatus;
-	static bool init = false;
-	if (!init) {
-		init = true;
-		lastStatus = *pSharedMemoryStatus;
-		return lastStatus;
-	}
-	if (*pSharedMemoryStatus != lastStatus) {
-		DisplayInfoBox(L"ProfilerStatusManager::getStatus()", profilerStatusWstring(*pSharedMemoryStatus));
-		lastStatus = *pSharedMemoryStatus;
-	}
-	return lastStatus;
+	return *pSharedMemoryStatus;
 }
 
 void ProfilerStatusManager::changeStatus(ProfilerStatus _newStatus){
@@ -66,6 +55,14 @@ void ProfilerStatusManager::changeStatus(ProfilerStatus _newStatus){
 
 void ProfilerStatusManager::setStatus(ProfilerStatus _status) {
 	*pSharedMemoryStatus = _status;
+}
+
+void ProfilerStatusManager::announceStatusChange() {
+	SetEvent(hStatusWrittenEvent);
+}
+
+void ProfilerStatusManager::waitNewStatus(){
+	WaitForSingleObject(hStatusWrittenEvent, INFINITE);
 }
 
 int ProfilerStatusManager::getMethod(){

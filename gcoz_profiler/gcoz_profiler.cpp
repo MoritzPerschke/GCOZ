@@ -39,12 +39,36 @@ int main(int argc, char* argv[]) {
 		std::cout << ok << "Starting profiling" << std::endl;
 		MessageHandler messageHandler;
 		bool profilingDone = false;
-		statusManager.setStatus(ProfilerStatus::GCOZ_MEASURE);
 		do {
 
+			/*
+			* - calc next status
+			* - build new message
+			* - send new message
+			* - wait for message recv event
+			* - set new status
+			*/
+			ProfilerStatus nextStatus = messageHandler.nextStatus();
+			std::cout << ok << "Next Status: " << profilerStatusString(nextStatus) << std::endl;
+			profilingDone = (nextStatus == ProfilerStatus::GCOZ_FINISH);
+			if (nextStatus == ProfilerStatus::GCOZ_FINISH) {
+				profilingDone = true;
+				break;
+			}
+			ProfilerMessage nextMsg = {};
+			messageHandler.nextMessage(nextMsg, nextStatus);
+			com.sendMessage(nextMsg);
+			com.waitRecv();
+			statusManager.setStatus(nextStatus);
+			statusManager.announceStatusChange();
+
+			/*
+			* - wait for response from game
+			* - either add measurement or result
+			*/
 			DWORD waitResult = com.waitMsg();
 			if (waitResult == WAIT_OBJECT_0) {
-				switch (statusManager.getPreviousStatus()) {
+				switch (nextStatus) {
 				case ProfilerStatus::GCOZ_MEASURE:
 					Measurement measurement = com.getMeasurement();
 					// add baseline stuff and next method
@@ -57,38 +81,26 @@ int main(int argc, char* argv[]) {
 					Result result = com.getResult();
 					messageHandler.handleResult(result);
 					std::cout << ok << "Received Results" << std::endl;
-					break;
+				break;
 
-				// case ProfilerStatus::GCOZ_COLLECT_THREADID:
-				case ProfilerStatus::GCOZ_WAIT:
-					// should not happen?
-					std::cout << err << "Received message during WAIT" << std::endl;
-					break;
+			// case ProfilerStatus::GCOZ_COLLECT_THREADID:
+			case ProfilerStatus::GCOZ_WAIT:
+				// should not happen?
+				std::cout << err << "Received message during WAIT" << std::endl;
+				break;
 					
-				case ProfilerStatus::GCOZ_FINISH:
-					// end
-					std::cout << err << "Received message during FINISH" << std::endl;
-					break;
-				}
+			case ProfilerStatus::GCOZ_FINISH:
+				// end
+				std::cout << err << "Received message during FINISH" << std::endl;
+				break;
+			default:
+				break;
 			}
-			/*
-			- calc next status
-			- build new message
-			- send new message
-			- wait for message recv event
-			- set new status
-			*/
-			ProfilerStatus nextStatus = messageHandler.nextStatus();
-			profilingDone = (nextStatus == ProfilerStatus::GCOZ_FINISH);
-			ProfilerMessage nextMsg = {};
-			messageHandler.nextMessage(nextMsg, nextStatus);
-			com.sendMessage(nextMsg);
-			com.waitRecv();
-			statusManager.setStatus(nextStatus);
-			statusManager.announceStatusChange();
 
-		} while(!profilingDone);
-		messageHandler.finish();
+		}
+	} while(!profilingDone);
+	//std::cout << ok << "All Data collected, saving..." << std::endl;
+	//messageHandler.finish();
 
 	std::cout << ok << "Done, exiting..." << std::endl;
 	return 0;
