@@ -5,8 +5,9 @@ int main(int argc, char* argv[]) {
 
 	// using switch here is dumb
 	if (argc < 3) {
-		std::cout << inf << "Size of DllMessage: " << sizeof(DllMessage) << std::endl;
+		std::cout << inf << "Sizes:\n\tProfilerStatus: " << sizeof(ProfilerStatus) << "\n\tMethod: " << sizeof(int) << std::endl;
 		std::cout << err << "Usage: .\\gcoz_profiler.exe </data subdirectory> <PID>";
+		return 1;
 	}
 	DWORD PID = atoi(argv[2]);
 	string processName = string(argv[1]);
@@ -16,46 +17,85 @@ int main(int argc, char* argv[]) {
 		Communication com;
 		com.init();
 
-		/* Injection */
-		// this HAS TO happen after Communication is initialized
-		Injector injector = Injector();
-		injector.inject_dll(PID);
+	ProfilerStatusManager statusManager;
+	statusManager.setStatus(ProfilerStatus::GCOZ_WAIT);
 
-		/* Main profiling loop */
-		std::cout << inf << "Waiting for game to be in steady state" << std::endl;
-		system("pause");
-		std::cout << inf << "Waiting 10 more seconds" << std::endl;
-		std::this_thread::sleep_for(std::chrono::seconds(10)); // wait to get into steady state and wait 10 to tab back into game
+	/* Injection */
+	// this HAS TO happen after Communication AND ProfilerStatusManager is initialized
+	Injector injector = Injector();
+	injector.inject_dll(PID);
 
-		std::cout << ok << "Starting profiling" << std::endl;
-		ProfilerStatusManager man = ProfilerStatusManager(processName);
-		ProfilerMessage start;
-		start.status = ProfilerStatus::GCOZ_COLLECT_THREAD_IDS;
-		start.methodID = -1;
-		start.valid = true;
-		com.sendMessage(start);
-		do {
-		std::cout << inf << "[Main] Waiting for message from Dll..." << std::endl;
-		DllMessage msg = com.getMessage();
-			if (msg.valid) {
-				ProfilerMessage nextMsg;
-				man.next(msg, nextMsg);
-				com.sendMessage(nextMsg);
-			} // if(msg.valid)
-			else {
-				std::cout << err << "No message after timeout" << std::endl;
+	/* Main profiling loop */
+	std::cout << inf << "Waiting for game to be in steady state" << std::endl;
+	system("pause");
+	std::cout << inf << "Waiting 10 more seconds" << std::endl;
+	std::this_thread::sleep_for(std::chrono::seconds(10)); // wait to get into steady state and wait 10 to tab back into game
+
+	std::cout << ok << "Starting profiling" << std::endl;
+	MessageHandler messageHandler = MessageHandler(processName);
+	bool profilingDone = false;
+	do {
+
+		/*
+		* - calc next status
+		* - build new message
+		* - send new message
+		* - wait for message recv event
+		* - set new status
+		*/
+		ProfilerStatus nextStatus = messageHandler.nextStatus();
+		std::cout << ok << "Next Status: " << profilerStatusString(nextStatus) << std::endl;
+		profilingDone = (nextStatus == ProfilerStatus::GCOZ_FINISH);
+		if (nextStatus == ProfilerStatus::GCOZ_FINISH) {
+			profilingDone = true;
+			break;
+		}
+		ProfilerMessage nextMsg = {};
+		messageHandler.nextMessage(nextMsg, nextStatus);
+		com.sendMessage(nextMsg);
+		com.waitRecv();
+		statusManager.setStatus(nextStatus);
+		statusManager.announceStatusChange();
+
+		/*
+		* - wait for response from game
+		* - either add measurement or result
+		*/
+		DWORD waitResult = com.waitMsg();
+		if (waitResult == WAIT_OBJECT_0) {
+			switch (nextStatus) {
+			case ProfilerStatus::GCOZ_MEASURE:
+				Measurement measurement = com.getMeasurement();
+				// add baseline stuff and next method
+				messageHandler.handleMeasurement(measurement);
+				std::cout << ok << "Received Measurement" << std::endl;
+				break;
+
+			case ProfilerStatus::GCOZ_PROFILE:
+				// all methods slowed results ? choose first method : choose next slowdown
+				Result result = com.getResult();
+				messageHandler.handleResult(result);
+				std::cout << ok << "Received Results" << std::endl;
+			break;
+
+			// case ProfilerStatus::GCOZ_COLLECT_THREADID:
+			case ProfilerStatus::GCOZ_WAIT:
+				// should not happen?
+				std::cout << err << "Received message during WAIT" << std::endl;
+				break;
+					
+			case ProfilerStatus::GCOZ_FINISH:
+				// end
+				std::cout << err << "Received message during FINISH" << std::endl;
+				break;
+			default:
 				break;
 			}
-			std::cout << "[Main] ProfilerManager.dataCollected(): " << man.dataCollected() << std::endl;
-		} while (!man.dataCollected());
-		man.finish();
-
-	//}
-	//catch (const std::runtime_error& error) {
-	//	std::cout << err << error.what() << std::endl;
-	//	return 1;
-	//}
+		}
+	} while(!profilingDone);
+	std::cout << ok << "All Data collected, saving..." << std::endl;
+	messageHandler.finish();
 
 	std::cout << ok << "Done, exiting..." << std::endl;
 	return 0;
-}
+}	

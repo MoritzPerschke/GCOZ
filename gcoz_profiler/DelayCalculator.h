@@ -10,7 +10,6 @@
 #include <iomanip>
 #include <cstdint>
 #include <time.h>
-#include "ResultsHandler.h"
 #include "Constants.h"
 #include "status.h"
 
@@ -28,15 +27,13 @@ class DelayCalculator {
 		float speedup;
 	};
 
-	ResultsHandler handler;
-	
 	std::deque<choice> choices;
 	int amoutSpeedupsMax = 10; // 0.1 - 0.9 in .1 increments
-	bool allMethodSpeedupsDone = false; // all 10 different "speedups" applied to all methods at once
 	std::array<int, D3D11_METHOD_COUNT> baselineCalls;
 	durationArray baselineDurations; // these are used to calculate delays
-	int lastMethodProfiled; // when a new msg is received from dll, this method was profiled
-	float lastSpeedup; // same as above for speedup
+
+	bool baselineAdded;
+	bool allMethodSpeedupsDone = false; // all 10 different "speedups" applied to all methods at once
 
 	/* Tracks wether "speedup" float has been applied to all methods. If element at "speedup" exists, it has been done*/
 	std::map<float, bool> frametimeChangesAll;
@@ -46,11 +43,11 @@ class DelayCalculator {
 	void printBaseline();
 
 public:
-	DelayCalculator();
-	DelayCalculator(ResultsHandler& _handler);
-	bool dataCollectedAllMethods();
+	bool isBaselineAdded() { return baselineAdded; };
 	bool dataCollected();
-	void addBaseline(durationArray _durations, frametimeArray _frameTimes, std::array<int, D3D11_METHOD_COUNT> _calls);
+	bool dataCollectedAllMethods();
+	void addBaseline(frametimeArray _frameTimes, durationArray _durations, std::array<int, D3D11_METHOD_COUNT> _calls);
 	void calculateDelays(float& _speedupPicked, int& _methodPicked, delayArray& _msgDelays);
-	void measurementDone();
+	void measurementDoneAll(float _speedup);
+	void measurementDoneSingle(float _speedup, int _method);
 };

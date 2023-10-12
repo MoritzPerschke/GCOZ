@@ -34,6 +34,9 @@
     <ClCompile Include="kiero\minhook\src\trampoline.c">
       <Filter>Source Files\External</Filter>
     </ClCompile>
+    <ClCompile Include="ProfilerStatusManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="kiero\minhook\src\buffer.h">

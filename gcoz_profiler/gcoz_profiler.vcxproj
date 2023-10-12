@@ -135,13 +135,14 @@
     <ClCompile Include="Injector.cpp" />
     <ClCompile Include="ProfilerStatusManager.cpp" />
     <ClCompile Include="ResultsHandler.cpp" />
+    <ClCompile Include="MessageHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Constants.h" />
     <ClInclude Include="DelayCalculator.h" />
     <ClInclude Include="gcoz_profiler.h" />
     <ClInclude Include="Communication.h" />
-    <ClInclude Include="IdCollector.h" />
+    <ClInclude Include="MessageHandler.h" />
     <ClInclude Include="Injector.h" />
     <ClInclude Include="Messages.h" />
     <ClInclude Include="ProfilerStatus.h" />

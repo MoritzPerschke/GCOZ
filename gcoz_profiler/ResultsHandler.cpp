@@ -16,6 +16,7 @@ string uniqueFileName(fs::path& _dir, string _base) {
 }
 
 ResultsHandler::ResultsHandler() {
+	std::cout << err << "Resultshandler Constructor called without processName" << std::endl;
 }
 
 ResultsHandler::ResultsHandler(string& _processName){

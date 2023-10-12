@@ -7,7 +7,7 @@
 #include "Constants.h"
 
 using Timepoint = std::chrono::steady_clock::time_point;
-using Duration = std::chrono::duration<double>;
+using Duration = std::chrono::duration<double>; // should be removable
 
 struct Message {
 	bool valid;
@@ -18,20 +18,19 @@ struct ProfilerMessage : Message {
 	ProfilerStatus status;
 	// for profiling
 	delayArray delays;
-	// for threadid collection
-	int methodID;
 };
 
-struct DllMessage : Message {
-	// for profiling
-	ProfilerStatus lastStatus;
+struct DllMessage : Message {};
+
+struct Measurement : DllMessage {
 	frametimeArray frameTimes;
-	frametimeArray frameRates;
 	durationArray durations;
 	std::array<int, D3D11_METHOD_COUNT> methodCalls;
 	// for threadid collection
 	std::array<long long, METHOD_ID_ARRAY_SIZE> threadIDs;
 };
 
-struct Measurements : DllMessage {
+struct Result : DllMessage {
+	frametimeArray frameTimes;
+	frametimeArray frameRates;
 };

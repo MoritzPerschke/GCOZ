@@ -6,17 +6,9 @@ std::string getTime() {
 	localtime_s(&bt, &timer);
 	char buffer[20];
 	strftime(buffer, sizeof(buffer), "%R", &bt);
-	return "["+ std::string(buffer) + "]";
+	return "[" + std::string(buffer) + "]";
 }
 
-DelayCalculator::DelayCalculator() {
-}
-
-DelayCalculator::DelayCalculator(ResultsHandler& _handler){
-	handler = _handler;
-}
-
-bool DelayCalculator::dataCollectedAllMethods() { return allMethodSpeedupsDone; }
 
 void DelayCalculator::printBaseline() { // this probably won't be needed anymore
 	std::cout <<
@@ -24,7 +16,7 @@ void DelayCalculator::printBaseline() { // this probably won't be needed anymore
 		"Baseline Method Durations:" << std::endl;
 	for (int i = 0; i < baselineDurations.size(); i++) {
 		std::cout << std::setfill(' ') << std::setw(7) << baselineDurations[i].count();
-		if ((i+1) % 19 == 0) {
+		if ((i + 1) % 19 == 0) {
 			std::cout << std::endl;
 		}
 	}
@@ -46,10 +38,10 @@ void printDelays(delayArray& _delays) { // this probably won't be needed anymore
 		"= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= =" << std::endl;
 }
 
-void DelayCalculator::addBaseline(durationArray _durations, frametimeArray _frameTimes, std::array<int, D3D11_METHOD_COUNT> _calls) {
+void DelayCalculator::addBaseline(frametimeArray _frameTimes, durationArray _durations, std::array<int, D3D11_METHOD_COUNT> _calls) {
 	baselineDurations = _durations;
 	baselineCalls = _calls;
-	handler.addBaseline(_frameTimes, _durations, _calls);
+
 	for (int i = 0; i < D3D11_METHOD_COUNT; i++) {
 		if (baselineCalls[i] > 0) {
 			baselineDurations[i] = baselineDurations[i] / baselineCalls[i];
@@ -67,12 +59,11 @@ void DelayCalculator::addBaseline(durationArray _durations, frametimeArray _fram
 	std::shuffle(choices.begin(), choices.end(), gen);
 	std::cout << ok << getTime() << "[DelayCalculator] created " << choices.size() << "combinations of method/speedup" << std::endl;
 	printBaseline();
+	baselineAdded = true;
 
 }
 
 void DelayCalculator::calculateDelays(float& _speedupPicked, int& _methodPicked, delayArray& _msgDelays) {
-	static float allSpeedup = static_cast<float>(-0.1);
-	allSpeedup += static_cast<float>(0.1);
 
 	choice newChoice = { 0, .0 };
 	float selectedSpeedup;
@@ -85,11 +76,16 @@ void DelayCalculator::calculateDelays(float& _speedupPicked, int& _methodPicked,
 		newChoice = choices.front();
 		choices.pop_front();
 	}
-	
-	selectedSpeedup= allMethodSpeedupsDone ? newChoice.speedup : allSpeedup;
-	selectedMethod = allMethodSpeedupsDone ? newChoice.method : -1;
+	else {
+		std::cout << inf << "Delaying all methods" << std::endl;
+	}
 
-	std::cout << "\n" << inf << getTime() << "[DelayCalculator] Selected: " << selectedMethod << " with speedup " << selectedSpeedup << ", " <<  choices.size() << " combinations remaining" << std::endl;
+	static float allSpeedup = static_cast<float>(0.0);
+	selectedSpeedup = allMethodSpeedupsDone ? newChoice.speedup : allSpeedup;
+	selectedMethod = allMethodSpeedupsDone ? newChoice.method : -1;
+	allSpeedup += static_cast<float>(0.1);
+
+	std::cout << "\n" << inf << getTime() << "[DelayCalculator] Selected: " << selectedMethod << " with speedup " << selectedSpeedup << ", " << choices.size() << " combinations remaining" << std::endl;
 
 	/*  calculate delays for methods. This delay is at least 1ns
 		first "if" sets delay for all methods except selectedMethod
@@ -113,22 +109,23 @@ void DelayCalculator::calculateDelays(float& _speedupPicked, int& _methodPicked,
 		}
 	}
 
-	_methodPicked = lastMethodProfiled = selectedMethod;
-	_speedupPicked = lastSpeedup = selectedSpeedup;
+	_methodPicked = selectedMethod;
+	_speedupPicked = selectedSpeedup;
 }
 
-void DelayCalculator::measurementDone() {
-
-	if (!allMethodSpeedupsDone) {
-		frametimeChangesAll[lastSpeedup] = true;
-		if (frametimeChangesAll.size() == amoutSpeedupsMax) {
-			allMethodSpeedupsDone = true;
-		}
+void DelayCalculator::measurementDoneAll(float _speedup) {
+	frametimeChangesAll[_speedup] = true;
+	if (frametimeChangesAll.size() == amoutSpeedupsMax) {
+		allMethodSpeedupsDone = true;
 	}
-	else {
-		frametimeChangesSingle[lastMethodProfiled][lastSpeedup] = true;
-	}
+}
 
+void DelayCalculator::measurementDoneSingle(float _speedup, int _method) {
+	frametimeChangesSingle[_method][_speedup] = true;
+}
+
+bool DelayCalculator::dataCollectedAllMethods() {
+	return allMethodSpeedupsDone;
 }
 
 bool DelayCalculator::dataCollected() {
