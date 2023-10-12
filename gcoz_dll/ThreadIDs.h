@@ -25,7 +25,6 @@ namespace ThreadIDs {
 
 	std::mutex mutex;
 	std::unordered_map<threadID, std::vector<int>> threadMethods;
-	int collect = 0;
 
 	//void addID(threadID _id, int _methodIdx) {
 	void addID(int _methodIdx) {
@@ -36,8 +35,7 @@ namespace ThreadIDs {
 	/* 
 	  iterate map<methodIdx, threadsIDs>, iterate threadIDs vector; add index of threadID in temp vector to return map[methodIdx]
 	*/
-	/// TODO: change actual return value
-	std::array<long long, METHOD_ID_ARRAY_SIZE> getIDs() {
+	std::array<long long, METHOD_ID_ARRAY_SIZE> getIDs(int _method) {
 		std::map<int, std::vector<int>> threadINT;
 		std::vector<threadID> temp;
 
@@ -51,8 +49,8 @@ namespace ThreadIDs {
 		}
 
 		std::array<long long, METHOD_ID_ARRAY_SIZE> result = { -1 };
-		for (int i = 0; i < threadINT[collect].size(); i++) {
-			result[i] = threadINT[collect][i];
+		for (int i = 0; i < threadINT[_method].size(); i++) {
+			result[i] = threadINT[_method][i];
 		}
 		///// TEMP: build string of integer thread ids to show in msg box
 		//MessageBoxW(NULL, L"Starting build of ID Messageboxes", L"Debug", MB_SETFOREGROUND);

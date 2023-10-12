@@ -9,6 +9,7 @@
 #include "HelperMacros.h"
 #include "DelayManager.h"
 #include "MethodDurations.h"
+#include "ThreadIDs.h"
 #include "ProfilerStatusManager.h"
 #include "../gcoz_profiler/Constants.h"
 
@@ -56,6 +57,9 @@ namespace D3D11Hooks {
 					value = o##_NAME(PARAMETER_NAMES(__VA_ARGS__)); \
 					little_sleep(delays.getDelay(_IDX)); \
 					break; \
+				case ProfilerStatus::GCOZ_COLLECT_THREAD_IDS: \
+					value = o##_NAME(PARAMETER_NAMES(__VA_ARGS__)); \
+					 ThreadIDs::addID(_IDX); \
 				case ProfilerStatus::GCOZ_WAIT : \
 					value = o##_NAME(PARAMETER_NAMES(__VA_ARGS__));	\
 					break; \
@@ -80,6 +84,9 @@ namespace D3D11Hooks {
 					o##_NAME(PARAMETER_NAMES(__VA_ARGS__)); \
 					little_sleep(delays.getDelay(_IDX)); \
 					break; \
+				case ProfilerStatus::GCOZ_COLLECT_THREAD_IDS: \
+					o##_NAME(PARAMETER_NAMES(__VA_ARGS__)); \
+					ThreadIDs::addID(_IDX); \
 				case ProfilerStatus::GCOZ_WAIT : \
 					o##_NAME(PARAMETER_NAMES(__VA_ARGS__));	\
 					break; \
@@ -124,6 +131,20 @@ namespace D3D11Hooks {
 				send.valid = true;
 				com.sendResult(send);
 				delays.resetDelays();
+				man.setStatus(ProfilerStatus::GCOZ_WAIT);
+				man.announceStatusChange();
+			}
+			MethodDurations::presentEnd();
+			break;
+
+		case ProfilerStatus::GCOZ_COLLECT_THREAD_IDS:
+			MethodDurations::presentStart();
+			if (callCount++ == MEASURE_FRAME_COUNT) {
+				callCount = 0;
+				ThreadIDMessage ids = {};
+				ids.threadIDs = ThreadIDs::getIDs(man.getMethod());
+				ids.valid = true;
+				com.sendThreadIDs(ids);
 				man.setStatus(ProfilerStatus::GCOZ_WAIT);
 				man.announceStatusChange();
 			}

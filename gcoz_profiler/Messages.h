@@ -15,8 +15,6 @@ struct Message {
 
 // this should be split into methodid collection and profiling
 struct ProfilerMessage : Message {
-	ProfilerStatus status;
-	// for profiling
 	delayArray delays;
 };
 
@@ -26,11 +24,13 @@ struct Measurement : DllMessage {
 	frametimeArray frameTimes;
 	durationArray durations;
 	std::array<int, D3D11_METHOD_COUNT> methodCalls;
-	// for threadid collection
-	std::array<long long, METHOD_ID_ARRAY_SIZE> threadIDs;
 };
 
 struct Result : DllMessage {
 	frametimeArray frameTimes;
 	frametimeArray frameRates;
+};
+
+struct ThreadIDMessage : DllMessage {
+	std::array<long long, METHOD_ID_ARRAY_SIZE> threadIDs;
 };

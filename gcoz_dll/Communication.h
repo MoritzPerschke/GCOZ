@@ -21,4 +21,5 @@ public:
 	bool newDataAvailable();
 	bool sendMeasurement(const Measurement& _msg);
 	bool sendResult(const Result& _msg);
+	bool sendThreadIDs(const ThreadIDMessage& _msg);
 };

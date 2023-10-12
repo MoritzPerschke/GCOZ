@@ -96,3 +96,17 @@ bool Communication::sendResult(const Result& _msg) {
 	}
 	return WaitForSingleObject(hProfilerDataReceived, 2) == WAIT_OBJECT_0; // not sure about delay here
 }
+
+bool Communication::sendThreadIDs(const ThreadIDMessage& _msg){
+	if(pDllData != NULL){
+		ThreadIDMessage* shared = static_cast<ThreadIDMessage*> (pDllData);
+		*shared = _msg;
+	}
+	else {
+		DisplayErrorBox(L"[Communication.cpp::sendThreadIDs] pDllData == NULL");
+	}
+	if (!SetEvent(hDllWrittenEvent)) {
+		DisplayErrorBox(L"Failed to set hDllWrittenEvent");
+	}
+	return WaitForSingleObject(hProfilerDataReceived, 2) == WAIT_OBJECT_0;
+}
