@@ -20,4 +20,5 @@ public:
 	DWORD waitRecv();
 	Measurement getMeasurement();
 	Result getResult();
+	ThreadIDMessage getThreadIDs();
 };

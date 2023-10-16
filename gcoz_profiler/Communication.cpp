@@ -79,6 +79,15 @@ Result Communication::getResult() {
 	return result;
 }
 
+ThreadIDMessage Communication::getThreadIDs(){
+	ThreadIDMessage* shared = static_cast<ThreadIDMessage*>(pSharedMemoryDll);
+	ThreadIDMessage ids = *shared;
+	if (ids.valid) {
+		SetEvent(hProfilerDataReceived);
+	}
+	return ids;
+}
+
 bool Communication::sendMessage(ProfilerMessage _msg) {
 	*pProfilerData = _msg;
 	return SetEvent(hProfilerWrittenEvent);

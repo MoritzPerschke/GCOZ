@@ -16,6 +16,7 @@ struct Message {
 // this should be split into methodid collection and profiling
 struct ProfilerMessage : Message {
 	delayArray delays;
+	int nextMethod;
 };
 
 struct DllMessage : Message {};

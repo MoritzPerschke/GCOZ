@@ -15,6 +15,9 @@ ProfilerStatus MessageHandler::nextStatus() {
 	if (!calc.isBaselineAdded()) {
 		return ProfilerStatus::GCOZ_MEASURE;
 	}
+	else if (!idsC.isDone()) {
+		return ProfilerStatus::GCOZ_COLLECT_THREAD_IDS;
+	}
 	else if (!calc.dataCollectedAllMethods()){
 		return ProfilerStatus::GCOZ_PROFILE;
 	}
@@ -26,9 +29,16 @@ ProfilerStatus MessageHandler::nextStatus() {
 	}
 }
 
-void MessageHandler::nextMessage(ProfilerMessage& _msg, ProfilerStatus _status) {
+/* GCOZ_MEASURE: write/return nothing, baseline method durations are needed
+/* GCOZ_COLLECT_THREAD_IDS: return the next method to collect Thread IDs from as int
+/* GCOZ_PROFILE: writes the required delays to message given as input
+/* GCOZ_WAIT/FINISH: return nothing, done/fail */ //ugly but should work
+void MessageHandler::nextMessage(ProfilerStatus _status, ProfilerMessage& _msg) {
 	switch (_status) {
 	case ProfilerStatus::GCOZ_MEASURE:
+		break;
+	case ProfilerStatus::GCOZ_COLLECT_THREAD_IDS:
+		_msg.nextMethod = idsC.nextMethod();
 		break;
 	case ProfilerStatus::GCOZ_PROFILE:
 		calc.calculateDelays(lastSpeedup, lastMethod, _msg.delays);
@@ -44,7 +54,12 @@ void MessageHandler::nextMessage(ProfilerMessage& _msg, ProfilerStatus _status) 
 }
 
 void MessageHandler::finish() {
+	idsC.finish(resH);
 	resH.exportResults();
+}
+
+void MessageHandler::handleThreadIDs(ThreadIDMessage _ids){
+	idsC.addIDs(_ids.threadIDs);
 }
 
 void MessageHandler::handleMeasurement(Measurement _measurement){

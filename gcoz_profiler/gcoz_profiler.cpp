@@ -51,7 +51,7 @@ int main(int argc, char* argv[]) {
 			break;
 		}
 		ProfilerMessage nextMsg = {};
-		messageHandler.nextMessage(nextMsg, nextStatus);
+		messageHandler.nextMessage(nextStatus, nextMsg);
 		com.sendMessage(nextMsg);
 		com.waitRecv();
 		statusManager.setStatus(nextStatus);
@@ -78,7 +78,10 @@ int main(int argc, char* argv[]) {
 				std::cout << ok << "Received Results" << std::endl;
 			break;
 
-			// case ProfilerStatus::GCOZ_COLLECT_THREADID:
+			 case ProfilerStatus::GCOZ_COLLECT_THREAD_IDS:
+				 ThreadIDMessage ids = com.getThreadIDs();
+				 messageHandler.handleThreadIDs(ids);
+				 break;
 			case ProfilerStatus::GCOZ_WAIT:
 				// should not happen?
 				std::cout << err << "Received message during WAIT" << std::endl;
