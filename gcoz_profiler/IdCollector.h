@@ -11,12 +11,13 @@
 #include "ResultsHandler.h"
 
 class IdCollector {
+	int currentMethod;
 	int lastMethod;
-	std::map<int, std::vector<long long>> ids; // no idea how many different threads might call a method
+	std::map<idHash, std::vector<long long>> ids; // no idea how many different threads might call a method
 
 public:
 	IdCollector();
-	void addIDs(std::array<long long, METHOD_ID_ARRAY_SIZE> _threadIDs);
+	void addIDs(idArray _threadIDs);
 	int nextMethod();
 	bool isDone();
 	void finish(ResultsHandler& resH);

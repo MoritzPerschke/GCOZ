@@ -24,7 +24,7 @@ public:
 	ProfilerStatus getCurrentStatus();
 	ProfilerStatus getPreviousStatus();
 	int getCurrentMethod();
-	int getPreviousMethod();
+	void setCurrentMethod(int _method);
 	void setStatus(ProfilerStatus _new);
 	void announceStatusChange();
 };

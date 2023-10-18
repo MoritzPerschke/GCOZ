@@ -19,7 +19,7 @@ class MessageHandler {
 public:
 	MessageHandler(string& _processName);
 	ProfilerStatus nextStatus();
-	void nextMessage(ProfilerStatus _status, ProfilerMessage& _msg);
+	void nextMessage(ProfilerStatus _status, ProfilerMessage& _msg, int& _method);
 	void handleMeasurement(Measurement _measurement);
 	void handleResult(Result _result);
 	void handleThreadIDs(ThreadIDMessage _ids);

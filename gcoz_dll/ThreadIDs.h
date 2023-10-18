@@ -6,68 +6,50 @@
 #include <array>
 #include <algorithm>
 #include <string>
-
-//delete
 #include <vector>
-#include <map>
 
 using threadID = std::thread::id;
 
-int getIndex(std::vector<threadID> v, threadID e) {
-	auto it = std::find(v.begin(), v.end(), e);
+template <typename T> int getIndex(std::vector<T> _vec, T _elem) {
+	auto it = std::find(_vec.begin(), _vec.end(), _elem);
 	int idx = 0;
-	it != v.end() ? idx = static_cast<int>(it - v.begin()) : idx = -1;
+	it != _vec.end() ? idx = static_cast<int>(it - _vec.begin()) : idx = -1;
 	return idx;
 }
 
-/// ?associate method with thread or thread with method?
 namespace ThreadIDs {
 
-	std::mutex mutex;
-	std::unordered_map<threadID, std::vector<int>> threadMethods;
+	static std::mutex mutex;
+	static std::vector<threadID> knownThreads;
+	static std::unordered_map<int, std::vector<idHash>> threadMethods;
 
-	//void addID(threadID _id, int _methodIdx) {
-	void addID(int _methodIdx) {
-		std::lock_guard<std::mutex> guard(mutex);
-		threadMethods[std::this_thread::get_id()].push_back(_methodIdx); // does this work as intended??
+	void addID(int _methodIdx, threadID _id) {
+		std::size_t hash = std::hash<std::thread::id>{}(_id);
+		/*
+		* if threadIdx is -1 this thread has never called a method before
+		* if it has, check if the map at key method already knows the thread
+		* it it does, don't do anything, else add it
+		*/
+		if (std::find(knownThreads.begin(), knownThreads.end(), _id) != knownThreads.end()){
+			int threadIdx = getIndex(knownThreads, _id) + 1;
+			if (std::find(threadMethods[_methodIdx].begin(), threadMethods[_methodIdx].end(), hash) == threadMethods[_methodIdx].end()){
+				threadMethods[_methodIdx].push_back(hash); // does this work as intended??
+			} // if thread has not called method before
+		} // if thread is known
+		else {
+			knownThreads.push_back(_id);
+			int threadIdx = getIndex(knownThreads, _id) + 1;
+			threadMethods[_methodIdx].push_back(threadIdx);
+		} // new thread calling a method, assumption made threadMethods[_methodIdx] doesn't contain it
 	}
 
-	/* 
-	  iterate map<methodIdx, threadsIDs>, iterate threadIDs vector; add index of threadID in temp vector to return map[methodIdx]
-	*/
-	std::array<long long, METHOD_ID_ARRAY_SIZE> getIDs(int _method) {
-		std::map<int, std::vector<int>> threadINT;
-		std::vector<threadID> temp;
-
-		for (const auto& it : threadMethods) {
-			// first  == threadID
-			// second == vector of methods called by thread
-			if (std::find(temp.begin(), temp.end(), it.first) != temp.end()) {
-				temp.push_back(it.first);
-			}
-			std::copy(it.second.begin(), it.second.end(), threadMethods[it.first].begin());
+	idArray getIDs(int _method) {
+		idArray result = {};
+		if (threadMethods[_method].size() > 0) { // this clause never catches for some reason
 		}
-
-		std::array<long long, METHOD_ID_ARRAY_SIZE> result = { -1 };
-		for (int i = 0; i < threadINT[_method].size(); i++) {
-			result[i] = threadINT[_method][i];
+		for (int i = 0; i < threadMethods[_method].size(); i++) {
+			result[i] = threadMethods[_method][i];
 		}
-		///// TEMP: build string of integer thread ids to show in msg box
-		//MessageBoxW(NULL, L"Starting build of ID Messageboxes", L"Debug", MB_SETFOREGROUND);
-		//for (const auto& it : threadINT) {
-		//	// first  == id of thread
-		//	// second == list of called methods
-		//	if (it.second.size() > 0) {
-		//		std::wstring bodyString = L"[";
-		//		for (const auto& idx : it.second) {
-		//			bodyString += std::to_wstring(idx) + L", ";
-		//		}
-		//		bodyString += L"] ";
-
-		//		std::wstring titleString = L"Thread " + std::to_wstring(it.first) + L"called Methods";
-		//		MessageBoxW(NULL, bodyString.c_str(), titleString.c_str(), MB_OK | MB_SETFOREGROUND);
-		//	}
-		//}
 		return result;
 	}
 }

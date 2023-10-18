@@ -33,5 +33,5 @@ struct Result : DllMessage {
 };
 
 struct ThreadIDMessage : DllMessage {
-	std::array<long long, METHOD_ID_ARRAY_SIZE> threadIDs;
+	idArray threadIDs;
 };

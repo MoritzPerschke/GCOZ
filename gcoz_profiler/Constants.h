@@ -5,16 +5,18 @@
 #include <chrono>
 #include <thread>
 
-#define D3D11_METHOD_COUNT 205
-#define MEASURE_FRAME_COUNT 500 // need the same fc for measuring/profiling since switching to array
-#define METHOD_ID_ARRAY_SIZE 200
+#define D3D11_METHOD_COUNT 205  // making this dynamic would be nice
+#define MEASURE_FRAME_COUNT 500
+#define METHOD_ID_ARRAY_SIZE 500
+#define METHOD_THREAD_COLLECTION_FRAME_COUNT 500
 
 using Nanoseconds = std::chrono::nanoseconds;
 
+typedef std::size_t idHash;
 typedef std::array<Nanoseconds, MEASURE_FRAME_COUNT> frametimeArray;
 typedef std::array<Nanoseconds, D3D11_METHOD_COUNT> durationArray;
 typedef std::array<Nanoseconds, D3D11_METHOD_COUNT> delayArray;
-
+typedef std::array<idHash, METHOD_ID_ARRAY_SIZE> idArray;
 
 #define D3D11_METHOD_NAMES \
     X(QueryInterface)\

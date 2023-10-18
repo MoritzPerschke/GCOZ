@@ -14,7 +14,7 @@
 #include "../gcoz_profiler/Constants.h"
 
 namespace D3D11Hooks {
-	DelayManager delays; // not sure if this is the best option, default constructor sets all delays to 0
+	DelayManager delays;
 	ProfilerStatusManager man;
 	Communication com;
 
@@ -59,7 +59,9 @@ namespace D3D11Hooks {
 					break; \
 				case ProfilerStatus::GCOZ_COLLECT_THREAD_IDS: \
 					value = o##_NAME(PARAMETER_NAMES(__VA_ARGS__)); \
-					 ThreadIDs::addID(_IDX); \
+					ThreadIDs::mutex.lock();\
+					ThreadIDs::addID(_IDX, std::this_thread::get_id());\
+					ThreadIDs::mutex.unlock(); \
 				case ProfilerStatus::GCOZ_WAIT : \
 					value = o##_NAME(PARAMETER_NAMES(__VA_ARGS__));	\
 					break; \
@@ -86,7 +88,9 @@ namespace D3D11Hooks {
 					break; \
 				case ProfilerStatus::GCOZ_COLLECT_THREAD_IDS: \
 					o##_NAME(PARAMETER_NAMES(__VA_ARGS__)); \
-					ThreadIDs::addID(_IDX); \
+					ThreadIDs::mutex.lock();\
+					ThreadIDs::addID(_IDX, std::this_thread::get_id());\
+					ThreadIDs::mutex.unlock(); \
 				case ProfilerStatus::GCOZ_WAIT : \
 					o##_NAME(PARAMETER_NAMES(__VA_ARGS__));	\
 					break; \
@@ -139,10 +143,12 @@ namespace D3D11Hooks {
 
 		case ProfilerStatus::GCOZ_COLLECT_THREAD_IDS:
 			MethodDurations::presentStart();
-			if (callCount++ == MEASURE_FRAME_COUNT) {
+			if (callCount++ == METHOD_THREAD_COLLECTION_FRAME_COUNT) {
 				callCount = 0;
 				ThreadIDMessage ids = {};
+				ThreadIDs::mutex.lock();
 				ids.threadIDs = ThreadIDs::getIDs(man.getMethod());
+				ThreadIDs::mutex.unlock();
 				ids.valid = true;
 				com.sendThreadIDs(ids);
 				man.setStatus(ProfilerStatus::GCOZ_WAIT);

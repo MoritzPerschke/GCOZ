@@ -33,15 +33,16 @@ ProfilerStatus MessageHandler::nextStatus() {
 /* GCOZ_COLLECT_THREAD_IDS: return the next method to collect Thread IDs from as int
 /* GCOZ_PROFILE: writes the required delays to message given as input
 /* GCOZ_WAIT/FINISH: return nothing, done/fail */ //ugly but should work
-void MessageHandler::nextMessage(ProfilerStatus _status, ProfilerMessage& _msg) {
+void MessageHandler::nextMessage(ProfilerStatus _status, ProfilerMessage& _msg, int& _method) {
 	switch (_status) {
 	case ProfilerStatus::GCOZ_MEASURE:
 		break;
 	case ProfilerStatus::GCOZ_COLLECT_THREAD_IDS:
-		_msg.nextMethod = idsC.nextMethod();
+		_method = idsC.nextMethod();
 		break;
 	case ProfilerStatus::GCOZ_PROFILE:
 		calc.calculateDelays(lastSpeedup, lastMethod, _msg.delays);
+		_method = lastMethod;
 		_msg.valid = true;
 		break;
 	case ProfilerStatus::GCOZ_WAIT:

@@ -61,9 +61,8 @@ int ProfilerStatusManager::getCurrentMethod() {
 	return *currentMethod;
 }
 
-int ProfilerStatusManager::getPreviousMethod()
-{
-	return previousMethod;
+void ProfilerStatusManager::setCurrentMethod(int _method){
+	*currentMethod = _method;
 }
 
 void ProfilerStatusManager::setStatus(ProfilerStatus _new) {

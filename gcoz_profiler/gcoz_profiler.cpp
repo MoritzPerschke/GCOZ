@@ -33,25 +33,27 @@ int main(int argc, char* argv[]) {
 
 	std::cout << ok << "Starting profiling" << std::endl;
 	MessageHandler messageHandler = MessageHandler(processName);
+	static ProfilerStatus lastStatus = statusManager.getCurrentStatus();
 	bool profilingDone = false;
-	do {
-
-		/*
+	do {/*
 		* - calc next status
 		* - build new message
 		* - send new message
 		* - wait for message recv event
-		* - set new status
-		*/
+		* - set new status           */
 		ProfilerStatus nextStatus = messageHandler.nextStatus();
-		std::cout << ok << "Next Status: " << profilerStatusString(nextStatus) << std::endl;
+		if (lastStatus != nextStatus) {
+			std::cout << ok << "Next Status: " << profilerStatusString(nextStatus) << std::endl;
+		}
 		profilingDone = (nextStatus == ProfilerStatus::GCOZ_FINISH);
-		if (nextStatus == ProfilerStatus::GCOZ_FINISH) {
+		if (nextStatus == ProfilerStatus::GCOZ_PROFILE) { // change this back to finish state
 			profilingDone = true;
 			break;
 		}
 		ProfilerMessage nextMsg = {};
-		messageHandler.nextMessage(nextStatus, nextMsg);
+		int nextMethod = -1;
+		messageHandler.nextMessage(nextStatus, nextMsg, nextMethod);
+		statusManager.setCurrentMethod(nextMethod);
 		com.sendMessage(nextMsg);
 		com.waitRecv();
 		statusManager.setStatus(nextStatus);
