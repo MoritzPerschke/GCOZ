@@ -13,9 +13,13 @@ public:
 	HANDLE hDllWrittenEvent, hProfilerWrittenEvent, hDllDataReceived, hProfilerDataReceived;
 	ProfilerMessage* pProfilerData;
 	DllMessage* pDllData;
+
 	Communication();
 	~Communication();
 
-	ProfilerMessage getMessage(DWORD _waitTimeout);
-	bool sendMessage(DllMessage _msg);
+	ProfilerMessage getMessage();
+	bool newDataAvailable();
+	bool sendMeasurement(const Measurement& _msg);
+	bool sendResult(const Result& _msg);
+	bool sendThreadIDs(const ThreadIDMessage& _msg);
 };

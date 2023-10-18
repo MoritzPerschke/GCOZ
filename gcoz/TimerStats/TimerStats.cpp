@@ -45,8 +45,7 @@ float run(DWORD delay, int runs, sleep_function func, json& outputJson) {
 	return result;
 }
 
-int main(int argc, char* argv[])
-{
+void meatNPotatoes(bool writeToFile) {
 	std::cout << ok << "Creating Json of time runs..." << std::endl;
 	// create data dir if it does not exist
 	fs::path targetPath = "../../../data";
@@ -140,13 +139,47 @@ int main(int argc, char* argv[])
 		<< inf << run(10000, runs, &little_sleep_ns, outputJson) << "ns" << std::endl
 		<< inf << run(10000, runs, &little_sleep_us, outputJson) << "us\n" << std::endl;
 
-	if (argc == 2) {
+	if (writeToFile == true) {
 		std::cout << ok << "Measurements done, writing file out..." << std::endl;
 		std::ofstream outputFile;
 		outputFile.open(filePath.string(), std::ios::out | std::ios::trunc);
 		outputFile << outputJson.dump();
 		outputFile.close();
 		std::cout << ok << "Writing done, have fun with python" << std::endl;
+	}
+}
+
+void threadTime() {
+	auto start = timer.now();
+	std::thread::id id = std::this_thread::get_id();
+	Nanoseconds dur = std::chrono::duration_cast<Nanoseconds>(timer.now() - start);
+	std::cout << ok << "Getting thread id took: " << dur.count() << "ns" << std::endl;
+}
+
+int main(int argc, char* argv[])
+{
+	if (argc == 1) {
+		std::cout << err << "Usage: .\\TimerStats.exe <option>" << std::endl
+			<< inf << "-s  : profile sleep function whithout exporting data" << std::endl
+			<< inf << "-se : profile sleep function and export data" << std::endl
+			<< inf << "-to : print time for std::this_thread::get_id()" << std::endl
+			<< inf << "-tr : print time for std::this_thread::get_id() 100 times\n" << std::endl;
+	}
+
+	else if (argc == 2 && std::string(argv[1]) == "-s") {
+		meatNPotatoes(false);
+	}
+	else if (argc == 2 && std::string(argv[1]) == "-se") {
+		meatNPotatoes(true);
+	}
+	else if (argc == 2 && std::string(argv[1]) == "-to") {
+		threadTime();
+	}
+
+	else if (argc == 2 && std::string(argv[1]) == "-tr") {
+		for (int i = 0; i < 100; i++) {
+			threadTime();
+		}
 	}
 }
 

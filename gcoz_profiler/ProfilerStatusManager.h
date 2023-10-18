@@ -1,24 +1,30 @@
 #pragma once
 
 #include <Windows.h>
+#include <shared_mutex>
 #include "ProfilerStatus.h"
 #include "ResultsHandler.h"
 #include "DelayCalculator.h"
 #include "Messages.h"
+#include "IdCollector.h"
 
 class ProfilerStatusManager {
+	HANDLE mutex;
+	HANDLE hStatusWrittenEvent;
+	ProfilerStatus* currentStatus;
+	ProfilerStatus previousStatus;
+	int* currentMethod;
+	int previousMethod;
+
 	float lastSpeedup;
 	int lastMethodIndex;
 
-	DelayCalculator calc;
-	ResultsHandler resultsHandler;
-
-	void nextMessage(ProfilerMessage& _msg);
-	void finalMessage(ProfilerMessage& _msg);
-
 public:
-	ProfilerStatusManager(string& _processName);
-	ProfilerStatus next(DllMessage _dllMsg, ProfilerMessage& _nextMessage);
-	void finish();
-	bool dataCollected() { return calc.dataCollected(); }
+	ProfilerStatusManager();
+	ProfilerStatus getCurrentStatus();
+	ProfilerStatus getPreviousStatus();
+	int getCurrentMethod();
+	void setCurrentMethod(int _method);
+	void setStatus(ProfilerStatus _new);
+	void announceStatusChange();
 };
