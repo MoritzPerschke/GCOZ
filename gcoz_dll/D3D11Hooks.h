@@ -1,9 +1,12 @@
 #pragma once
+#include <Windows.h>
 #include <dxgi.h>
 #include <d3d11.h>
 #include <d3d11_1.h>
 #include <d3d11_2.h>
 #include <thread>
+#include <tchar.h>
+#include <dwmapi.h>
 
 #include "ErrorMessage.h"
 #include "HelperMacros.h"
@@ -13,7 +16,27 @@
 #include "ProfilerStatusManager.h"
 #include "../gcoz_profiler/Constants.h"
 
-namespace D3D11Hooks {
+#include"../external/imgui/imgui.h"
+#include "../external/imgui/imgui_impl_win32.h"
+#include "../external/imgui/imgui_impl_dx11.h"
+
+static WNDPROC oWndProc = NULL;
+
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+LRESULT CALLBACK hkWindowProc(
+	_In_ HWND   hwnd,
+	_In_ UINT   uMsg,
+	_In_ WPARAM wParam,
+	_In_ LPARAM lParam
+)
+{
+	if (ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam)) {
+		return true;
+	}
+	return ::CallWindowProcA(oWndProc, hwnd, uMsg, wParam, lParam);
+}
+
 	DelayManager delays;
 	ProfilerStatusManager man;
 	Communication com;
@@ -99,7 +122,7 @@ namespace D3D11Hooks {
 		D3D11_METHODS_VOID
 #undef X
 
-		typedef HRESULT(__stdcall* Present)(IDXGISwapChain*, UINT, UINT);
+	typedef HRESULT(__stdcall* Present)(IDXGISwapChain*, UINT, UINT);
 	static Present oPresent = NULL;
 	HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT Flags) {
 		static unsigned long long int callCount = 0;
@@ -179,18 +202,61 @@ namespace D3D11Hooks {
 			//DisplayInfoBox(L"Dll Main", L"default case in Present switch");
 			break;
 		} // switch(ProfilerStatusManager::currentStatus)
+
 		return oPresent(pSwapChain, SyncInterval, Flags);
 	}
 
-	void hookD3D11() {
-#define X(idx, returnType, name, ...)\
-				kiero::bind(idx, (void**)&o##name, hk##name);
-		D3D11_METHODS
-			D3D11_METHODS_VOID
-#undef X
-			kiero::bind(8, (void**)&oPresent, hkPresent);
-		DisplayInfoBox(L"Progress", L"D3D11 functions hooked");
+	long __stdcall hkPresent1(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT Flags)
+	{
+		static bool init = false;
+
+		if (!init)
+		{
+			DXGI_SWAP_CHAIN_DESC desc;
+			pSwapChain->GetDesc(&desc);
+
+			ID3D11Device* device;
+			pSwapChain->GetDevice(__uuidof(ID3D11Device), (void**)&device);
+
+			ID3D11DeviceContext* context;
+			device->GetImmediateContext(&context);
+			IMGUI_CHECKVERSION();
+			ImGui::CreateContext();
+			ImGuiIO& io = ImGui::GetIO();
+			io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+			io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+
+			oWndProc = (WNDPROC) ::SetWindowLongPtr(desc.OutputWindow, GWLP_WNDPROC, (LONG_PTR)hkWindowProc); // changed to (LONG_PTR) from example
+
+			ImGui_ImplWin32_Init(desc.OutputWindow);
+			ImGui_ImplDX11_Init(device, context);
+
+			init = true;
+		}
+
+		ImGui_ImplDX11_NewFrame();
+		ImGui_ImplWin32_NewFrame();
+		ImGui::NewFrame();
+		
+		ImGui::Begin("Hello");
+		ImGui::Text("Overlay here");
+		ImGui::Button("do nothing");
+		ImGui::End();
+
+		ImGui::Render();
+		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
+		return oPresent(pSwapChain, SyncInterval, Flags);
 	}
 
-} // namespace D3D11Hooks
+
+	void hookD3D11() {
+		#define X(idx, returnType, name, ...)\
+				kiero::bind(idx, (void**)&o##name, hk##name);
+				D3D11_METHODS
+				D3D11_METHODS_VOID
+		#undef X
+		kiero::bind(8, (void**)&oPresent, hkPresent1);
+		DisplayInfoBox(L"Progress", L"D3D11 functions hooked");
+	}
 

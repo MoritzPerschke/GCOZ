@@ -3,7 +3,7 @@
 #include <d3d11.h> // C:\Program Files (x86)\Windows Kits\10\Include\10.0.22621.0\um\d3d11.
 #include <Windows.h>
 #include <d3d11.h>
-#include "kiero/kiero.h"
+#include "../external/kiero/kiero.h"
 #include "Communication.h"
 #include "DelayManager.h"
 #include "D3D11Hooks.h"
@@ -11,7 +11,7 @@
 
 int profilerThread() {
 	if (kiero::init(kiero::RenderType::D3D11) == kiero::Status::Success) {
-		D3D11Hooks::hookD3D11();
+		hookD3D11();
 	}
 	return 0;
 }
