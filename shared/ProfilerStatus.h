@@ -1,4 +1,6 @@
 #pragma once
+#ifndef _PROFILER_STATUS
+#define _PROFILER_STATUS
 
 #define X_PROFILER_STATUS\
 	X(GCOZ_MEASURE)\
@@ -24,6 +26,8 @@ static inline std::string profilerStatusString(ProfilerStatus _status) {
 		break;
 		X_PROFILER_STATUS
 #undef X
+	default:
+		return "Failure in status conversion";
 	}
 }
 
@@ -37,5 +41,8 @@ static inline std::wstring profilerStatusWstring(ProfilerStatus _status) {
 		break;
 		X_PROFILER_STATUS
 #undef X
+	return L"Failure in status conversion";
 	}
 }
+
+#endif // !_PROFILER_STATUS
