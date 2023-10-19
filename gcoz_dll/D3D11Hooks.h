@@ -9,7 +9,7 @@
 #include "DelayManager.h"
 #include "MethodDurations.h"
 #include "ThreadIDs.h"
-#include "GCOZ_GUI.h"
+#include "DllGui.h"
 #include "ProfilerStatusManager.h"
 #include "../shared/Constants.h"
 

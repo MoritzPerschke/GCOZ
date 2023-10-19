@@ -163,7 +163,7 @@
     <ClInclude Include="DelayManager.h" />
     <ClInclude Include="ErrorMessage.h" />
     <ClInclude Include="framework.h" />
-    <ClInclude Include="GCOZ_GUI.h" />
+    <ClInclude Include="DllGui.h" />
     <ClInclude Include="MethodDurations.h" />
     <ClInclude Include="HelperMacros.h" />
     <ClInclude Include="pch.h" />
@@ -188,7 +188,7 @@
     <ClCompile Include="DelayManager.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="ErrorMessage.cpp" />
-    <ClCompile Include="GCOZ_GUI.cpp" />
+    <ClCompile Include="DllGui.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

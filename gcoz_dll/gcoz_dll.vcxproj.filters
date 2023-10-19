@@ -58,7 +58,7 @@
     <ClCompile Include="..\external\imgui\imgui_widgets.cpp">
       <Filter>Source Files\External</Filter>
     </ClCompile>
-    <ClCompile Include="GCOZ_GUI.cpp">
+    <ClCompile Include="DllGui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -144,7 +144,7 @@
     <ClInclude Include="..\external\imgui\imstb_truetype.h">
       <Filter>Header Files\External</Filter>
     </ClInclude>
-    <ClInclude Include="GCOZ_GUI.h">
+    <ClInclude Include="DllGui.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

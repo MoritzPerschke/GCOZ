@@ -1,4 +1,4 @@
-#include "GCOZ_GUI.h"
+#include "DllGui.h"
 
 LRESULT CALLBACK hkWindowProc(
 	_In_ HWND   hwnd,
