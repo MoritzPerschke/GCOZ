@@ -34,15 +34,34 @@ void GUI::init(IDXGISwapChain* pSwapChain) {
 	ImGui_ImplDX11_Init(device, context);
 }
 
+int getFPS() {
+
+    ImGuiIO& IO = ImGui::GetIO();
+    static std::chrono::steady_clock clock;
+    static std::chrono::steady_clock::time_point lastCall;
+    static float value = 0.;
+    static bool firstCall = true;
+
+    if (firstCall) { lastCall = clock.now(); value = IO.Framerate; firstCall = false; }
+    if (clock.now() - lastCall > std::chrono::milliseconds(500)) {
+        lastCall = clock.now();
+        value = IO.Framerate;
+    }
+
+    return static_cast<int>(value);
+}
+
 void GUI::showGCOZgui(ProfilerStatusManager _man, std::string _debugMsg) {
     ImGui_ImplDX11_NewFrame();
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
 
-    ImGui::SetNextWindowSize(ImVec2(250, 150));
-
     // Create a window
+    ImGui::SetNextWindowSize(ImVec2(350, 200), ImGuiCond_FirstUseEver);
     ImGui::Begin("GCOZ");
+    ImGui::SetWindowFontScale(1.1f);
+
+    /// TODO functions to build different windows depending on status
 
     // Create a tab bar
     if (ImGui::BeginTabBar("")) {
@@ -51,8 +70,10 @@ void GUI::showGCOZgui(ProfilerStatusManager _man, std::string _debugMsg) {
         if (ImGui::BeginTabItem("Overview")) {
             std::string status = "Current Status: " + profilerStatusString(_man.getStatus());
             std::string method = "Current Method: " + std::to_string(_man.getMethod());
+            std::string framerate = "FPS: " + std::to_string(getFPS());
             ImGui::Text(status.c_str());
             ImGui::Text(method.c_str());
+            ImGui::Text(framerate.c_str());
             ImGui::EndTabItem();
         }
 
@@ -62,24 +83,6 @@ void GUI::showGCOZgui(ProfilerStatusManager _man, std::string _debugMsg) {
             ImGui::Text(debugMsg.c_str());
             ImGui::EndTabItem();
         }
-
-  
-        // ImGui tab
-        //if (ImGui::BeginTabItem("ImGui Settings")) {
-
-        //    // get imgui structs for style and whatnot
-        //    ImGuiStyle style = ImGui::GetStyle();
-        //    ImGuiIO io = ImGui::GetIO();
-        //    ImGui::Text("Default Window Size: %.1f x %.1f", io.DisplaySize.x, io.DisplaySize.y);
-        //    //ImGui::Text("Default Window Position: %.1f, %.1f", io.DisplayPos.x, io.DisplayPos.y);
-        //    ImGui::Text("Default Font: %s", io.Fonts->Fonts[0]->GetDebugName());
-        //    ImGui::Text("Default Font Size: %.1f", io.FontGlobalScale);
-        //    ImGui::Text("Default Style WindowRounding: %.1f", style.WindowRounding);
-        //    ImGui::Text("Default Style FrameRounding: %.1f", style.FrameRounding);
-        //    //ImGui::Text("Default Tooltip Display Time: %.2f", io.ConfigTooltipDisplayTime);
-
-        //    ImGui::EndTabItem();
-        //}
 
         ImGui::EndTabBar();
     }
