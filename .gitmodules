@@ -1,0 +1,3 @@
+[submodule "external/kiero"]
+	path = external/kiero
+	url = git@github.com:MoritzPerschke/kiero.git
