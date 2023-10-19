@@ -15,7 +15,7 @@
 #include "ThreadIDs.h"
 #include "GCOZ_GUI.h"
 #include "ProfilerStatusManager.h"
-#include "../gcoz_profiler/Constants.h"
+#include "../shared/Constants.h"
 
 	DelayManager delays;
 	ProfilerStatusManager man;

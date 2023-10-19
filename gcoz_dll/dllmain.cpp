@@ -7,7 +7,7 @@
 #include "Communication.h"
 #include "DelayManager.h"
 #include "D3D11Hooks.h"
-#include "../gcoz_profiler/Messages.h"
+#include "../shared/Messages.h"
 
 int profilerThread() {
 	if (kiero::init(kiero::RenderType::D3D11) == kiero::Status::Success) {

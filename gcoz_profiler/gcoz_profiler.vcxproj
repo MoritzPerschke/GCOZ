@@ -138,17 +138,18 @@
     <ClCompile Include="MessageHandler.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Constants.h" />
+    <ClInclude Include="..\shared\Constants.h" />
+    <ClInclude Include="..\shared\Messages.h" />
+    <ClInclude Include="..\shared\ProfilerStatus.h" />
+    <ClInclude Include="..\shared\status.h" />
     <ClInclude Include="DelayCalculator.h" />
     <ClInclude Include="gcoz_profiler.h" />
     <ClInclude Include="Communication.h" />
+    <ClInclude Include="IdCollector.h" />
     <ClInclude Include="MessageHandler.h" />
     <ClInclude Include="Injector.h" />
-    <ClInclude Include="Messages.h" />
-    <ClInclude Include="ProfilerStatus.h" />
     <ClInclude Include="ProfilerStatusManager.h" />
     <ClInclude Include="ResultsHandler.h" />
-    <ClInclude Include="status.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

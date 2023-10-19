@@ -10,8 +10,8 @@
 #include <iomanip>
 #include <cstdint>
 #include <time.h>
-#include "Constants.h"
-#include "status.h"
+#include "../shared/Constants.h"
+#include "../shared/status.h"
 
 using Duration = std::chrono::duration<double>;
 

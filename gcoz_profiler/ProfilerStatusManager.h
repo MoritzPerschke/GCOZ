@@ -2,10 +2,10 @@
 
 #include <Windows.h>
 #include <shared_mutex>
-#include "ProfilerStatus.h"
+#include "../shared/ProfilerStatus.h"
 #include "ResultsHandler.h"
 #include "DelayCalculator.h"
-#include "Messages.h"
+#include "../shared/Messages.h"
 #include "IdCollector.h"
 
 class ProfilerStatusManager {

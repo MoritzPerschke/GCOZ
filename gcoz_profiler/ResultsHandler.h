@@ -7,8 +7,8 @@
 #include <filesystem>
 #include <Psapi.h>
 #include <nlohmann/json.hpp>
-#include "Constants.h"
-#include "status.h"
+#include "../shared/Constants.h"
+#include "../shared/status.h"
 
 #include <iostream>
 

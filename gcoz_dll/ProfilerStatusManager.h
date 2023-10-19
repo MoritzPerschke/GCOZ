@@ -3,7 +3,7 @@
 #include <Windows.h>
 #include "Communication.h"
 #include "ErrorMessage.h"
-#include "../gcoz_profiler/ProfilerStatus.h"
+#include "../shared/ProfilerStatus.h"
 
 class ProfilerStatusManager {
 	HANDLE mutex;

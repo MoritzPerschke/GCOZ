@@ -6,9 +6,10 @@
 #include <thread>
 #include <iostream>
 
-#include "status.h"
-#include "Constants.h"
 #include "ResultsHandler.h"
+
+#include "../shared/status.h"
+#include "../shared/Constants.h"
 
 class IdCollector {
 	int currentMethod;

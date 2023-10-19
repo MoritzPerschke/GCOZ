@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Windows.h>
-#include "Messages.h"
+#include "../shared/Messages.h"
 #include "ResultsHandler.h"
 #include "DelayCalculator.h"
 #include "IdCollector.h"

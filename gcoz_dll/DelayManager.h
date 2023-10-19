@@ -3,7 +3,7 @@
 #include <chrono>
 #include <array>
 #include "Communication.h"
-#include "../gcoz_profiler/Constants.h"
+#include "../shared/Constants.h"
 
 // maybe this can be a namespace
 class DelayManager {

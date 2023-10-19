@@ -3,7 +3,7 @@
 #include <Windows.h>
 #include <iostream>
 #include <fileapi.h>
-#include "Messages.h"
+#include "../shared/Messages.h"
 #include "Injector.h"
 #include "Communication.h"
 #include "ProfilerStatusManager.h"

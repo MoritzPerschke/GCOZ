@@ -2,7 +2,7 @@
 #include <Windows.h>
 #include <string>
 #include "ErrorMessage.h"
-#include "../gcoz_profiler/Messages.h"
+#include "../shared/Messages.h"
 
 // maybe singleton? https://stackoverflow.com/a/1008289/15005309
 class Communication {

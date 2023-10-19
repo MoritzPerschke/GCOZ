@@ -87,9 +87,6 @@
     <ClInclude Include="MethodDurations.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="status.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ProfilerStatusManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>

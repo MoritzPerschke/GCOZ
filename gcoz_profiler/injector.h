@@ -3,7 +3,7 @@
 #include <iostream>
 #include <cstring>
 
-#include "status.h"
+#include "../shared/status.h"
 
 class Injector
 {

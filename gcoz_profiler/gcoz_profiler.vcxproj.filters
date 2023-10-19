@@ -44,16 +44,10 @@
     <ClInclude Include="gcoz_profiler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Messages.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Communication.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Injector.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ProfilerStatus.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ProfilerStatusManager.h">
@@ -62,16 +56,25 @@
     <ClInclude Include="DelayCalculator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Constants.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="status.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ResultsHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MessageHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\Constants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\Messages.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\ProfilerStatus.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\status.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IdCollector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

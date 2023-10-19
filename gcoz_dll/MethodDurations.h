@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "../gcoz_profiler/Constants.h"
+#include "../shared/Constants.h"
 
 namespace MethodDurations {
 	using Timepoint = std::chrono::steady_clock::time_point;
