@@ -1,22 +1,26 @@
 #pragma once
+#include <Windows.h>
 #include <dxgi.h>
 #include <d3d11.h>
 #include <d3d11_1.h>
 #include <d3d11_2.h>
 #include <thread>
+#include <tchar.h>
+#include <dwmapi.h>
 
 #include "ErrorMessage.h"
 #include "HelperMacros.h"
 #include "DelayManager.h"
 #include "MethodDurations.h"
 #include "ThreadIDs.h"
+#include "GCOZ_GUI.h"
 #include "ProfilerStatusManager.h"
 #include "../gcoz_profiler/Constants.h"
 
-namespace D3D11Hooks {
 	DelayManager delays;
 	ProfilerStatusManager man;
 	Communication com;
+	std::string overlayDebugMessage = "Looking good :)";
 
 	void little_sleep(Nanoseconds _delay) { // https://stackoverflow.com/a/45571538
 		auto start = MethodDurations::now();
@@ -99,9 +103,16 @@ namespace D3D11Hooks {
 		D3D11_METHODS_VOID
 #undef X
 
-		typedef HRESULT(__stdcall* Present)(IDXGISwapChain*, UINT, UINT);
+	typedef HRESULT(__stdcall* Present)(IDXGISwapChain*, UINT, UINT);
 	static Present oPresent = NULL;
 	HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT Flags) {
+		// ImGui Setup
+		static bool init = false;
+		if (!init){
+			GUI::init(pSwapChain);
+			init = true;
+		}
+
 		static unsigned long long int callCount = 0;
 		MethodDurations::Timepoint start;
 
@@ -179,18 +190,18 @@ namespace D3D11Hooks {
 			//DisplayInfoBox(L"Dll Main", L"default case in Present switch");
 			break;
 		} // switch(ProfilerStatusManager::currentStatus)
+
+		GUI::showGCOZgui(man, overlayDebugMessage);
+
 		return oPresent(pSwapChain, SyncInterval, Flags);
 	}
 
 	void hookD3D11() {
-#define X(idx, returnType, name, ...)\
+		#define X(idx, returnType, name, ...)\
 				kiero::bind(idx, (void**)&o##name, hk##name);
-		D3D11_METHODS
-			D3D11_METHODS_VOID
-#undef X
-			kiero::bind(8, (void**)&oPresent, hkPresent);
-		DisplayInfoBox(L"Progress", L"D3D11 functions hooked");
+				D3D11_METHODS
+				D3D11_METHODS_VOID
+		#undef X
+		kiero::bind(8, (void**)&oPresent, hkPresent);
 	}
-
-} // namespace D3D11Hooks
 
