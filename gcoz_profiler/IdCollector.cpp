@@ -19,7 +19,7 @@ void IdCollector::addIDs(idArray _threadIDs) {
 }
 
 int IdCollector::nextMethod() {
-	std::cout << "[IdCollector] current Method:" << currentMethod << std::endl;
+	std::cout << "[IdCollector] current Method:" << methodNames[currentMethod] << std::endl;
 	return currentMethod;
 }
 
@@ -28,5 +28,5 @@ bool IdCollector::isDone() {
 }
 
 void IdCollector::finish(ResultsHandler& resH) {
-	//resH.addThreadIDs(this->ids);
+	resH.addThreadIDs(this->ids);
 }

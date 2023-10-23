@@ -44,12 +44,14 @@ int main(int argc, char* argv[]) {
 		ProfilerStatus nextStatus = messageHandler.nextStatus();
 		if (lastStatus != nextStatus) {
 			std::cout << ok << "Next Status: " << profilerStatusString(nextStatus) << std::endl;
+			lastStatus = nextStatus;
 		}
-		profilingDone = (nextStatus == ProfilerStatus::GCOZ_FINISH);
-		if (nextStatus == ProfilerStatus::GCOZ_PROFILE) { // change this back to finish state
+		if (nextStatus == ProfilerStatus::GCOZ_FINISH) {
 			profilingDone = true;
 			break;
 		}
+		
+
 		ProfilerMessage nextMsg = {};
 		int nextMethod = -1;
 		messageHandler.nextMessage(nextStatus, nextMsg, nextMethod);

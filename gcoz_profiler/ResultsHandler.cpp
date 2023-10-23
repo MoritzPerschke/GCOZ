@@ -81,7 +81,8 @@ void ResultsHandler::addResultAll(frametimeArray _frameTimes, frametimeArray _fr
 	std::cout << ok << "[ResultsHandler] Results for all methods added with delay " << static_cast<int>(_speedup * 100) << "%" << std::endl;
 }
 
-void ResultsHandler::addThreadIDs(std::map<int, std::vector<long long>> _ids){
+void ResultsHandler::addThreadIDs(std::map<int, std::vector<idHash>> _ids){
+	json id_vector;
 	for (const auto& elem : _ids) {
 		std::cout << inf << "Method " << methodNames[elem.first] << " called by " << elem.second.size() << " different threads" << std::endl;
 		for (const auto& thread : elem.second) {

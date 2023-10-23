@@ -110,7 +110,7 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 	}
 
 	static unsigned long long int callCount = 0;
-	MethodDurations::Timepoint start;
+	//MethodDurations::Timepoint start;
 
 	switch (man.getStatus()) {
 	case ProfilerStatus::GCOZ_MEASURE: // measure times of D3D11 Methods, nothing else
@@ -182,6 +182,7 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 		break;
 	case ProfilerStatus::GCOZ_FINISH:
 		//DisplayInfoBox(L"Dll Main", L"finish case in Present switch");
+		break;
 	default:
 		//DisplayInfoBox(L"Dll Main", L"default case in Present switch");
 		break;

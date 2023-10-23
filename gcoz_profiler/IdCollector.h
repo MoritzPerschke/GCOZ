@@ -14,7 +14,7 @@
 class IdCollector {
 	int currentMethod;
 	int lastMethod;
-	std::map<idHash, std::vector<long long>> ids; // no idea how many different threads might call a method
+	std::map<int, std::vector<idHash>> ids; // no idea how many different threads might call a method
 
 public:
 	IdCollector();
