@@ -6,7 +6,7 @@ MessageHandler::MessageHandler(string& _processName){
 
 ProfilerStatus MessageHandler::nextStatus() {
 	/*
-	- are all baseline measuremetns collected? (should one be one)
+	- are all baseline measurements collected? (should one be one)
 	- are all slowdowns applied to all methods?
 	- are all slowdowns applied to every method?
 	- (are all threadIDs collected?)
@@ -46,9 +46,11 @@ void MessageHandler::nextMessage(ProfilerStatus _status, ProfilerMessage& _msg, 
 		_msg.valid = true;
 		break;
 	case ProfilerStatus::GCOZ_WAIT:
+		spdlog::warn("No next message possible for status WAIT");
 		// shouldn't happen
 		break;
 	case ProfilerStatus::GCOZ_FINISH:
+		spdlog::warn("No next message possible for status FINISH");
 		// shouldn't need a message
 		break;
 	}

@@ -58,7 +58,7 @@ Communication::~Communication() {
 
 	CloseHandle(hDllWrittenEvent);
 	CloseHandle(hProfilerWrittenEvent);
-	std::cout << "[*] Communication Destructor called" << std::endl;
+	spdlog::info("Communication Destructor called");
 }
 
 Measurement Communication::getMeasurement() {

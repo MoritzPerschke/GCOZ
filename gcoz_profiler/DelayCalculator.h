@@ -10,6 +10,8 @@
 #include <iomanip>
 #include <cstdint>
 #include <time.h>
+#include <spdlog/spdlog.h>
+
 #include "../shared/Constants.h"
 #include "../shared/status.h"
 

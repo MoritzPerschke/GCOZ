@@ -8,18 +8,18 @@ IdCollector::IdCollector() {
 void IdCollector::addIDs(idArray _threadIDs) {
 	for (const auto& id : _threadIDs) {
 		if (id != 0) {
-			std::cout << inf << "hashed threadid: " << id << std::endl;
+			spdlog::info("Hashed threadid for {}: {}", methodNames[currentMethod], id);
 			this->ids[currentMethod].push_back(id);
 		}
 	}
 	if (this->ids[currentMethod].size() == 0) {
-		//std::cout << inf << "No ThreadIDs received for " << currentMethod << std::endl;
+		spdlog::warn("No ThreadIDs received for {}", methodNames[currentMethod]);
 	}
 	currentMethod++;
 }
 
 int IdCollector::nextMethod() {
-	std::cout << "[IdCollector] current Method:" << methodNames[currentMethod] << std::endl;
+	spdlog::info("Current method: {}", methodNames[currentMethod]);
 	return currentMethod;
 }
 

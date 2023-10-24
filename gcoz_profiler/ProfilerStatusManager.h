@@ -7,6 +7,7 @@
 #include "DelayCalculator.h"
 #include "../shared/Messages.h"
 #include "IdCollector.h"
+#include <spdlog/spdlog.h>
 
 class ProfilerStatusManager {
 	HANDLE mutex;

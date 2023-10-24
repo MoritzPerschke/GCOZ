@@ -1,15 +1,5 @@
 #include "DelayCalculator.h"
 
-std::string getTime() {
-	std::tm bt {};
-	auto timer = std::time(0);
-	localtime_s(&bt, &timer);
-	char buffer[20];
-	strftime(buffer, sizeof(buffer), "%R", &bt);
-	return "[" + std::string(buffer) + "]";
-}
-
-
 void DelayCalculator::printBaseline() { // this probably won't be needed anymore
 	std::cout <<
 		"= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= =" << std::endl <<
@@ -57,8 +47,8 @@ void DelayCalculator::addBaseline(frametimeArray _frameTimes, durationArray _dur
 		}
 	}
 	std::shuffle(choices.begin(), choices.end(), gen);
-	std::cout << ok << getTime() << "[DelayCalculator] created " << choices.size() << "combinations of method/speedup" << std::endl;
-	printBaseline();
+	spdlog::info("[DelayCalculator] created {} combinations of method/speedup", choices.size());
+	//printBaseline();
 	baselineAdded = true;
 
 }
@@ -77,7 +67,7 @@ void DelayCalculator::calculateDelays(float& _speedupPicked, int& _methodPicked,
 		choices.pop_front();
 	}
 	else {
-		std::cout << inf << "Delaying all methods" << std::endl;
+		spdlog::info("Delaying all methods");
 	}
 
 	static float allSpeedup = static_cast<float>(0.0);
@@ -85,7 +75,7 @@ void DelayCalculator::calculateDelays(float& _speedupPicked, int& _methodPicked,
 	selectedMethod = allMethodSpeedupsDone ? newChoice.method : -1;
 	allSpeedup += static_cast<float>(0.1);
 
-	std::cout << "\n" << inf << getTime() << "[DelayCalculator] Selected: " << selectedMethod << " with speedup " << selectedSpeedup << ", " << choices.size() << " combinations remaining" << std::endl;
+	spdlog::info("Selected: {} with speedup {}, {} combinations remaining", selectedMethod, selectedSpeedup, choices.size());
 
 	/*  calculate delays for methods. This delay is at least 1ns
 		first "if" sets delay for all methods except selectedMethod

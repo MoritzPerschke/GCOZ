@@ -8,6 +8,7 @@
 #include "Communication.h"
 #include "ProfilerStatusManager.h"
 #include "MessageHandler.h"
+#include <spdlog/spdlog.h>
 
 const char* ok = "[+] ";
 const char* err = "[-] ";

@@ -3,19 +3,20 @@
 
 int main(int argc, char* argv[]) {
 
-	// using switch here is dumb
+	/* Logging */
+	spdlog::set_pattern("[%R][%^%l%$] %v");
+
 	if (argc < 3) {
-		std::cout << inf << "Sizes:\n\tProfilerStatus: " << sizeof(ProfilerStatus) << "\n\tMethod: " << sizeof(int) << std::endl;
-		std::cout << err << "Usage: .\\gcoz_profiler.exe </data subdirectory> <PID>";
+		spdlog::error("Usage: .\\gcoz_profiler.exe </data subdirectory> <PID>");
+		spdlog::info("Sizes:\n\t\tProfilerStatus: {}\n\t\tMethod: {}", sizeof(ProfilerStatus), sizeof(int));
 		return 1;
 	}
 	DWORD PID = atoi(argv[2]);
 	string processName = string(argv[1]);
 
-	//try {
-		/* Communication */
-		Communication com;
-		com.init();
+	/* Communication */
+	Communication com;
+	com.init();
 
 	ProfilerStatusManager statusManager;
 	statusManager.setStatus(ProfilerStatus::GCOZ_WAIT);
@@ -26,12 +27,12 @@ int main(int argc, char* argv[]) {
 	injector.inject_dll(PID);
 
 	/* Main profiling loop */
-	std::cout << inf << "Waiting for game to be in steady state" << std::endl;
+	spdlog::info("Waiting for game to be in steady state");
 	system("pause");
-	std::cout << inf << "Waiting 10 more seconds" << std::endl;
-	std::this_thread::sleep_for(std::chrono::seconds(10)); // wait to get into steady state and wait 10 to tab back into game
+	spdlog::info("Waiting 5 more seconds");
+	std::this_thread::sleep_for(std::chrono::seconds(5)); // wait to get into steady state and wait to tab back into game
 
-	std::cout << ok << "Starting profiling" << std::endl;
+	spdlog::info("Starting profiling");
 	MessageHandler messageHandler = MessageHandler(processName);
 	static ProfilerStatus lastStatus = statusManager.getCurrentStatus();
 	bool profilingDone = false;
@@ -43,7 +44,7 @@ int main(int argc, char* argv[]) {
 		* - set new status           */
 		ProfilerStatus nextStatus = messageHandler.nextStatus();
 		if (lastStatus != nextStatus) {
-			std::cout << ok << "Next Status: " << profilerStatusString(nextStatus) << std::endl;
+			spdlog::info("Next Status: {}", profilerStatusString(nextStatus));
 			lastStatus = nextStatus;
 		}
 		if (nextStatus == ProfilerStatus::GCOZ_FINISH) {
@@ -72,14 +73,14 @@ int main(int argc, char* argv[]) {
 				Measurement measurement = com.getMeasurement();
 				// add baseline stuff and next method
 				messageHandler.handleMeasurement(measurement);
-				std::cout << ok << "Received Measurement" << std::endl;
+				spdlog::info("Received Measurement");
 				break;
 
 			case ProfilerStatus::GCOZ_PROFILE:
 				// all methods slowed results ? choose first method : choose next slowdown
 				Result result = com.getResult();
 				messageHandler.handleResult(result);
-				std::cout << ok << "Received Results" << std::endl;
+				spdlog::info("Received Results");
 			break;
 
 			 case ProfilerStatus::GCOZ_COLLECT_THREAD_IDS:
@@ -88,21 +89,21 @@ int main(int argc, char* argv[]) {
 				 break;
 			case ProfilerStatus::GCOZ_WAIT:
 				// should not happen?
-				std::cout << err << "Received message during WAIT" << std::endl;
+				spdlog::error("Received message during WAIT");
 				break;
 					
 			case ProfilerStatus::GCOZ_FINISH:
 				// end
-				std::cout << err << "Received message during FINISH" << std::endl;
+				spdlog::error("Received message during FINISH");
 				break;
 			default:
 				break;
 			}
 		}
 	} while(!profilingDone);
-	std::cout << ok << "All Data collected, saving..." << std::endl;
+	spdlog::info("All Data collected, saving...");
 	messageHandler.finish();
 
-	std::cout << ok << "Done, exiting..." << std::endl;
+	spdlog::info("Done, exiting...");
 	return 0;
 }	

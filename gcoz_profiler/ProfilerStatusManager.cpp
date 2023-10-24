@@ -9,12 +9,12 @@ ProfilerStatusManager::ProfilerStatusManager(){
 		0,
 		sizeof(ProfilerStatus),
 		L"gcoz_status_shared_memory"
-	); if (hStatusFileMapping == NULL) {std::cout << err << ("File mapping creation for status failed") << std::endl;}
+	); if (hStatusFileMapping == NULL) {spdlog::error("File mapping creation for status failed");}
 	LPVOID SharedMemoryStatus = MapViewOfFile(
 		hStatusFileMapping,
 		FILE_MAP_ALL_ACCESS,
 		0, 0, sizeof(ProfilerStatus)
-	); if (SharedMemoryStatus == NULL) {std::cout << err << ("Mapping view of Status file failed") << std::endl;}
+	); if (SharedMemoryStatus == NULL) {spdlog::error("Mapping view of Status file failed");}
 	currentStatus = static_cast<ProfilerStatus*>(SharedMemoryStatus);
 	// Shared memory for status sharing
 
@@ -25,7 +25,7 @@ ProfilerStatusManager::ProfilerStatusManager(){
 		0,
 		sizeof(HANDLE),
 		L"SharedMemoryMutex"
-	); if (hSharedMutexMapping == NULL) { std::cout << err << ("File mapping creation for mutex failed") << std::endl; }
+	); if (hSharedMutexMapping == NULL) { spdlog::error("File mapping creation for mutex failed"); }
 	mutex = CreateMutex(NULL, FALSE, L"SharedMemoryMutex");
 	// shared memory for mutex
 
@@ -36,12 +36,12 @@ ProfilerStatusManager::ProfilerStatusManager(){
 		0,
 		sizeof(int),
 		L"gcoz_method_shared_memory"
-	); if (hMethodFileMapping == NULL) { std::cout << err << ("File creation for method failed") << std::endl;}
+	); if (hMethodFileMapping == NULL) { spdlog::error("File creation for method failed");}
 	LPVOID SharedMemoryMethod = MapViewOfFile(
 		hMethodFileMapping,
 		FILE_MAP_ALL_ACCESS,
 		0, 0, sizeof(int)
-	); if (SharedMemoryMethod == NULL) { std::cout << err << ("Mapping view of Method file failed") << std::endl; }
+	); if (SharedMemoryMethod == NULL) { spdlog::error("Mapping view of Method file failed"); }
 	currentMethod = static_cast<int*>(SharedMemoryMethod);
 	// shared memory for method 
 

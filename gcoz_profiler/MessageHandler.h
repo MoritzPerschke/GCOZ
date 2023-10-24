@@ -5,6 +5,7 @@
 #include "ResultsHandler.h"
 #include "DelayCalculator.h"
 #include "IdCollector.h"
+#include <spdlog/spdlog.h>
 
 class MessageHandler {
 	DelayCalculator calc;

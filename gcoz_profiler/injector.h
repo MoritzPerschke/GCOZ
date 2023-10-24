@@ -2,6 +2,7 @@
 #include <Windows.h>
 #include <iostream>
 #include <cstring>
+#include <spdlog/spdlog.h>
 
 #include "../shared/status.h"
 

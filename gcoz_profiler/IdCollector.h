@@ -5,9 +5,9 @@
 #include <array>
 #include <thread>
 #include <iostream>
+#include <spdlog/spdlog.h>
 
 #include "ResultsHandler.h"
-
 #include "../shared/status.h"
 #include "../shared/Constants.h"
 

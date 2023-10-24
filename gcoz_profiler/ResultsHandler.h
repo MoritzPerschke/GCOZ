@@ -7,6 +7,8 @@
 #include <filesystem>
 #include <Psapi.h>
 #include <nlohmann/json.hpp>
+#include <spdlog/spdlog.h>
+
 #include "../shared/Constants.h"
 #include "../shared/status.h"
 

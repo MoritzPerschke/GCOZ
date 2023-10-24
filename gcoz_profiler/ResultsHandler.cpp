@@ -16,19 +16,19 @@ string uniqueFileName(fs::path& _dir, string _base) {
 }
 
 ResultsHandler::ResultsHandler() {
-	std::cout << err << "Resultshandler Constructor called without processName" << std::endl;
+	spdlog::warn("Resultshandler Constructor called without processName");
 }
 
 ResultsHandler::ResultsHandler(string& _processName){
 	// create data dir if it does not exist
 	fs::path targetPath = "../../../data";
 	fs::create_directories(targetPath);
-	std::cout << ok << "[ResultsHandler] Data folder found" << std::endl;
+	spdlog::info("Folder for data found");
 
 	// create folder for game if it does not exist
 	fs::path folderPath = targetPath / _processName;
 	fs::create_directories(folderPath);
-	std::cout << ok << "[ResultsHandler] Game folder found" << std::endl;
+	spdlog::info("Folder for game found");
 
 	// build file path to save to
 	filePathTimes = folderPath / uniqueFileName(folderPath, "times");
@@ -53,7 +53,7 @@ void ResultsHandler::addBaseline(frametimeArray _baselineTimes, durationArray _b
 		outputJsonBaseline["calls"][methodNames[i]] = _calls[i];
 	}
 
-	std::cout << ok << "[ResultsHandler] Baseline times added" << std::endl;
+	spdlog::info("Baseline times added to file");
 }
 
 void ResultsHandler::addResultSingle(frametimeArray _frameTimes, frametimeArray _frameRates, int _methodIndex, float _speedup){
@@ -65,7 +65,7 @@ void ResultsHandler::addResultSingle(frametimeArray _frameTimes, frametimeArray 
 
 	json r_vector(getFrameTimeVector(_frameRates));
 	outputJsonRates[locM][locS] = r_vector;
-	std::cout << ok << "[ResultsHandler] Results for single method(" << locM << ") added with delay " << static_cast<int>(_speedup * 100) << "%" << std::endl;
+	spdlog::info("Results for {} with {}% delay added to file", locM, static_cast<int>(_speedup * 100));
 }
 
 void ResultsHandler::addResultAll(frametimeArray _frameTimes, frametimeArray _frameRates, float _speedup) {
@@ -78,13 +78,13 @@ void ResultsHandler::addResultAll(frametimeArray _frameTimes, frametimeArray _fr
 	json r_vector(getFrameTimeVector(_frameRates));
 	outputJsonRates[locM][locS] = r_vector;
 
-	std::cout << ok << "[ResultsHandler] Results for all methods added with delay " << static_cast<int>(_speedup * 100) << "%" << std::endl;
+	spdlog::info("Results for all methods with {}% delay added to file", static_cast<int>(_speedup * 100));
 }
 
 void ResultsHandler::addThreadIDs(std::map<int, std::vector<idHash>> _ids){
 	json id_vector;
 	for (const auto& elem : _ids) {
-		std::cout << inf << "Method " << methodNames[elem.first] << " called by " << elem.second.size() << " different threads" << std::endl;
+		spdlog::info("Method {} called by {} different threads", methodNames[elem.first], elem.second.size());
 		for (const auto& thread : elem.second) {
 			outputJsonBaseline["threads"][methodNames[elem.first]].push_back(thread);
 		}
@@ -92,7 +92,7 @@ void ResultsHandler::addThreadIDs(std::map<int, std::vector<idHash>> _ids){
 }
 
 void ResultsHandler::exportResults(){
-	std::cout << inf << "[ResultsHandler] Writing Data to: " << filePathTimes << " and " << filePathRates << std::endl;
+	spdlog::info("Writing Data to {} and {}", filePathTimes.string(), filePathRates.string());
 
 	std::ofstream outputFile;
 	outputFile.open(filePathTimes.string(), std::ios::out | std::ios::trunc);
@@ -107,5 +107,5 @@ void ResultsHandler::exportResults(){
 	outputFile << outputJsonBaseline.dump();
 	outputFile.close();
 
-	std::cout << ok << "[ResultsHandler] Done" << std::endl;
+	spdlog::info("Done writing data");
 }

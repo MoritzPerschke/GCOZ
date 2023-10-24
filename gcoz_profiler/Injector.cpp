@@ -11,13 +11,13 @@ int Injector::inject_dll(DWORD _PID) {
 
 	hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, PID);
 	if (hProcess == NULL) {
-		std::cout << err << "Couldn't get handle to Process: " << GetLastError() << std::endl;
+		spdlog::error("Couldn't get handle to Process: {}", GetLastError());
 		return 1;
 	}
 
 	rBuffer = VirtualAllocEx(hProcess, rBuffer, sizeof(dllPath), (MEM_RESERVE | MEM_COMMIT), PAGE_READWRITE);
 	if (rBuffer == NULL) {
-		std::cout << err << "Couldn't allocate remote Memory" << std::endl;
+		spdlog::error("Couldn't allocate remote Memory");
 		return 1;
 
 	}
@@ -26,27 +26,25 @@ int Injector::inject_dll(DWORD _PID) {
 
 	hKernel32 = GetModuleHandle(L"Kernel32");
 	if (hKernel32 == NULL) {
-		std::cout << err << "Couldn't get Kernel32 handle: " << GetLastError() << std::endl;
+		spdlog::error("Couldn't get Kernel32 handle: {}", GetLastError());
 		return 1;
 	}
 
 	LPTHREAD_START_ROUTINE loadlib = (LPTHREAD_START_ROUTINE)GetProcAddress(hKernel32, "LoadLibraryW");
-	std::cout << inf << "Got address of loadLibrayW: " << loadlib << std::endl;
+	spdlog::info("Got address of loadLibrayW");
 
 	hThread = CreateRemoteThread(hProcess, NULL, 0, loadlib, rBuffer, 0, &TID);
 	if (hThread == NULL) {
-		std::cout << err << "Couldn't get address of Thread: " << GetLastError();
+		spdlog::error("Couldn't get address of Thread: {}", GetLastError());
 		return 1;
 	}
 
-	std::cout << inf << "Thread " << TID << " created with handle: " << hThread << " waiting..." << std::endl;
+	spdlog::info("Remote thread creation success!");
 	WaitForSingleObject(hThread, INFINITE);
 
-	std::cout << inf << "Thread finished, cleaning up..." << std::endl;
+	spdlog::info("Injection complete, cleaning up...");
 	CloseHandle(hThread);
 	CloseHandle(hProcess);
-
-	std::cout << ok << "Injection complete" << std::endl;
 
 	return 0;
 }
