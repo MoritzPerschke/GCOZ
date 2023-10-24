@@ -1,3 +1,6 @@
 [submodule "external/kiero"]
 	path = external/kiero
 	url = git@github.com:MoritzPerschke/kiero.git
+[submodule "external/spdlog"]
+	path = external/spdlog
+	url = git@github.com:gabime/spdlog.git
