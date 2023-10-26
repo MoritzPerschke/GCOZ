@@ -6,9 +6,6 @@
 #include "ProfilerStatus.h"
 #include "Constants.h"
 
-using Timepoint = std::chrono::steady_clock::time_point;
-using Duration = std::chrono::duration<double>; // should be removable
-
 struct Message {
 	bool valid;
 };

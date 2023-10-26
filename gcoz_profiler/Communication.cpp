@@ -1,5 +1,38 @@
 #include "Communication.h"
 
+
+/* Setup boost shared memory for:
+- Frametimes
+- method Durations
+- how often methods get called
+- calling Thread IDs for methods
+- framerates
+- delays
+- maybe also current method ID for threadID collection
+*/
+void setupBoostShared() {
+	spdlog::info("Creating shared Memory for communication");
+	using namespace boost::interprocess;
+
+	// https://www.boost.org/doc/libs/1_83_0/doc/html/interprocess/quick_guide.html#interprocess.quick_guide.qg_interprocess_container
+	struct shm_remove { // remove shared memory on creation/destruction of the class
+		shm_remove() { shared_memory_object::remove("gcoz_FrametimesShared"); }
+		~shm_remove() { shared_memory_object::remove("gcoz_FrametimesShared"); }
+	}remover;
+	
+	managed_shared_memory segment(create_only, "gcoz_FrametimesShared", 65536);
+
+	// ChatGPT, modified for duration
+	typedef managed_shared_memory::segment_manager segMan;
+	typedef allocator<Duration, segMan> DurationAllocator;
+	typedef vector<Duration, DurationAllocator> DurationVector;
+	typedef std::pair<const Duration, DurationVector> DurationMapType;
+	typedef allocator<DurationMapType, segMan> MapValueAllocator;
+	typedef map<Duration, DurationVector, std::less<Duration>, MapValueAllocator> DurationMap;
+
+	DurationMap* durations = segment.find_or_construct<DurationMap>("Frametime_map")(segment.get_segment_manager());
+}
+
 void Communication::init() {
 	/* Profiler -> Dll Communication */
 	hProfilerFileMapping = CreateFileMapping(

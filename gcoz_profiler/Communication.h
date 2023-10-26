@@ -1,12 +1,17 @@
 #pragma once
+
 #include <Windows.h>
-#include <iostream>
+#include <spdlog/spdlog.h>
 #include "../shared/ProfilerStatus.h"
 #include "../shared/Messages.h"
-#include <spdlog/spdlog.h>
 
-// maybe singleton? https://stackoverflow.com/a/1008289/15005309
+#include <boost/interprocess/managed_shared_memory.hpp>
+#include <boost/interprocess/containers/vector.hpp>
+#include <boost/interprocess/containers/map.hpp>
+#include <boost/interprocess/allocators/allocator.hpp>
+
 class Communication {
+
 	HANDLE hDllFileMapping, hProfilerFileMapping;
 	LPVOID pSharedMemoryDll, pSharedMemoryProfiler;
 	HANDLE hDllWrittenEvent, hProfilerWrittenEvent, hDllDataReceived, hProfilerDataReceived;
