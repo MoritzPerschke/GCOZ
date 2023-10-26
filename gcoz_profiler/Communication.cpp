@@ -9,7 +9,7 @@
 - delays
 - maybe also current method ID for threadID collection
 */
-void setupBoostShared() {
+void Communication::setupBoostShared() {
 	spdlog::info("Creating shared Memory for communication");
 	using namespace boost::interprocess;
 
@@ -21,7 +21,15 @@ void setupBoostShared() {
 	
 	managed_shared_memory segment(create_only, "gcoz_FrametimesShared", 65536);
 
-	IPC::DurationMap* durations = segment.find_or_construct<IPC::DurationMap>("Frametime_map")(segment.get_segment_manager());
+	durationMap = segment.find_or_construct<IPC::DurationMap>("Frametime_map")(segment.get_segment_manager());
+}
+
+void Communication::readBoostShared() {
+	IPC::DurationMap::iterator iter;
+	iter = durationMap->begin();
+	for (; iter != durationMap->end(); iter++) {
+		spdlog::info("Key: {}, size: {}", iter->first, iter->second.size());
+	}
 }
 
 void Communication::init() {

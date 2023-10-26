@@ -13,9 +13,14 @@ class Communication {
 	HANDLE hDllWrittenEvent, hProfilerWrittenEvent, hDllDataReceived, hProfilerDataReceived;
 	ProfilerMessage* pProfilerData;
 
+	IPC::DurationMap* durationMap;
+
 public:
 	~Communication();
 	void init();
+
+	void setupBoostShared();
+	void readBoostShared();
 
 	bool sendMessage(ProfilerMessage _msg);
 	DWORD waitMsg();
