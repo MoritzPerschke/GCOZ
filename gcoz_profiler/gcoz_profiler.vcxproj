@@ -145,6 +145,7 @@
     <ClInclude Include="..\shared\Constants.h" />
     <ClInclude Include="..\shared\Messages.h" />
     <ClInclude Include="..\shared\ProfilerStatus.h" />
+    <ClInclude Include="..\shared\SharedMemoryBoost.hpp" />
     <ClInclude Include="..\shared\status.h" />
     <ClInclude Include="DelayCalculator.h" />
     <ClInclude Include="gcoz_profiler.h" />

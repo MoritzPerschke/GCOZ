@@ -2,13 +2,9 @@
 
 #include <Windows.h>
 #include <spdlog/spdlog.h>
-#include "../shared/ProfilerStatus.h"
-#include "../shared/Messages.h"
-
-#include <boost/interprocess/managed_shared_memory.hpp>
-#include <boost/interprocess/containers/vector.hpp>
-#include <boost/interprocess/containers/map.hpp>
-#include <boost/interprocess/allocators/allocator.hpp>
+#include <ProfilerStatus.h>
+#include <Messages.h>
+#include <SharedMemoryBoost.hpp>
 
 class Communication {
 

@@ -80,6 +80,9 @@
     <ClInclude Include="..\shared\Messages.h">
       <Filter>Header Files\Shared</Filter>
     </ClInclude>
+    <ClInclude Include="..\shared\SharedMemoryBoost.hpp">
+      <Filter>Header Files\Shared</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

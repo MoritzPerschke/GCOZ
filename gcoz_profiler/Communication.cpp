@@ -1,6 +1,5 @@
 #include "Communication.h"
 
-
 /* Setup boost shared memory for:
 - Frametimes
 - method Durations
@@ -22,15 +21,7 @@ void setupBoostShared() {
 	
 	managed_shared_memory segment(create_only, "gcoz_FrametimesShared", 65536);
 
-	// ChatGPT, modified for duration
-	typedef managed_shared_memory::segment_manager segMan;
-	typedef allocator<Duration, segMan> DurationAllocator;
-	typedef vector<Duration, DurationAllocator> DurationVector;
-	typedef std::pair<const Duration, DurationVector> DurationMapType;
-	typedef allocator<DurationMapType, segMan> MapValueAllocator;
-	typedef map<Duration, DurationVector, std::less<Duration>, MapValueAllocator> DurationMap;
-
-	DurationMap* durations = segment.find_or_construct<DurationMap>("Frametime_map")(segment.get_segment_manager());
+	IPC::DurationMap* durations = segment.find_or_construct<IPC::DurationMap>("Frametime_map")(segment.get_segment_manager());
 }
 
 void Communication::init() {
