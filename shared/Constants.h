@@ -10,7 +10,8 @@
 #define METHOD_ID_ARRAY_SIZE 500
 #define METHOD_THREAD_COLLECTION_FRAME_COUNT 500
 
-using Duration = std::chrono::duration<double>;
+//using Duration = std::chrono::duration<double>;
+using Duration = int;
 using Nanoseconds = std::chrono::nanoseconds;
 
 typedef std::size_t idHash;

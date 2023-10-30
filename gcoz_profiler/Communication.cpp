@@ -1,5 +1,6 @@
 #include "Communication.h"
 
+#include <vector>
 /* Setup boost shared memory for:
 - Frametimes
 - method Durations
@@ -10,25 +11,38 @@
 - maybe also current method ID for threadID collection
 */
 void Communication::setupBoostShared() {
-	spdlog::info("Creating shared Memory for communication");
-	using namespace boost::interprocess;
 
-	// https://www.boost.org/doc/libs/1_83_0/doc/html/interprocess/quick_guide.html#interprocess.quick_guide.qg_interprocess_container
-	struct shm_remove { // remove shared memory on creation/destruction of the class
-		shm_remove() { shared_memory_object::remove("gcoz_FrametimesShared"); }
-		~shm_remove() { shared_memory_object::remove("gcoz_FrametimesShared"); }
-	}remover;
-	
+	using namespace boost::interprocess;
+	spdlog::info("Creating shared Memory for communication");
+
+	shared_memory_object::remove("gcoz_FrametimesShared");
 	managed_shared_memory segment(create_only, "gcoz_FrametimesShared", 65536);
 
-	durationMap = segment.find_or_construct<IPC::DurationMap>("Frametime_map")(segment.get_segment_manager());
+	const IPC::MapValueAllocator mapAlloc(segment.get_segment_manager());
+	const IPC::DurationAllocator durAlloc(segment.get_segment_manager());
+
+	IPC::DurationMap* map = segment.construct<IPC::DurationMap>("Frametime_Map")(std::less<int>(), mapAlloc);
+	for (int i = 0; i < 10; i++) {
+		spdlog::info("test");
+		map->insert(IPC::DurationMapType(i, IPC::DurationVector(durAlloc)));
+	}
+	for (int i = 0; i < 50; i++) {
+		map->at(i % 10).push_back(i);
+	}
+
+	spdlog::info("shared mem created");
 }
 
 void Communication::readBoostShared() {
-	IPC::DurationMap::iterator iter;
-	iter = durationMap->begin();
-	for (; iter != durationMap->end(); iter++) {
-		spdlog::info("Key: {}, size: {}", iter->first, iter->second.size());
+	using namespace boost::interprocess;
+	spdlog::info("Reading memory");
+
+	managed_shared_memory segment(open_only, "gcoz_FrametimesShared");
+
+	IPC::DurationMap* map = segment.find<IPC::DurationMap>("Frametime_Map").first;
+
+	for (const auto& elem : map->at(1)) {
+		spdlog::info("value: {}", elem);
 	}
 }
 
@@ -79,6 +93,7 @@ void Communication::init() {
 	hProfilerWrittenEvent = CreateEventA(NULL, FALSE, FALSE, "gcoz_ProfilerWrittenEvent");
 	hProfilerDataReceived = CreateEventA(NULL, FALSE, FALSE, "gcoz_ProfilerDataReceived");
 
+	setupBoostShared();
 }
 
 Communication::~Communication() {

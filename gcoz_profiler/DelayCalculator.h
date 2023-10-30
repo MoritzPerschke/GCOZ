@@ -15,8 +15,6 @@
 #include "../shared/Constants.h"
 #include "../shared/status.h"
 
-using Duration = std::chrono::duration<double>;
-
 static std::random_device rd;
 static std::mt19937 gen(rd());
 //static std::uniform_int_distribution<int> method(0, (D3D11_METHOD_COUNT-1));
