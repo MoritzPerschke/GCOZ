@@ -2,24 +2,33 @@
 
 #ifndef _CONSTANT_VALUES
 #define _CONSTANT_VALUES
+
 #include <chrono>
 #include <thread>
 
-#define D3D11_METHOD_COUNT 205  // making this dynamic would be nice
-#define MEASURE_FRAME_COUNT 500
+// Profiler specific definitions
+#define D3D11_METHOD_COUNT   205  
+#define MEASURE_FRAME_COUNT  500
 #define METHOD_ID_ARRAY_SIZE 500
 #define METHOD_THREAD_COLLECTION_FRAME_COUNT 500
 
-//using Duration = std::chrono::duration<double>;
-using Duration = int;
-using Nanoseconds = std::chrono::nanoseconds;
+// chrono typedefs
+typedef std::chrono::duration<double> RawDuration;
+typedef long long SharedDuration;
+typedef std::chrono::nanoseconds Nanoseconds;
 
-typedef std::size_t idHash;
+// ThreadID typedefs
+typedef std::size_t     idHash;
+typedef std::thread::id threadID;
+
+// Data Structures
 typedef std::array<Nanoseconds, MEASURE_FRAME_COUNT> frametimeArray;
-typedef std::array<Nanoseconds, D3D11_METHOD_COUNT> durationArray;
-typedef std::array<Nanoseconds, D3D11_METHOD_COUNT> delayArray;
-typedef std::array<idHash, METHOD_ID_ARRAY_SIZE> idArray;
+typedef std::array<Nanoseconds, D3D11_METHOD_COUNT>  durationArray;
+typedef std::array<Nanoseconds, D3D11_METHOD_COUNT>  delayArray;
+typedef std::array<idHash, METHOD_ID_ARRAY_SIZE>     idArray;
 
+
+// Method specific
 #define D3D11_METHOD_NAMES \
     X(QueryInterface)\
     X(AddRef)\

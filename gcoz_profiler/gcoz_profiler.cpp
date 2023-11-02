@@ -31,11 +31,10 @@ int main(int argc, char* argv[]) {
 	/* Main profiling loop */
 	spdlog::info("Waiting for game to be in steady state");
 	system("pause");
-	com.readBoostShared();
 	spdlog::info("Waiting 5 more seconds");
 	std::this_thread::sleep_for(std::chrono::seconds(5)); // wait to get into steady state and wait to tab back into game
 
-	spdlog::info("Starting profiling");
+	spdlog::info("Starting profiling...");
 	MessageHandler messageHandler = MessageHandler(processName);
 	static ProfilerStatus lastStatus = statusManager.getCurrentStatus();
 	bool profilingDone = false;

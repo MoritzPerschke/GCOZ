@@ -10,41 +10,6 @@
 - delays
 - maybe also current method ID for threadID collection
 */
-void Communication::setupBoostShared() {
-
-	using namespace boost::interprocess;
-	spdlog::info("Creating shared Memory for communication");
-
-	shared_memory_object::remove("gcoz_FrametimesShared");
-	managed_shared_memory segment(create_only, "gcoz_FrametimesShared", 65536);
-
-	const IPC::MapValueAllocator mapAlloc(segment.get_segment_manager());
-	const IPC::DurationAllocator durAlloc(segment.get_segment_manager());
-
-	IPC::DurationMap* map = segment.construct<IPC::DurationMap>("Frametime_Map")(std::less<int>(), mapAlloc);
-	for (int i = 0; i < 10; i++) {
-		spdlog::info("test");
-		map->insert(IPC::DurationMapType(i, IPC::DurationVector(durAlloc)));
-	}
-	for (int i = 0; i < 50; i++) {
-		map->at(i % 10).push_back(i);
-	}
-
-	spdlog::info("shared mem created");
-}
-
-void Communication::readBoostShared() {
-	using namespace boost::interprocess;
-	spdlog::info("Reading memory");
-
-	managed_shared_memory segment(open_only, "gcoz_FrametimesShared");
-
-	IPC::DurationMap* map = segment.find<IPC::DurationMap>("Frametime_Map").first;
-
-	for (const auto& elem : map->at(1)) {
-		spdlog::info("value: {}", elem);
-	}
-}
 
 void Communication::init() {
 	/* Profiler -> Dll Communication */
@@ -67,25 +32,29 @@ void Communication::init() {
 	}
 	pProfilerData = static_cast<ProfilerMessage*>(pSharedMemoryProfiler);
 
-	/* Dll -> Profiler Communication */
-	hDllFileMapping = CreateFileMapping(
-		INVALID_HANDLE_VALUE,
-		NULL,
-		PAGE_READWRITE,
-		0,
-		16384,
-		L"gcoz_dll_shared_memory"
-	); 
-	if (hDllFileMapping == NULL) {
-		throw std::runtime_error("hDllFileMapping creation failed");
-	}
-	pSharedMemoryDll = MapViewOfFile(
-		hDllFileMapping,
-		FILE_MAP_ALL_ACCESS,
-		0, 0, 0
-	); if (pSharedMemoryDll == NULL) {
-		throw std::runtime_error("pSharedMemoryDll File Mapping failed");
-	}
+	/* Boost shared memory setup */
+	shared_memory_object::remove("gcoz_SharedMemory");
+	managed_shared_memory segment(create_only, "gcoz_SharedMemory", 65536);
+
+	named_mutex generalMutex(create_only, "gcoz_SharedMemory_General_Mutex");
+
+	/* Boost shared memory for measured method durations */
+	const IPC::DurationMapValue_Allocator durationAlloc(segment.get_segment_manager());
+	methodDurationsMap = segment.construct<IPC::DurationVector_Map>("Durations_Map")(std::less<int>(), durationAlloc);
+	named_mutex durationsMutex(create_only, "gcoz_Durations_Map_Mutex");
+
+	/* Boost shared memory for Thread ID collection */
+	const IPC::ThreadIdVector_Map threadMapAlloc(segment.get_segment_manager());
+	threadIDmap = segment.construct<IPC::ThreadIdVector_Map>("ThreadID_Map")(std::less<idHash>(), threadMapAlloc);
+	named_mutex threadidMutex(create_only, "gcoz_ThreadID_Map_Mutex");
+
+	/* Boost shared memory for Profiling Results */
+	const IPC::ResultsMapValue_Allocator resultsMapAlloc(segment.get_segment_manager());
+	profilingResultsMap = segment.construct<IPC::Results_Map>("Results_Map")(std::less<int>(), resultsMapAlloc); // this fails compile-time
+	named_mutex resultsMutex(create_only, "gcoz_Results_Map_Mutex");
+
+	// signal that setup is done
+	HANDLE boostSharedCreated = CreateEventA(NULL, TRUE, TRUE, "gcoz_SharedMemory_ThreadIDs_created");
 
 	/* Synchronization Events */
 	hDllWrittenEvent = CreateEventA(NULL, FALSE, FALSE, "gcoz_DllWrittenEvent");
@@ -93,7 +62,6 @@ void Communication::init() {
 	hProfilerWrittenEvent = CreateEventA(NULL, FALSE, FALSE, "gcoz_ProfilerWrittenEvent");
 	hProfilerDataReceived = CreateEventA(NULL, FALSE, FALSE, "gcoz_ProfilerDataReceived");
 
-	setupBoostShared();
 }
 
 Communication::~Communication() {
