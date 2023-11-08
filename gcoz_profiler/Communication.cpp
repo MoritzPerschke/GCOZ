@@ -11,7 +11,7 @@
 - maybe also current method ID for threadID collection
 */
 
-void Communication::init() {
+Communication::Communication() {
 	/* Profiler -> Dll Communication */
 	hProfilerFileMapping = CreateFileMapping(
 		INVALID_HANDLE_VALUE,
@@ -35,7 +35,6 @@ void Communication::init() {
 	/* Boost shared memory setup */
 	shared_memory_object::remove("gcoz_SharedMemory");
 	managed_shared_memory segment(create_only, "gcoz_SharedMemory", 65536);
-
 	named_mutex generalMutex(create_only, "gcoz_SharedMemory_General_Mutex");
 
 	/* Boost shared memory for measured method durations */
@@ -49,9 +48,13 @@ void Communication::init() {
 	named_mutex threadidMutex(create_only, "gcoz_ThreadID_Map_Mutex");
 
 	/* Boost shared memory for Profiling Results */
-	const IPC::ResultsMapValue_Allocator resultsMapAlloc(segment.get_segment_manager());
-	profilingResultsMap = segment.construct<IPC::Results_Map>("Results_Map")(std::less<int>(), resultsMapAlloc); // this fails compile-time
-	named_mutex resultsMutex(create_only, "gcoz_Results_Map_Mutex");
+	const IPC::ResultsMapValue_Allocator frameTimeAlloc(segment.get_segment_manager());
+	frameTimesMap = segment.construct<IPC::Results_Map>("FrameTimes_Map")(std::less<int>(), frameTimeAlloc);
+	named_mutex frameTimesMutex(create_only, "gcoz_FrameTimes_Map_Mutex");
+
+	const IPC::ResultsMapValue_Allocator frameRatesAlloc(segment.get_segment_manager());
+	frameRatesMap = segment.construct<IPC::Results_Map>("FrameRates_Map")(std::less<int>(), frameRatesAlloc);
+	named_mutex frameRatesMutex(create_only, "gcoz_FrameRates_Map_Mutex");
 
 	// signal that setup is done
 	HANDLE boostSharedCreated = CreateEventA(NULL, TRUE, TRUE, "gcoz_SharedMemory_ThreadIDs_created");
@@ -61,14 +64,13 @@ void Communication::init() {
 	hDllDataReceived = CreateEventA(NULL, FALSE, FALSE, "gcoz_DllDataReceived");
 	hProfilerWrittenEvent = CreateEventA(NULL, FALSE, FALSE, "gcoz_ProfilerWrittenEvent");
 	hProfilerDataReceived = CreateEventA(NULL, FALSE, FALSE, "gcoz_ProfilerDataReceived");
+	dllDoneEvent = CreateEventA(NULL, FALSE, FALSE, "gcoz_dllDone_Event");
 
 }
 
 Communication::~Communication() {
-	UnmapViewOfFile(hDllFileMapping);
 	UnmapViewOfFile(hProfilerFileMapping);
 
-	CloseHandle(pSharedMemoryDll);
 	CloseHandle(pSharedMemoryProfiler);
 
 	CloseHandle(hDllWrittenEvent);
@@ -76,43 +78,27 @@ Communication::~Communication() {
 	spdlog::info("Communication Destructor called");
 }
 
-Measurement Communication::getMeasurement() {
-	Measurement* shared = static_cast<Measurement*>(pSharedMemoryDll);
-	Measurement result = *shared;
-	if (result.valid) {
-		SetEvent(hProfilerDataReceived);
-	}
-	return result;
-}
-
-Result Communication::getResult() {
-	Result* shared = static_cast<Result*>(pSharedMemoryDll);
-	Result result = *shared;
-	if (result.valid) {
-		SetEvent(hProfilerDataReceived);
-	}
-	return result;
-}
-
-ThreadIDMessage Communication::getThreadIDs(){
-	ThreadIDMessage* shared = static_cast<ThreadIDMessage*>(pSharedMemoryDll);
-	ThreadIDMessage ids = *shared;
-	if (ids.valid) {
-		SetEvent(hProfilerDataReceived);
-	}
-	return ids;
-}
-
 bool Communication::sendMessage(ProfilerMessage _msg) {
 	*pProfilerData = _msg;
+	//if (memcmp(pProfilerData, &_msg, sizeof(_msg)) == 0) {
+	//	return SetEvent(hProfilerWrittenEvent);
+	//}
+	//else {
+	//	return false;
+	//} test later
 	return SetEvent(hProfilerWrittenEvent);
 }
 
-DWORD Communication::waitMsg(){
-	DWORD result = WaitForSingleObject(hDllWrittenEvent, INFINITE);
-	return result;
+DWORD Communication::waitDllDone() {
+	return WaitForSingleObject(dllDoneEvent, INFINITE);
 }
 
 DWORD Communication::waitRecv(){
-	return WaitForSingleObject(hDllDataReceived, INFINITE); // infinite wait might be problematic
+	return WaitForSingleObject(hDllDataReceived, INFINITE);
 }
+
+/*deprecated*/
+//DWORD Communication::waitMsg(){
+//	DWORD result = WaitForSingleObject(hDllWrittenEvent, INFINITE);
+//	return result;
+//}

@@ -14,15 +14,17 @@
 #include "../shared/Constants.h"
 
 DelayManager delays;
+MethodDurations durations;
 ProfilerStatusManager man;
 Communication com;
+ThreadIDs ids;
 std::string overlayDebugMessage = "Looking good :)"; // this is ugly, get this to a namespace or sth
 
 void little_sleep(Nanoseconds _delay) { // https://stackoverflow.com/a/45571538
-	auto start = MethodDurations::now();
+	auto start = durations.now();
 	auto end = start + _delay;
-	while (MethodDurations::now() < end) {
-		if ((MethodDurations::now() - end) > std::chrono::milliseconds(1)) {
+	while (durations.now() < end) {
+		if ((durations.now() - end) > std::chrono::milliseconds(1)) {
 			std::this_thread::yield();
 		}
 	}
@@ -45,13 +47,13 @@ void little_sleep(Nanoseconds _delay) { // https://stackoverflow.com/a/45571538
 #define X(_IDX, _RETURN_TYPE, _NAME, ...) \
 	_RETURN_TYPE __stdcall hk##_NAME(FUNCTION_SIGNATURE(__VA_ARGS__)){ \
 		_RETURN_TYPE value; \
-		MethodDurations::Timepoint start; \
+		Timepoint start; \
 		switch (man.getStatus()) { \
 			case ProfilerStatus::GCOZ_MEASURE : \
-				start = MethodDurations::now(); \
+				start = durations.now(); \
 				value = o##_NAME(PARAMETER_NAMES(__VA_ARGS__)); \
-				MethodDurations::Duration duration = MethodDurations::now() - start; \
-				MethodDurations::addDuration(_IDX, duration); \
+				RawDuration duration = durations.now() - start; \
+				durations.addDuration(_IDX, duration); \
 				break; \
 			case ProfilerStatus::GCOZ_PROFILE : \
 				value = o##_NAME(PARAMETER_NAMES(__VA_ARGS__)); \
@@ -59,9 +61,9 @@ void little_sleep(Nanoseconds _delay) { // https://stackoverflow.com/a/45571538
 				break; \
 			case ProfilerStatus::GCOZ_COLLECT_THREAD_IDS: \
 				value = o##_NAME(PARAMETER_NAMES(__VA_ARGS__)); \
-				ThreadIDs::mutex.lock();\
-				ThreadIDs::addID(_IDX, std::this_thread::get_id());\
-				ThreadIDs::mutex.unlock(); \
+				ids.mutex.lock();\
+				ids.addID(_IDX, std::this_thread::get_id());\
+				ids.mutex.unlock(); \
 			case ProfilerStatus::GCOZ_WAIT : \
 				value = o##_NAME(PARAMETER_NAMES(__VA_ARGS__));	\
 				break; \
@@ -74,13 +76,13 @@ void little_sleep(Nanoseconds _delay) { // https://stackoverflow.com/a/45571538
 /* same as above just for void functions (no return)*/
 #define X(_IDX, _RETURN_TYPE, _NAME, ...) \
 	_RETURN_TYPE __stdcall hk##_NAME(FUNCTION_SIGNATURE(__VA_ARGS__)){ \
-		MethodDurations::Timepoint start; \
+		Timepoint start; \
 		switch (man.getStatus()) { \
 			case ProfilerStatus::GCOZ_MEASURE : \
-				start = MethodDurations::now(); \
+				start = durations.now(); \
 				o##_NAME(PARAMETER_NAMES(__VA_ARGS__)); \
-				MethodDurations::Duration duration = MethodDurations::now() - start; \
-				MethodDurations::addDuration(_IDX, duration); \
+				RawDuration duration = durations.now() - start; \
+				durations.addDuration(_IDX, duration); \
 				break; \
 			case ProfilerStatus::GCOZ_PROFILE : \
 				o##_NAME(PARAMETER_NAMES(__VA_ARGS__)); \
@@ -88,9 +90,9 @@ void little_sleep(Nanoseconds _delay) { // https://stackoverflow.com/a/45571538
 				break; \
 			case ProfilerStatus::GCOZ_COLLECT_THREAD_IDS: \
 				o##_NAME(PARAMETER_NAMES(__VA_ARGS__)); \
-				ThreadIDs::mutex.lock();\
-				ThreadIDs::addID(_IDX, std::this_thread::get_id());\
-				ThreadIDs::mutex.unlock(); \
+				ids.mutex.lock();\
+				ids.addID(_IDX, std::this_thread::get_id());\
+				ids.mutex.unlock(); \
 			case ProfilerStatus::GCOZ_WAIT : \
 				o##_NAME(PARAMETER_NAMES(__VA_ARGS__));	\
 				break; \
@@ -114,54 +116,42 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 
 	switch (man.getStatus()) {
 	case ProfilerStatus::GCOZ_MEASURE: // measure times of D3D11 Methods, nothing else
-		MethodDurations::presentStart();
-		if (callCount++ == MEASURE_FRAME_COUNT) { // this could prob be done in seperate thread
+		//MethodDurations::presentStart();// no need to track frames here
+		if (callCount++ == MEASURE_FRAME_COUNT) {
 			callCount = 0;
-			Measurement send = {};
-			// remove measurement of frametimes, use allMethods[0%] as baseline
-			send.frameTimes = MethodDurations::getPresentTimes();
-			//send.frameRates = MethodDurations::getFrameRates();
-			send.durations = MethodDurations::getDurations();
-			send.methodCalls = MethodDurations::getCallAmounts();
-			send.valid = true;
-			com.sendMeasurement(send);
 			delays.resetDelays();
 			man.setStatus(ProfilerStatus::GCOZ_WAIT);
+			com.announceFinish();
 			man.announceStatusChange();
 		}
-		MethodDurations::presentEnd();
+		//MethodDurations::presentEnd();
 		break;
 
 	case ProfilerStatus::GCOZ_PROFILE: // apply last received delays and measure FPS
-		MethodDurations::presentStart();
-		if (callCount++ == MEASURE_FRAME_COUNT) {
+		durations.presentStart(man.getMethod(), man.getDelay());
+		if (callCount++ == MEASURE_FRAME_COUNT + 2) { // +2 to make sure begin/end time of present is initialized
 			callCount = 0;
-			Result send = {};
-			send.frameTimes = MethodDurations::getPresentTimes();
-			send.frameRates = MethodDurations::getFrameRates();
-			send.valid = true;
-			com.sendResult(send);
+			HANDLE doneEvent = OpenEventA(NULL, FALSE, "gcoz_dllDone_Event"); /// this or announce status change
 			delays.resetDelays();
 			man.setStatus(ProfilerStatus::GCOZ_WAIT);
+			com.announceFinish(); 
 			man.announceStatusChange();
 		}
-		MethodDurations::presentEnd();
+		durations.presentEnd();
 		break;
 
 	case ProfilerStatus::GCOZ_COLLECT_THREAD_IDS:
-		MethodDurations::presentStart();
+		//MethodDurations::presentStart(man.getMethod(), man.getDelay()); // no need to track frames here
+		ids.mutex.lock();
+		ids.addID(8, std::this_thread::get_id());
+		ids.mutex.unlock();
 		if (callCount++ == METHOD_THREAD_COLLECTION_FRAME_COUNT) {
 			callCount = 0;
-			ThreadIDMessage ids = {};
-			ThreadIDs::mutex.lock();
-			ids.threadIDs = ThreadIDs::getIDs(man.getMethod());
-			ThreadIDs::mutex.unlock();
-			ids.valid = true;
-			com.sendThreadIDs(ids);
 			man.setStatus(ProfilerStatus::GCOZ_WAIT);
+			com.announceFinish(); 
 			man.announceStatusChange();
 		}
-		MethodDurations::presentEnd();
+		//MethodDurations::presentEnd();
 		break;
 
 	case ProfilerStatus::GCOZ_WAIT: // do nothing, wait for message from Profiler

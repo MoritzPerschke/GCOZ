@@ -38,6 +38,21 @@ ProfilerStatusManager::ProfilerStatusManager(){
 		0, 0, sizeof(int)
 	); if (hStatusFileMapping == NULL) { DisplayErrorBox(L"ProfilerStatusManager", L"SharedMemoryMethod == NULL"); }
 	pSharedMemoryMethod = static_cast<int*>(SharedMemoryMethod);
+
+	/* shared memory for delay */
+	HANDLE hDelayFileMapping = OpenFileMapping(
+		FILE_MAP_ALL_ACCESS,
+		FALSE,
+		L"gcoz_delay_shared_memory"
+	); if (hStatusFileMapping == NULL) { DisplayErrorBox(L"ProfilerStatusManager", L"hMethodFileMapping == NULL"); }
+
+	LPVOID SharedMemoryDelay = MapViewOfFile(
+		hMethodFileMapping,
+		FILE_MAP_ALL_ACCESS,
+		0, 0, sizeof(float)
+	); if (hStatusFileMapping == NULL) { DisplayErrorBox(L"ProfilerStatusManager", L"SharedMemoryMethod == NULL"); }
+	pSharedMemoryDelay = static_cast<float*>(SharedMemoryMethod);
+
 	
 	/* Synchronization Event */
 	hStatusWrittenEvent = OpenEventA(NULL, FALSE, "hStatusWrittenEvent");
@@ -67,4 +82,8 @@ void ProfilerStatusManager::waitNewStatus(){
 
 int ProfilerStatusManager::getMethod(){
 	return *pSharedMemoryMethod;
+}
+
+float ProfilerStatusManager::getDelay(){
+	return *pSharedMemoryDelay;
 }

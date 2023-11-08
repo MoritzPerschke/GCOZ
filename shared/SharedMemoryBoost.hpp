@@ -82,10 +82,11 @@ namespace IPC {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/* Map of int -> float -> Vector of Durations (Profiling results, needs one per method) */ //this is a lot 
 	/* maps method -> delay -> results */
-	/* profilingResults->at("present")->at(.1)->push_back(); */
+	/* profilingResults->at(1)->at(.1)->push_back(); */
 
 	typedef pair <const int, DelayResult_Map>	ResultsMap_Type;
 	typedef scoped_allocator_adaptor <allocator<ResultsMap_Type, segMan>> ResultsMapValue_Allocator;
+	/* This map is used to do method->delay->frametimes/rates */
 	typedef map <int, DelayResult_Map, std::less<int>, ResultsMapValue_Allocator> Results_Map;
 
 } // namespace IPC

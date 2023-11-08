@@ -7,19 +7,15 @@
 #include <iostream>
 #include <spdlog/spdlog.h>
 
-#include "ResultsHandler.h"
-#include "../shared/status.h"
-#include "../shared/Constants.h"
+#include <status.h>
+#include <Constants.h>
 
 class IdCollector {
 	int currentMethod;
-	int lastMethod;
-	std::map<int, std::vector<idHash>> ids; // no idea how many different threads might call a method
 
 public:
 	IdCollector();
-	void addIDs(idArray _threadIDs);
+	void idsAdded();
 	int nextMethod();
 	bool isDone();
-	void finish(ResultsHandler& resH);
 };

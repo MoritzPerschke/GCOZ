@@ -1,11 +1,14 @@
 #include "DelayCalculator.h"
 
+DelayCalculator::DelayCalculator() {
+}
+
 void DelayCalculator::printBaseline() { // this probably won't be needed anymore
 	std::cout <<
 		"= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= =" << std::endl <<
 		"Baseline Method Durations:" << std::endl;
-	for (int i = 0; i < baselineDurations.size(); i++) {
-		std::cout << std::setfill(' ') << std::setw(7) << baselineDurations[i].count();
+	for (int i = 0; i < _baselineDurationsAverage.size(); i++) {
+		std::cout << std::setfill(' ') << std::setw(7) << _baselineDurationsAverage[i];
 		if ((i + 1) % 19 == 0) {
 			std::cout << std::endl;
 		}
@@ -28,29 +31,37 @@ void printDelays(delayArray& _delays) { // this probably won't be needed anymore
 		"= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= =" << std::endl;
 }
 
-void DelayCalculator::addBaseline(frametimeArray _frameTimes, durationArray _durations, std::array<int, D3D11_METHOD_COUNT> _calls) {
-	baselineDurations = _durations;
-	baselineCalls = _calls;
+void DelayCalculator::addBaseline() {
+	named_mutex _durationsMutex(open_only, "gcoz_Durations_Map_Mutex");
+	scoped_lock<named_mutex> lock(_durationsMutex);
 
-	for (int i = 0; i < D3D11_METHOD_COUNT; i++) {
-		if (baselineCalls[i] > 0) {
-			baselineDurations[i] = baselineDurations[i] / baselineCalls[i];
+	managed_shared_memory segment(open_only, "gcoz_SharedMemory");
+	IPC::DurationVector_Map* _baselineDurations = segment.find<IPC::DurationVector_Map>("Durations_Map").first;
+	
+	for (const auto& dur : *_baselineDurations) 
+	{// iterate through map<int, DurationVector>
+		if (dur.second.size() > 0) 
+		{// Durations measured for method
+			SharedDuration average = 
+				std::reduce(dur.second.begin(), dur.second.end()) / dur.second.size();
+			_baselineDurationsAverage.push_back(average);
 
-			if (baselineDurations[i] > Nanoseconds(1000)) {
+			if (average < 1000)
+			{// 1000ns clock accuracy
 				choice current;
-				current.method = i;
-				for (int j = 0; j < amoutSpeedupsMax; j++) {
-					current.speedup = static_cast<float>(j) / 10;
+				current.method = dur.first;
+				for (int i = 0; i < amoutSpeedupsMax; i++) {
+					current.speedup = static_cast<float>(i) / 10;
 					choices.push_back(current);
 				}
 			}
 		}
 	}
+
 	std::shuffle(choices.begin(), choices.end(), gen);
 	spdlog::info("[DelayCalculator] created {} combinations of method/speedup", choices.size());
 	//printBaseline();
 	baselineAdded = true;
-
 }
 
 void DelayCalculator::calculateDelays(float& _speedupPicked, int& _methodPicked, delayArray& _msgDelays) {
@@ -59,10 +70,7 @@ void DelayCalculator::calculateDelays(float& _speedupPicked, int& _methodPicked,
 	float selectedSpeedup;
 	int selectedMethod;
 
-	if (allMethodSpeedupsDone && choices.size() > 0) {
-		while (baselineDurations[choices.front().method] < Nanoseconds(1000)) {
-			choices.pop_front();
-		}
+	if (allMethodsDelayedDone && choices.size() > 0) {
 		newChoice = choices.front();
 		choices.pop_front();
 	}
@@ -71,8 +79,8 @@ void DelayCalculator::calculateDelays(float& _speedupPicked, int& _methodPicked,
 	}
 
 	static float allSpeedup = static_cast<float>(0.0);
-	selectedSpeedup = allMethodSpeedupsDone ? newChoice.speedup : allSpeedup;
-	selectedMethod = allMethodSpeedupsDone ? newChoice.method : -1;
+	selectedSpeedup = allMethodsDelayedDone ? newChoice.speedup : allSpeedup;
+	selectedMethod = allMethodsDelayedDone ? newChoice.method : -1;
 	allSpeedup += static_cast<float>(0.1);
 
 	spdlog::info("Selected: {} with speedup {}, {} combinations remaining", selectedMethod, selectedSpeedup, choices.size());
@@ -82,13 +90,17 @@ void DelayCalculator::calculateDelays(float& _speedupPicked, int& _methodPicked,
 		second "if" set delay for selectedMethod as well if frametimeChangesAll is not full yet
 		third "if" sets delay to basically none, just in case a method that wasn't called during measuring is called during profiling
 	*/
-	for (int i = 0; i < baselineDurations.size(); i++) {
-		if (baselineDurations[i] > Nanoseconds(1000)) { // 100ns == resolution of high_resolution_clock
-			if (i != selectedMethod) {
-				_msgDelays[i] = std::chrono::duration_cast<Nanoseconds>(baselineDurations[i] * selectedSpeedup);
+	for (int i = 0; i < _baselineDurationsAverage.size(); i++) 
+	{
+		SharedDuration average = _baselineDurationsAverage[i];
+		if (_baselineDurationsAverage[i] > 1000)
+		{// 100ns == resolution of high_resolution_clock
+			if (i != selectedMethod)
+			{
+				_msgDelays[i] = Nanoseconds(std::llround(average * selectedSpeedup));
 			}
-			else if (!allMethodSpeedupsDone) {
-				_msgDelays[i] = std::chrono::duration_cast<Nanoseconds>(baselineDurations[i] * selectedSpeedup);
+			else if (!allMethodsDelayedDone) {
+				_msgDelays[i] = Nanoseconds(std::llround(average * selectedSpeedup));
 			}
 			else {
 				_msgDelays[i] = Nanoseconds(0);
@@ -106,7 +118,7 @@ void DelayCalculator::calculateDelays(float& _speedupPicked, int& _methodPicked,
 void DelayCalculator::measurementDoneAll(float _speedup) {
 	frametimeChangesAll[_speedup] = true;
 	if (frametimeChangesAll.size() == amoutSpeedupsMax) {
-		allMethodSpeedupsDone = true;
+		allMethodsDelayedDone = true;
 	}
 }
 
@@ -115,7 +127,7 @@ void DelayCalculator::measurementDoneSingle(float _speedup, int _method) {
 }
 
 bool DelayCalculator::dataCollectedAllMethods() {
-	return allMethodSpeedupsDone;
+	return allMethodsDelayedDone;
 }
 
 bool DelayCalculator::dataCollected() {

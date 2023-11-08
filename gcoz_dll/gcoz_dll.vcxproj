@@ -115,6 +115,7 @@
       <PreprocessToFile>false</PreprocessToFile>
       <AdditionalOptions>/Zc:preprocessor %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>C:\Users\Moritz\Documents\bachelor_thesis\boost_1_83_0;$(ProjectDir)..\shared;$(ProjectDir)..\external\kiero;$(ProjectDir)..\external\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -133,6 +134,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>C:\Users\Moritz\Documents\bachelor_thesis\boost_1_83_0;$(ProjectDir)..\shared;$(ProjectDir)..\external\kiero;$(ProjectDir)..\external\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -191,6 +193,7 @@
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="ErrorMessage.cpp" />
     <ClCompile Include="DllGui.cpp" />
+    <ClCompile Include="MethodDurations.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -198,6 +201,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="ProfilerStatusManager.cpp" />
+    <ClCompile Include="ThreadIDs.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

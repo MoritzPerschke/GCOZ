@@ -1,31 +1,47 @@
 #pragma once
 
 #include <Windows.h>
-#include <shared_mutex>
-#include "../shared/ProfilerStatus.h"
-#include "ResultsHandler.h"
-#include "DelayCalculator.h"
-#include "../shared/Messages.h"
-#include "IdCollector.h"
 #include <spdlog/spdlog.h>
 
-class ProfilerStatusManager {
-	HANDLE mutex;
-	HANDLE hStatusWrittenEvent;
-	ProfilerStatus* currentStatus;
-	ProfilerStatus previousStatus;
-	int* currentMethod;
-	int previousMethod;
+#include <ProfilerStatus.h>
+#include <Messages.h>
 
-	float lastSpeedup;
-	int lastMethodIndex;
+#include "DelayCalculator.h"
+#include "IdCollector.h"
+#include "ResultsHandler.h"
+
+class ProfilerStatusManager {
+	DelayCalculator _delays;
+	IdCollector		_ids;
+	ResultsHandler  _results;
+
+	HANDLE _statusMutex;
+	HANDLE _hStatusWrittenEvent;
+
+	ProfilerStatus  _nextStatus;
+	ProfilerStatus* _currentStatus;
+	ProfilerStatus  _previousStatus;
+
+	int* _currentMethod;
+	int  _previousMethod;
+
+	float* _currentDelay;
+	float _previousDelay;
 
 public:
-	ProfilerStatusManager();
+	ProfilerStatusManager(std::string _processName);
 	ProfilerStatus getCurrentStatus();
 	ProfilerStatus getPreviousStatus();
-	int getCurrentMethod();
+	ProfilerStatus getNextStatus();
+	void nextMessage(ProfilerStatus _status, ProfilerMessage& _msg);
+
+	int   getCurrentMethod();
+	float getCurrentDelay();
+
 	void setCurrentMethod(int _method);
+
 	void setStatus(ProfilerStatus _new);
 	void announceStatusChange();
+
+	void finish(std::string _outputName);
 };

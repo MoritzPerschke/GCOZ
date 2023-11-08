@@ -18,23 +18,24 @@ struct shm_remove {
 class Communication {
 
 	shm_remove remover;
-	HANDLE hDllFileMapping, hProfilerFileMapping;
-	LPVOID pSharedMemoryDll, pSharedMemoryProfiler;
+	HANDLE hProfilerFileMapping;
+	LPVOID pSharedMemoryProfiler;
 	HANDLE hDllWrittenEvent, hProfilerWrittenEvent, hDllDataReceived, hProfilerDataReceived;
 	ProfilerMessage* pProfilerData;
+	HANDLE dllDoneEvent;
 
-	IPC::Results_Map* profilingResultsMap;
-	IPC::DurationVector_Map* methodDurationsMap;
-	IPC::ThreadIdVector_Map* threadIDmap;
+	// these do not need to be member variables i think
+	IPC::Results_Map* frameTimesMap; // FrameTimes_Map; gcoz_FrameTimes_Map_Mutex
+	IPC::Results_Map* frameRatesMap; // Framerates_Map; gcoz_FrameRates_Map_Mutex
+	IPC::DurationVector_Map* methodDurationsMap; // Durations_Map; gcoz_Durations_Map_Mutex
+	IPC::ThreadIdVector_Map* threadIDmap; // ThreadID_Map; gcoz_ThreadID_Map_Mutex
 
 public:
+	Communication();
 	~Communication();
-	void init();
 
 	bool sendMessage(ProfilerMessage _msg);
-	DWORD waitMsg();
+	DWORD waitDllDone();
+	//DWORD waitMsg();
 	DWORD waitRecv();
-	Measurement getMeasurement();
-	Result getResult();
-	ThreadIDMessage getThreadIDs();
 };
