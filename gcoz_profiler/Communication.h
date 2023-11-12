@@ -10,14 +10,14 @@
 
 // this should ensure that on creation/destruction of the Communication object the shared memory is properly destroyed
 // https://www.boost.org/doc/libs/1_83_0/doc/html/interprocess/quick_guide.html#interprocess.quick_guide.qg_interprocess_container
-struct shm_remove {
-	shm_remove() { boost::interprocess::shared_memory_object::remove("gcoz_FrametimesShared"); }
-	~shm_remove() { boost::interprocess::shared_memory_object::remove("gcoz_FrametimesShared"); }
-};
+//struct shm_remove {
+//	shm_remove() { boost::interprocess::shared_memory_object::remove("gcoz_FrametimesShared"); }
+//	~shm_remove() { boost::interprocess::shared_memory_object::remove("gcoz_FrametimesShared"); }
+//};
 
 class Communication {
 
-	shm_remove remover;
+	//shm_remove remover;
 	HANDLE hProfilerFileMapping;
 	LPVOID pSharedMemoryProfiler;
 	HANDLE hDllWrittenEvent, hProfilerWrittenEvent, hDllDataReceived, hProfilerDataReceived;

@@ -55,7 +55,9 @@ ProfilerStatusManager::ProfilerStatusManager(){
 
 	
 	/* Synchronization Event */
-	hStatusWrittenEvent = OpenEventA(NULL, FALSE, "hStatusWrittenEvent");
+	hStatusWrittenEvent = CreateEventA(NULL, FALSE, FALSE, "StatusWrittenEvent");
+	if (hStatusWrittenEvent == NULL) { DisplayErrorBox(L"ProfilerStatusManager", L"failed to open Status Written Event"); }
+	//DisplayInfoBox(L"ProfilerStatusManager", L"Construction success");
 }
 
 ProfilerStatus ProfilerStatusManager::getStatus() {
@@ -77,7 +79,8 @@ void ProfilerStatusManager::announceStatusChange() {
 }
 
 void ProfilerStatusManager::waitNewStatus(){
-	WaitForSingleObject(hStatusWrittenEvent, INFINITE);
+	DisplayInfoBox(L"ProfilerStatusManager", L"waiting for status written event");
+	WaitForSingleObject(hStatusWrittenEvent, 1000);
 }
 
 int ProfilerStatusManager::getMethod(){

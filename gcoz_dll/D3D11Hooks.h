@@ -105,11 +105,11 @@ typedef HRESULT(__stdcall* Present)(IDXGISwapChain*, UINT, UINT);
 static Present oPresent = NULL;
 HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT Flags) {
 	// ImGui Setup
-	static bool init = false;
-	if (!init){
-		GUI::init(pSwapChain);
-		init = true;
-	}
+	//static bool init = false;
+	//if (!init){
+	//	GUI::init(pSwapChain);
+	//	init = true;
+	//}
 
 	static unsigned long long int callCount = 0;
 	//MethodDurations::Timepoint start;
@@ -156,12 +156,18 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 
 	case ProfilerStatus::GCOZ_WAIT: // do nothing, wait for message from Profiler
 		if (com.newDataAvailable()) {
+			//DisplayInfoBox(L"Present Hook", L"newDataAvailable() == true");
 			ProfilerMessage newData = com.getMessage();
+			//DisplayInfoBox(L"Present Hook", L"Data received");
+			//std::this_thread::sleep_for(std::chrono::seconds(5));
+			//DisplayInfoBox(L"Present Hook", L"Data received");
 			if (newData.valid) {
+				//DisplayInfoBox(L"Present Hook", L"new Data is valid");
 				man.waitNewStatus();
 				if (man.getStatus() == ProfilerStatus::GCOZ_MEASURE) {
 					try {
 						delays.updateDelays(newData.delays);
+						//DisplayInfoBox(L"Present Hook", L"updated delays");
 					}
 					catch (...) {
 						DisplayErrorBox(L"Dll Main");
@@ -170,15 +176,12 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 			}
 		}
 		break;
-	case ProfilerStatus::GCOZ_FINISH:
-		//DisplayInfoBox(L"Dll Main", L"finish case in Present switch");
-		break;
 	default:
 		//DisplayInfoBox(L"Dll Main", L"default case in Present switch");
 		break;
 	} // switch(ProfilerStatusManager::currentStatus)
 
-	GUI::showGCOZgui(man, overlayDebugMessage);
+	//GUI::showGCOZgui(man, overlayDebugMessage);
 
 	return oPresent(pSwapChain, SyncInterval, Flags);
 }

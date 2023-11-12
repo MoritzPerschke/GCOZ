@@ -6,6 +6,8 @@
 #include <SharedMemoryBoost.hpp>
 #include <Constants.h>
 
+#include "ErrorMessage.h"
+
 class MethodDurations {
 	Timepoint lastPresentStart;
 	Timepoint lastPresentEnd;

@@ -9,6 +9,8 @@
 #include <vector>
 #include <SharedMemoryBoost.hpp>
 
+#include "ErrorMessage.h"
+
 template <typename T> int getIndex(std::vector<T> _vec, T _elem) {
 	auto it = std::find(_vec.begin(), _vec.end(), _elem);
 	int idx = 0;

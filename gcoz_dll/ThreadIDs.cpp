@@ -8,6 +8,7 @@ ThreadIDs::ThreadIDs(){
 
 	managed_shared_memory segment(open_only, "gcoz_SharedMemory");
 	_threadIDMap = segment.find<IPC::ThreadIdVector_Map>("gcoz_SharedMemory_ThreadIDs").first;
+	//DisplayInfoBox(L"ThreadIDs", L"Construction success");
 }
 
 void ThreadIDs::addID(int _methodIdx, threadID _id) {

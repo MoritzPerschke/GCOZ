@@ -2,6 +2,7 @@
 
 DelayManager::DelayManager() {
 	methodDelays.fill(Nanoseconds(0));
+	//DisplayInfoBox(L"DelayManager", L"Construction success");
 }
 
 Nanoseconds DelayManager::getDelay(int methodIndex){

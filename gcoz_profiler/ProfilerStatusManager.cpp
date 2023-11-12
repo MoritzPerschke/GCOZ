@@ -65,7 +65,8 @@ ProfilerStatusManager::ProfilerStatusManager(std::string _processName) {
 	
 	_currentDelay = static_cast<float*>(SharedMemoryDelay);
 
-	_hStatusWrittenEvent = CreateEventA(NULL, FALSE, FALSE, "hStatusWrittenEvent");
+	_hStatusWrittenEvent = CreateEventA(NULL, FALSE, FALSE, "StatusWrittenEvent");
+	if (_hStatusWrittenEvent == NULL) { spdlog::error("Failed to create status written event"); }
 }
 
 ProfilerStatus ProfilerStatusManager::getNextStatus(){

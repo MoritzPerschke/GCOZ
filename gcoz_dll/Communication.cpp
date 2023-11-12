@@ -23,6 +23,7 @@ Communication::Communication(){
 	hProfilerDataReceived = OpenEventA(EVENT_ALL_ACCESS, FALSE, "gcoz_ProfilerDataReceived");
 
 	pProfilerData = static_cast<ProfilerMessage*>(pSharedMemoryProfiler);
+	//DisplayInfoBox(L"Communcation", L"Construction success");
 }
 
 Communication::~Communication() {
