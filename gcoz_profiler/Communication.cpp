@@ -42,44 +42,24 @@ Communication::Communication() {
 	/* Make sure objects don't already exist */
 	boostCleanup();
 	/* Boost shared memory setup */
-	managed_shared_memory segment(create_only, "gcoz_SharedMemory", 1024 * 2000); // 1KB * 1000 = 1MB
+	managed_shared_memory segment(create_only, "gcoz_SharedMemory", 1024 * 10000); // 1KB * 1000 = 1MB
 	named_mutex generalMutex(create_only, "gcoz_SharedMemory_General_Mutex");
 
 	/* Boost shared memory for measured method durations */
-	const IPC::DurationMapValue_Allocator durationAlloc(segment.get_segment_manager());
-	//methodDurationsMap = segment.construct<IPC::DurationVector_Map>("Durations_Map")(std::less<int>(), durationAlloc);
-	segment.construct<IPC::DurationVector_Map>("Durations_Map")(std::less<int>(), durationAlloc);
+	segment.construct<IPC::DurationVector_Map>("Durations_Map")(segment.get_segment_manager());
 	named_mutex durationsMutex(create_only, "gcoz_Durations_Map_Mutex");
 	spdlog::info("Building shared memory");
 
 	/* Boost shared memory for Thread ID collection */
-	const IPC::IdHashMapValue_Allocator threadMapAlloc(segment.get_segment_manager());
-	//threadIDmap = segment.construct<IPC::ThreadIdVector_Map>("ThreadID_Map")(std::less<idHash>(), threadMapAlloc);
-	segment.construct<IPC::ThreadIdVector_Map>("ThreadID_Map")(std::less<idHash>(), threadMapAlloc);
+	segment.construct<IPC::ThreadIdVector_Map>("ThreadID_Map")(segment.get_segment_manager());
 	named_mutex threadidMutex(create_only, "gcoz_ThreadID_Map_Mutex");
 
 	/* Boost shared memory for Profiling Results */
-	const IPC::ResultsMapValue_Allocator frameTimeAlloc(segment.get_segment_manager());
-	//frameTimesMap = segment.construct<IPC::Results_Map>("FrameTimes_Map")(std::less<int>(), frameTimeAlloc);
-	segment.construct<IPC::Results_Map>("FrameTimes_Map")(std::less<int>(), frameTimeAlloc);
+	segment.construct<IPC::ResultsMap_Map>("FrameTimes_Map")(segment.get_segment_manager());
 	named_mutex frameTimesMutex(create_only, "gcoz_FrameTimes_Map_Mutex");
 
-	const IPC::ResultsMapValue_Allocator frameRatesAlloc(segment.get_segment_manager());
-	//frameRatesMap = segment.construct<IPC::Results_Map>("FrameRates_Map")(std::less<int>(), frameRatesAlloc);
-	segment.construct<IPC::Results_Map>("FrameRates_Map")(std::less<int>(), frameRatesAlloc);
+	segment.construct<IPC::ResultsMap_Map>("FrameRates_Map")(segment.get_segment_manager());
 	named_mutex frameRatesMutex(create_only, "gcoz_FrameRates_Map_Mutex");
-
-	/*---------[testing]----------*/
-
-	//IPC::Duration_Allocator alloc = segment.get_segment_manager();
-	//methodDurationsMap->insert(IPC::DurationMap_Type(1, IPC::Duration_Vector(alloc))); // this does not work either
-
-	IPC::DurationMapValue_Allocator intAlloc = segment.get_segment_manager();
-	IPC::Duration_Allocator duralloc = segment.get_segment_manager();
-	IPC::DurationVector_Map* testing = segment.construct<IPC::DurationVector_Map>("testing")(intAlloc);
-	testing->insert(IPC::DurationMap_Type(1, IPC::Duration_Vector(duralloc)));
-	spdlog::info("here");
-
 
 	// signal that setup is done
 	HANDLE boostSharedCreated = CreateEventA(NULL, TRUE, TRUE, "gcoz_SharedMemory_ThreadIDs_created");

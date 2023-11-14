@@ -25,10 +25,10 @@ class Communication {
 	HANDLE dllDoneEvent;
 
 	// these do not need to be member variables i think
-	IPC::Results_Map* frameTimesMap; // FrameTimes_Map; gcoz_FrameTimes_Map_Mutex
-	IPC::Results_Map* frameRatesMap; // Framerates_Map; gcoz_FrameRates_Map_Mutex
-	IPC::DurationVector_Map* methodDurationsMap; // Durations_Map; gcoz_Durations_Map_Mutex
-	IPC::ThreadIdVector_Map* threadIDmap; // ThreadID_Map; gcoz_ThreadID_Map_Mutex
+	//IPC::ResultsMap_Map* frameTimesMap; // FrameTimes_Map; gcoz_FrameTimes_Map_Mutex
+	//IPC::ResultsMap_Map* frameRatesMap; // Framerates_Map; gcoz_FrameRates_Map_Mutex
+	//IPC::DurationVector_Map* methodDurationsMap; // Durations_Map; gcoz_Durations_Map_Mutex
+	//IPC::ThreadIdVector_Map* threadIDmap; // ThreadID_Map; gcoz_ThreadID_Map_Mutex
 
 public:
 	Communication();

@@ -40,7 +40,7 @@ json ResultsHandler::getFrameRates(){
 	scoped_lock<named_mutex> lock(ratesMutex);
 
 	managed_shared_memory segment(open_only, "gcoz_SharedMemory");
-	IPC::Results_Map* frameRatesMap = segment.find<IPC::Results_Map>("FrameRates_Map").first;
+	IPC::ResultsMap_Map* frameRatesMap = segment.find<IPC::ResultsMap_Map>("FrameRates_Map").first;
 	
 	json frameRates;
 	for (const auto& elem : *frameRatesMap) {
@@ -66,7 +66,7 @@ json ResultsHandler::getFrameTimes() {
 	scoped_lock<named_mutex> lock(timesMutex);
 
 	managed_shared_memory segment(open_only, "gcoz_SharedMemory");
-	IPC::Results_Map* frameTimesMap = segment.find<IPC::Results_Map>("FrameTimes_Map").first;
+	IPC::ResultsMap_Map* frameTimesMap = segment.find<IPC::ResultsMap_Map>("FrameTimes_Map").first;
 
 	json frameTimes;
 	for (const auto& elem : *frameTimesMap) {
