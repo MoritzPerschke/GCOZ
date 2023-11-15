@@ -79,7 +79,7 @@ void ProfilerStatusManager::announceStatusChange() {
 }
 
 void ProfilerStatusManager::waitNewStatus(){
-	DisplayInfoBox(L"ProfilerStatusManager", L"waiting for status written event");
+	//DisplayInfoBox(L"ProfilerStatusManager", L"waiting for status written event");
 	WaitForSingleObject(hStatusWrittenEvent, 1000);
 }
 

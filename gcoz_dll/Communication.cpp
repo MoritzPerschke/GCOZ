@@ -17,7 +17,7 @@ Communication::Communication(){
 		DisplayErrorBox(L"MapViewOfFile Profiler");
 	}
 
-	hDllWrittenEvent = OpenEventA(EVENT_ALL_ACCESS, FALSE, "gcoz_DllWrittenEvent");
+	hDllDoneEvent = OpenEventA(EVENT_ALL_ACCESS, FALSE, "gcoz_dllDone_Event");
 	hDllDataReceived = OpenEventA(EVENT_ALL_ACCESS, FALSE, "gcoz_DllDataReceived");
 	hProfilerWrittenEvent = OpenEventA(EVENT_ALL_ACCESS, FALSE, "gcoz_ProfilerWrittenEvent");
 	hProfilerDataReceived = OpenEventA(EVENT_ALL_ACCESS, FALSE, "gcoz_ProfilerDataReceived");
@@ -31,7 +31,7 @@ Communication::~Communication() {
 
 	CloseHandle(pSharedMemoryProfiler);
 
-	CloseHandle(hDllWrittenEvent);
+	CloseHandle(hDllDoneEvent);
 	CloseHandle(hProfilerWrittenEvent);
 }
 
@@ -48,7 +48,7 @@ ProfilerMessage Communication::getMessage() {
 }
 
 void Communication::announceFinish() {
-	SetEvent(hDllWrittenEvent);
+	SetEvent(hDllDoneEvent);
 }
 
 bool Communication::newDataAvailable(){

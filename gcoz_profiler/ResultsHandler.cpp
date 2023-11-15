@@ -86,7 +86,7 @@ json ResultsHandler::getFrameTimes() {
 	return frameTimes;
 }
 
-json ResultsHandler::getThreadIDs(){
+json ResultsHandler::getThreadIDs(){ // not sure if it's here, but file only says 'null'
 	named_mutex threadsMutex(open_only, "gcoz_ThreadID_Map_Mutex");
 	scoped_lock<named_mutex> lock(threadsMutex);
 	
@@ -94,11 +94,14 @@ json ResultsHandler::getThreadIDs(){
 	IPC::ThreadIdVector_Map* threadIDmap = segment.find<IPC::ThreadIdVector_Map>("ThreadID_Map").first;
 
 	json id_vector;
+	spdlog::info("Building thread file");
 	for (const auto& idMapElem: *threadIDmap) {
 		//first  = methodID
 		//second = ThreadIDs
 		string locM = methodNames[idMapElem.first];
+		spdlog::info("Method {} called by threads:", locM);
 		for (const auto& id : idMapElem.second) {
+			spdlog::info("- {}", id);
 			id_vector[locM].push_back(id);
 		}
 	}
@@ -115,7 +118,7 @@ void ResultsHandler::exportResults(string _outputName){
 	// create data dir if it does not exist
 	fs::path targetPath = "../../../data";
 	fs::create_directories(targetPath);
-	spdlog::info("Folder /data found");
+	spdlog::info("Folder {} found", cut(targetPath).string());
 
 	// create folder for game if it does not exist
 	fs::path gamePath = targetPath / _outputName;

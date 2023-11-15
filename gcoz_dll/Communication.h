@@ -10,9 +10,8 @@ class Communication {
 	LPVOID pSharedMemoryProfiler;
 
 public:
-	HANDLE hDllWrittenEvent, hProfilerWrittenEvent, hDllDataReceived, hProfilerDataReceived;
+	HANDLE hDllDoneEvent, hProfilerWrittenEvent, hDllDataReceived, hProfilerDataReceived;
 	ProfilerMessage* pProfilerData;
-	DllMessage* pDllData;
 
 	Communication();
 	~Communication();

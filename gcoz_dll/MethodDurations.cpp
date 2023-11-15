@@ -4,18 +4,6 @@ Timepoint MethodDurations::now() {
 	return clock.now();
 }
 
-//MethodDurations::MethodDurations() {
-//	managed_shared_memory segment(open_only, "gcoz_SharedMemory");
-//	_durations = segment.find<IPC::DurationVector_Map>("Durations_Map").first;
-//	_frameRates = segment.find<IPC::Results_Map>("FrameRates_Map").first;
-//	_frameTimes = segment.find<IPC::Results_Map>("FrameTimes_Map").first;
-//	//DisplayInfoBox(L"MethodDurations", L"Construction success");
-//	if (_frameRates == NULL || _frameTimes == NULL) {
-//		DisplayErrorBox(L"MethodDurations");
-//	}
-//
-//}
-
 void MethodDurations::addDuration(int _methodIdx, RawDuration _dur) {
 
 	auto it = _durations->find(_methodIdx);

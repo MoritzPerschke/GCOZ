@@ -20,11 +20,15 @@ template <typename T> int getIndex(std::vector<T> _vec, T _elem) {
 
 class ThreadIDs {
 
-	std::vector<threadID> _knownThreads;
+	//std::vector<threadID> _knownThreads;
+	managed_shared_memory segment;
 	IPC::ThreadIdVector_Map* _threadIDMap;
 
 public:
 	std::mutex mutex;
-	ThreadIDs();
+	ThreadIDs() :
+		segment{ open_only, "gcoz_SharedMemory" },
+		_threadIDMap(segment.find<IPC::ThreadIdVector_Map>("ThreadID_Map").first) {}
+
 	void addID(int _methodIdx, threadID _id);
 };

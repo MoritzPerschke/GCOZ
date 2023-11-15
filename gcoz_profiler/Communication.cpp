@@ -42,7 +42,7 @@ Communication::Communication() {
 	/* Make sure objects don't already exist */
 	boostCleanup();
 	/* Boost shared memory setup */
-	managed_shared_memory segment(create_only, "gcoz_SharedMemory", 1024 * 10000); // 1KB * 1000 = 1MB
+	managed_shared_memory segment(create_only, "gcoz_SharedMemory", 1024 * 50000); // 1KB * 1000 = 1MB
 	named_mutex generalMutex(create_only, "gcoz_SharedMemory_General_Mutex");
 
 	/* Boost shared memory for measured method durations */

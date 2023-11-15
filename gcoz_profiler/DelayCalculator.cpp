@@ -32,27 +32,32 @@ void printDelays(delayArray& _delays) { // this probably won't be needed anymore
 }
 
 void DelayCalculator::addBaseline() {
+	spdlog::info("Calculating baseline durations for methods");
 	named_mutex _durationsMutex(open_only, "gcoz_Durations_Map_Mutex");
 	scoped_lock<named_mutex> lock(_durationsMutex);
 
 	managed_shared_memory segment(open_only, "gcoz_SharedMemory");
 	IPC::DurationVector_Map* _baselineDurations = segment.find<IPC::DurationVector_Map>("Durations_Map").first;
 	
-	for (const auto& dur : *_baselineDurations) 
+	//for(auto method_it = _baselineDurations->begin(); method_it < _baselineDurations->end(); method_it++)
+	for (const auto& method : *_baselineDurations) 
 	{// iterate through map<int, DurationVector>
-		if (dur.second.size() > 0) 
+		if (method.second.size() > 0) 
 		{// Durations measured for method
-			SharedDuration average = 
-				std::reduce(dur.second.begin(), dur.second.end()) / dur.second.size();
+			SharedDuration average = 0;
+			for (const auto& dur : method.second) {
+				average += dur;
+			}
+			average /= method.second.size();
 			_baselineDurationsAverage.push_back(average);
-
+			spdlog::info("Average for method {} is: {}", methodNames[method.first], average);
 			if (average < 1000)
 			{// 1000ns clock accuracy
 				choice current;
-				current.method = dur.first;
+				current.method = method.first;
 				for (int i = 0; i < amoutSpeedupsMax; i++) {
 					current.speedup = static_cast<float>(i) / 10;
-					choices.push_back(current);
+					choices.push_back(current); /// TODO: add back
 				}
 			}
 		}

@@ -131,7 +131,6 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 		durations.presentStart(man.getMethod(), man.getDelay());
 		if (callCount++ == MEASURE_FRAME_COUNT + 2) { // +2 to make sure begin/end time of present is initialized
 			callCount = 0;
-			HANDLE doneEvent = OpenEventA(NULL, FALSE, "gcoz_dllDone_Event"); /// this or announce status change
 			delays.resetDelays();
 			man.setStatus(ProfilerStatus::GCOZ_WAIT);
 			com.announceFinish(); 
