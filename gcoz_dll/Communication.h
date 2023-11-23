@@ -6,20 +6,17 @@
 
 // maybe singleton? https://stackoverflow.com/a/1008289/15005309
 class Communication {
-	HANDLE hDllFileMapping, hProfilerFileMapping;
-	LPVOID pSharedMemoryDll, pSharedMemoryProfiler;
+	HANDLE hProfilerFileMapping;
+	LPVOID pSharedMemoryProfiler;
 
 public:
-	HANDLE hDllWrittenEvent, hProfilerWrittenEvent, hDllDataReceived, hProfilerDataReceived;
+	HANDLE hDllDoneEvent, hProfilerWrittenEvent, hDllDataReceived, hProfilerDataReceived;
 	ProfilerMessage* pProfilerData;
-	DllMessage* pDllData;
 
 	Communication();
 	~Communication();
 
 	ProfilerMessage getMessage();
+	void announceFinish();
 	bool newDataAvailable();
-	bool sendMeasurement(const Measurement& _msg);
-	bool sendResult(const Result& _msg);
-	bool sendThreadIDs(const ThreadIDMessage& _msg);
 };

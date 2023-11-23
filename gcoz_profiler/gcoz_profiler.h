@@ -3,12 +3,11 @@
 #include <Windows.h>
 #include <iostream>
 #include <fileapi.h>
-#include "../shared/Messages.h"
-#include "Injector.h"
-#include "Communication.h"
+#include <Messages.h>
 #include "ProfilerStatusManager.h"
-#include "MessageHandler.h"
 #include <spdlog/spdlog.h>
+#include "Communication.h"
+#include "Injector.h"
 
 const char* ok = "[+] ";
 const char* err = "[-] ";

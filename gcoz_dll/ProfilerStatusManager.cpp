@@ -38,9 +38,26 @@ ProfilerStatusManager::ProfilerStatusManager(){
 		0, 0, sizeof(int)
 	); if (hStatusFileMapping == NULL) { DisplayErrorBox(L"ProfilerStatusManager", L"SharedMemoryMethod == NULL"); }
 	pSharedMemoryMethod = static_cast<int*>(SharedMemoryMethod);
+
+	/* shared memory for delay */
+	HANDLE hDelayFileMapping = OpenFileMapping(
+		FILE_MAP_ALL_ACCESS,
+		FALSE,
+		L"gcoz_delay_shared_memory"
+	); if (hStatusFileMapping == NULL) { DisplayErrorBox(L"ProfilerStatusManager", L"hMethodFileMapping == NULL"); }
+
+	LPVOID SharedMemoryDelay = MapViewOfFile(
+		hDelayFileMapping,
+		FILE_MAP_ALL_ACCESS,
+		0, 0, sizeof(float)
+	); if (hStatusFileMapping == NULL) { DisplayErrorBox(L"ProfilerStatusManager", L"SharedMemoryMethod == NULL"); }
+	pSharedMemoryDelay = static_cast<int*>(SharedMemoryDelay);
+
 	
 	/* Synchronization Event */
-	hStatusWrittenEvent = OpenEventA(NULL, FALSE, "hStatusWrittenEvent");
+	hStatusWrittenEvent = CreateEventA(NULL, FALSE, FALSE, "StatusWrittenEvent");
+	if (hStatusWrittenEvent == NULL) { DisplayErrorBox(L"ProfilerStatusManager", L"failed to open Status Written Event"); }
+	//DisplayInfoBox(L"ProfilerStatusManager", L"Construction success");
 }
 
 ProfilerStatus ProfilerStatusManager::getStatus() {
@@ -62,9 +79,16 @@ void ProfilerStatusManager::announceStatusChange() {
 }
 
 void ProfilerStatusManager::waitNewStatus(){
-	WaitForSingleObject(hStatusWrittenEvent, INFINITE);
+	//DisplayInfoBox(L"ProfilerStatusManager", L"waiting for status written event");
+	WaitForSingleObject(hStatusWrittenEvent, 1000);
 }
 
 int ProfilerStatusManager::getMethod(){
+	//DisplayInfoBox(L"ProfilerStatusManager", L"Method: " + std::to_wstring(*pSharedMemoryMethod));
 	return *pSharedMemoryMethod;
+}
+
+int ProfilerStatusManager::getDelay(){
+	//DisplayInfoBox(L"ProfilerStatusManager", L"Delay: " + std::to_wstring(*pSharedMemoryDelay));
+	return *pSharedMemoryDelay;
 }

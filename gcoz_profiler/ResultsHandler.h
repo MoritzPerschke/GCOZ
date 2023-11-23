@@ -1,5 +1,6 @@
 #pragma once
 #include <Windows.h>
+#include <iostream>
 #include <fstream>
 #include <array>
 #include <vector>
@@ -9,10 +10,9 @@
 #include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 
-#include "../shared/Constants.h"
-#include "../shared/status.h"
-
-#include <iostream>
+#include <SharedMemoryBoost.hpp>
+#include <Constants.h>
+#include <status.h>
 
 namespace fs = std::filesystem;
 using json = nlohmann::json;
@@ -21,20 +21,12 @@ using std::to_string;
 using std::string;
 
 class ResultsHandler {
-	fs::path filePathTimes;
-	fs::path filePathRates;
-	fs::path filePathBaseline;
-
-	json outputJsonRates;
-	json outputJsonTimes;
-	json outputJsonBaseline;
+	std::string _outputName;
 
 public:
-	ResultsHandler();
-	ResultsHandler(string& _processName);
-	void addBaseline(frametimeArray _baselineTimes, durationArray _baselineDurations, std::array<int, D3D11_METHOD_COUNT> _calls);
-	void addResultSingle(frametimeArray _frameTimes, frametimeArray _frameRates, int _methodIndex, float _speedup);
-	void addResultAll(frametimeArray _frameTimes, frametimeArray _frameRates, float _speedup);
-	void addThreadIDs(std::map<int, std::vector<idHash>> _ids);
-	void exportResults();
+	json getMethodDurations();
+	json getFrameRates();
+	json getFrameTimes();
+	json getThreadIDs();
+	void exportResults(string _outputName);
 };

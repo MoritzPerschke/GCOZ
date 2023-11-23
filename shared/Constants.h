@@ -2,22 +2,43 @@
 
 #ifndef _CONSTANT_VALUES
 #define _CONSTANT_VALUES
+
 #include <chrono>
 #include <thread>
 
-#define D3D11_METHOD_COUNT 205  // making this dynamic would be nice
-#define MEASURE_FRAME_COUNT 500
+/*-----------[General Profiler Constants]-----------*/
+#define D3D11_METHOD_COUNT   205  
+#define MEASURE_FRAME_COUNT  500
 #define METHOD_ID_ARRAY_SIZE 500
 #define METHOD_THREAD_COLLECTION_FRAME_COUNT 500
 
-using Nanoseconds = std::chrono::nanoseconds;
+/*---------------[Chrono Typedefs]-----------------*/
+typedef std::chrono::duration<double> RawDuration;
+typedef long long SharedDuration;
+typedef std::chrono::nanoseconds Nanoseconds;
+typedef std::chrono::steady_clock::time_point Timepoint;
 
-typedef std::size_t idHash;
+/*--------------[ThreadID Typedefs]---------------*/
+typedef std::size_t     idHash;
+typedef std::thread::id threadID;
+
+/*---------------[Data Structures]----------------*/
 typedef std::array<Nanoseconds, MEASURE_FRAME_COUNT> frametimeArray;
-typedef std::array<Nanoseconds, D3D11_METHOD_COUNT> durationArray;
-typedef std::array<Nanoseconds, D3D11_METHOD_COUNT> delayArray;
-typedef std::array<idHash, METHOD_ID_ARRAY_SIZE> idArray;
+typedef std::array<Nanoseconds, D3D11_METHOD_COUNT>  durationArray;
+typedef std::array<Nanoseconds, D3D11_METHOD_COUNT>  delayArray;
+typedef std::array<idHash, METHOD_ID_ARRAY_SIZE>     idArray;
 
+/*--------[Shared Memory Names and Types]--------*/
+/*
+
+    FrameTimes_Map<IPC::Results_Map*>; gcoz_FrameTimes_Map_Mutext<named_mutex>
+    Framerates_Map<IPC::Results_Map*>; gcoz_Framerates_Map_Mutext<named_mutex>
+    Durations_Map<IPC::DurationVector_Map*>; gcoz_Durations_Map_Mutex<named_mutex>
+    ThreadID_Map<IPC::ThreadIdVector_Map*>; gcoz_ThreadID_Map_Mutex<named_mutex>
+*/
+
+// Method specific
+/*--------------[Method specific]----------------*/
 #define D3D11_METHOD_NAMES \
     X(QueryInterface)\
     X(AddRef)\

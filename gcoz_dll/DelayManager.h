@@ -2,12 +2,14 @@
 #include <Windows.h>
 #include <chrono>
 #include <array>
+#include <Constants.h>
+#include <SharedMemoryBoost.hpp>
 #include "Communication.h"
-#include "../shared/Constants.h"
 
 // maybe this can be a namespace
 class DelayManager {
 	delayArray methodDelays;
+
 public:
 	DelayManager();
 	Nanoseconds getDelay(int methodIndex);

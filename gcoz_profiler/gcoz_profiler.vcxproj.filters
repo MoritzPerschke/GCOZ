@@ -36,9 +36,6 @@
     <ClCompile Include="ResultsHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MessageHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="IdCollector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -62,9 +59,6 @@
     <ClInclude Include="ResultsHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MessageHandler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="IdCollector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -78,6 +72,9 @@
       <Filter>Header Files\Shared</Filter>
     </ClInclude>
     <ClInclude Include="..\shared\Messages.h">
+      <Filter>Header Files\Shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\shared\SharedMemoryBoost.hpp">
       <Filter>Header Files\Shared</Filter>
     </ClInclude>
   </ItemGroup>

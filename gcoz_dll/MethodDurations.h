@@ -3,74 +3,32 @@
 #include <array>
 #include <algorithm>
 #include <vector>
+#include <SharedMemoryBoost.hpp>
+#include <Constants.h>
 
-#include "../shared/Constants.h"
+#include "ErrorMessage.h"
 
-namespace MethodDurations {
-	using Timepoint = std::chrono::steady_clock::time_point;
-	using Duration = std::chrono::duration<double>;
-	//using Nanoseconds = std::chrono::microseconds; // when this line is active, results look good?
+class MethodDurations {
+	Timepoint lastPresentStart;
+	Timepoint lastPresentEnd;
 
-	// maybe use map here to keep track of all individual times
-	static int presentCalls = 0;
-	static bool presentCalledInit = false;
-	static std::array<int, D3D11_METHOD_COUNT> calls = {};
-	static durationArray durations;
+	static std::chrono::steady_clock clock;
+	
+	managed_shared_memory segment;
+	IPC::DurationVector_Map* _durations;
+	IPC::ResultsMap_Map* _frameTimes;
+	IPC::ResultsMap_Map* _frameRates;
 
-	static Timepoint lastPresentEnd;
-	static Timepoint lastPresentStart;
-	frametimeArray presentCallTimes;
-	frametimeArray frameRates;
-	static std::chrono::steady_clock clock; // https://stackoverflow.com/a/37440647/15005309
+public:
+	MethodDurations() :
+		segment{ open_only, "gcoz_SharedMemory" },
+		_durations(segment.find<IPC::DurationVector_Map>("Durations_Map").first),
+		_frameTimes(segment.find<IPC::ResultsMap_Map>("FrameTimes_Map").first),
+		_frameRates(segment.find<IPC::ResultsMap_Map>("FrameRates_Map").first) {}
 
-	Timepoint now() {
-		return clock.now();
-	}
+	Timepoint now();
+	void addDuration(int _methodIdx, RawDuration _duration);
+	void presentStart(int _method, int _delay);
+	void presentEnd();
 
-	void addDuration(int _methodIdx, Duration _duration) {
-		calls[_methodIdx]++;
-		durations[_methodIdx] += std::chrono::duration_cast<Nanoseconds>(_duration); // not here
-	}
-
-	void presentStart() {
-		if (presentCalledInit) {
-			if (presentCalls < MEASURE_FRAME_COUNT) {
-				frameRates[presentCalls] = std::chrono::duration_cast<Nanoseconds>(now() - lastPresentStart);
-				lastPresentStart = now();
-
-				presentCallTimes[presentCalls] = std::chrono::duration_cast<Nanoseconds>(now() - lastPresentEnd);
-				presentCalls++;
-			}
-		}
-	}
-
-	void presentEnd() {
-		lastPresentEnd = now();
-		if (!presentCalledInit) { presentCalledInit = true; }
-	}
-
-	frametimeArray getFrameRates() {
-		return frameRates;
-	}
-
-	std::array<int, D3D11_METHOD_COUNT> getCallAmounts() {
-		return calls;
-	}
-
-	frametimeArray getPresentTimes() {
-		presentCalls = 0;
-		presentCalledInit = false;
-		return presentCallTimes;
-	}
-
-	durationArray getDurations() {
-		durationArray returnDurations = durations;
-		for (int i = 0; i < D3D11_METHOD_COUNT; i++) {
-			if(calls[i] == 0){
-				Timepoint empty = now();
-				returnDurations[i] = std::chrono::duration_cast<Nanoseconds>(empty - empty);
-			}
-		}
-		return returnDurations;
-	}
-} // MethodDurations
+};
