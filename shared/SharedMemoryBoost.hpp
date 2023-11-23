@@ -49,7 +49,7 @@ namespace IPC {
 	
 	using DurationVector_Map = Map<int, Vector<SharedDuration>>; // Method Durations Map (int -> Vector<Duration>)
 	using ThreadIdVector_Map = Map<int, Vector<idHash>>; //Map for ThreadIDs (int -> Vector<idHash>)
-	using ResultsMap_Map     = Map<int, Map<float, Vector<SharedDuration>>>; // Results Map (int -> float -> Vector<Duration>) // does not work because allocator tries to alloc pair <int, Map<>> for pair <float, vec<llong>>
+	using ResultsMap_Map     = Map<int, Map<int, Vector<SharedDuration>>>; // Results Map (int -> float -> Vector<Duration>) // does not work because allocator tries to alloc pair <int, Map<>> for pair <float, vec<llong>>
 
 } // namespace IPC
 

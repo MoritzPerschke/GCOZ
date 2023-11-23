@@ -1,6 +1,6 @@
 #include "ThreadIDs.h"
 
-void ThreadIDs::addID(int _methodIdx, threadID _id) { // need to shorten this, takes 5h on bl3
+void ThreadIDs::addID(int _methodIdx, threadID _id) {
 	using std::find;
 	
 	std::size_t hash = std::hash<std::thread::id>{}(_id);

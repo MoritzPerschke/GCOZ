@@ -25,8 +25,8 @@ class ProfilerStatusManager {
 	int* _currentMethod;
 	int  _previousMethod;
 
-	float* _currentDelay;
-	float _previousDelay;
+	int* _currentDelay;
+	int _previousDelay;
 
 public:
 	ProfilerStatusManager(std::string _processName);
@@ -36,7 +36,7 @@ public:
 	void nextMessage(ProfilerStatus _status, ProfilerMessage& _msg);
 
 	int   getCurrentMethod();
-	float getCurrentDelay();
+	int getCurrentDelay();
 
 	void setCurrentMethod(int _method);
 

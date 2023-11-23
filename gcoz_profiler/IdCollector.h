@@ -1,7 +1,7 @@
 #pragma once
 #include <Windows.h>
 #include <map>
-#include <vector>
+#include <queue>
 #include <array>
 #include <thread>
 #include <iostream>
@@ -11,6 +11,7 @@
 #include <Constants.h>
 
 class IdCollector {
+	std::queue<int> calledMethods;
 	int currentMethod;
 
 public:
@@ -18,4 +19,5 @@ public:
 	void idsAdded();
 	int nextMethod();
 	bool isDone();
+	std::queue<int>& getRefMethodQueue();
 };

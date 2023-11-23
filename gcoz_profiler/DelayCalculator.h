@@ -2,6 +2,7 @@
 #include <Windows.h>
 #include <map>
 #include <array>
+#include <queue>
 #include <deque>
 #include <format>
 #include <random>
@@ -21,7 +22,7 @@ class DelayCalculator {
 
 	struct choice {
 		int method;
-		float speedup;
+		int speedup;
 	};
 
 	int amoutSpeedupsMax = 10; // 0.1 - 0.9 in .1 increments
@@ -33,10 +34,10 @@ class DelayCalculator {
 	bool allMethodsDelayedDone = false; // all 10 different "speedups" applied to all methods at once
 
 	/* Tracks wether delay has been applied to all methods. If element at "speedup" exists, it has been done*/
-	std::map<float, bool> frametimeChangesAll;
+	std::map<int, bool> frametimeChangesAll;
 
 	/* Tracks for all methods wether delay has been applied, works same as above*/
-	std::array<std::map<float, bool>, D3D11_METHOD_COUNT> frametimeChangesSingle;
+	std::array<std::map<int, bool>, D3D11_METHOD_COUNT> frametimeChangesSingle;
 
 	void printBaseline();
 
@@ -45,9 +46,9 @@ public:
 	bool isBaselineAdded() { return baselineAdded; };
 	bool dataCollected();
 	bool dataCollectedAllMethods();
-	void addBaseline();
+	void addBaseline(std::queue<int>& _idCollectorMethodVector);
 	//void addBaseline(frametimeArray _frameTimes, durationArray _durations, std::array<int, D3D11_METHOD_COUNT> _calls);
-	void calculateDelays(float& _speedupPicked, int& _methodPicked, delayArray& _msgDelays);
-	void measurementDoneAll(float _speedup);
-	void measurementDoneSingle(float _speedup, int _method);
+	void calculateDelays(int& _speedupPicked, int& _methodPicked, delayArray& _msgDelays);
+	void measurementDoneAll(int _speedup);
+	void measurementDoneSingle(int _speedup, int _method);
 };

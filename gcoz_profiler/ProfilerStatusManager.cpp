@@ -63,7 +63,7 @@ ProfilerStatusManager::ProfilerStatusManager(std::string _processName) {
 		0, 0, sizeof(float)
 	); if (SharedMemoryDelay == NULL) { spdlog::error("Mapping view of delay file failed"); }
 	
-	_currentDelay = static_cast<float*>(SharedMemoryDelay);
+	_currentDelay = static_cast<int*>(SharedMemoryDelay);
 
 	_hStatusWrittenEvent = CreateEventA(NULL, FALSE, FALSE, "StatusWrittenEvent");
 	if (_hStatusWrittenEvent == NULL) { spdlog::error("Failed to create status written event"); }
@@ -74,7 +74,7 @@ ProfilerStatus ProfilerStatusManager::getNextStatus(){
 	switch (_previousStatus)
 	{ //moving this here shrinks main function a lot
 	case ProfilerStatus::GCOZ_MEASURE:
-		_delays.addBaseline();
+		_delays.addBaseline(_ids.getRefMethodQueue());
 		break;
 	case ProfilerStatus::GCOZ_COLLECT_THREAD_IDS:
 		_ids.idsAdded();
@@ -127,7 +127,11 @@ void ProfilerStatusManager::nextMessage(ProfilerStatus _status, ProfilerMessage&
 		*_currentMethod = _ids.nextMethod();
 		break;
 	case ProfilerStatus::GCOZ_PROFILE:
-		_delays.calculateDelays(*_currentDelay, *_currentMethod, _msg.delays);
+		int delay;
+		int method;
+		_delays.calculateDelays(delay, method, _msg.delays);
+		*_currentDelay = delay;
+		*_currentMethod = method;
 		_msg.valid = true;
 		break;
 	default:
@@ -150,7 +154,7 @@ int ProfilerStatusManager::getCurrentMethod() {
 	return *_currentMethod;
 }
 
-float ProfilerStatusManager::getCurrentDelay(){
+int ProfilerStatusManager::getCurrentDelay(){
 	return *_currentDelay;
 }
 

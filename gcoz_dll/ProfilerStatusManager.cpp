@@ -47,11 +47,11 @@ ProfilerStatusManager::ProfilerStatusManager(){
 	); if (hStatusFileMapping == NULL) { DisplayErrorBox(L"ProfilerStatusManager", L"hMethodFileMapping == NULL"); }
 
 	LPVOID SharedMemoryDelay = MapViewOfFile(
-		hMethodFileMapping,
+		hDelayFileMapping,
 		FILE_MAP_ALL_ACCESS,
 		0, 0, sizeof(float)
 	); if (hStatusFileMapping == NULL) { DisplayErrorBox(L"ProfilerStatusManager", L"SharedMemoryMethod == NULL"); }
-	pSharedMemoryDelay = static_cast<float*>(SharedMemoryMethod);
+	pSharedMemoryDelay = static_cast<int*>(SharedMemoryDelay);
 
 	
 	/* Synchronization Event */
@@ -84,9 +84,11 @@ void ProfilerStatusManager::waitNewStatus(){
 }
 
 int ProfilerStatusManager::getMethod(){
+	//DisplayInfoBox(L"ProfilerStatusManager", L"Method: " + std::to_wstring(*pSharedMemoryMethod));
 	return *pSharedMemoryMethod;
 }
 
-float ProfilerStatusManager::getDelay(){
+int ProfilerStatusManager::getDelay(){
+	//DisplayInfoBox(L"ProfilerStatusManager", L"Delay: " + std::to_wstring(*pSharedMemoryDelay));
 	return *pSharedMemoryDelay;
 }

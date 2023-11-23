@@ -49,10 +49,9 @@ json ResultsHandler::getFrameRates(){
 		string method = elem.first == -1 ? "All" : methodNames[elem.first];
 		for (const auto& delay : elem.second)
 		{ // loop over all the different delays
-			string locD = to_string(static_cast<int>(delay.first * 10)) + "%";
+			string locD = to_string(delay.first) + "%";
 			for (const auto& time : delay.second)
 			{ // iterate the vector of frametimes
-				float t = delay.first;
 				frameRates[method][locD].push_back(time);
 			}
 		}
@@ -69,16 +68,16 @@ json ResultsHandler::getFrameTimes() {
 	IPC::ResultsMap_Map* frameTimesMap = segment.find<IPC::ResultsMap_Map>("FrameTimes_Map").first;
 
 	json frameTimes;
-	for (const auto& elem : *frameTimesMap) {
+	for (const auto& method : *frameTimesMap) {
 		// first  = method
 		// second = delay->times
-		string method = elem.first == -1 ? "All" : methodNames[elem.first];
-		for (const auto& delay : elem.second)
+		string locM= method.first == -1 ? "All" : methodNames[method.first];
+		for (const auto& delay : method.second)
 		{ // loop over all the different delays
-			string locD = to_string(static_cast<int>(delay.first * 10)) + "%";
+			string locD = to_string(delay.first) + "%";
 			for (const auto& time : delay.second)
 			{ // iterate the vector of frametimes
-				frameTimes[method][locD].push_back(time);
+				frameTimes[locM][locD].push_back(time);
 			}
 		}
 	}
@@ -99,9 +98,7 @@ json ResultsHandler::getThreadIDs(){ // not sure if it's here, but file only say
 		//first  = methodID
 		//second = ThreadIDs
 		string locM = methodNames[idMapElem.first];
-		spdlog::info("Method {} called by threads:", locM);
 		for (const auto& id : idMapElem.second) {
-			spdlog::info("- {}", id);
 			id_vector[locM].push_back(id);
 		}
 	}

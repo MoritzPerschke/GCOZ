@@ -1,6 +1,7 @@
 #include "DelayCalculator.h"
 
 DelayCalculator::DelayCalculator() {
+	baselineAdded = false;
 }
 
 void DelayCalculator::printBaseline() { // this probably won't be needed anymore
@@ -8,8 +9,8 @@ void DelayCalculator::printBaseline() { // this probably won't be needed anymore
 		"= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= =" << std::endl <<
 		"Baseline Method Durations:" << std::endl;
 	for (int i = 0; i < _baselineDurationsAverage.size(); i++) {
-		std::cout << std::setfill(' ') << std::setw(7) << _baselineDurationsAverage[i];
-		if ((i + 1) % 19 == 0) {
+		std::cout << std::setfill(' ') << std::setw(15) << methodNames[i] << _baselineDurationsAverage[i];
+		if ((i + 1) % 4 == 0) {
 			std::cout << std::endl;
 		}
 	}
@@ -17,21 +18,7 @@ void DelayCalculator::printBaseline() { // this probably won't be needed anymore
 		"= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= =" << std::endl;
 }
 
-void printDelays(delayArray& _delays) { // this probably won't be needed anymore
-	std::cout <<
-		"= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= =" << std::endl <<
-		"Baseline Method Durations:" << std::endl;
-	for (int i = 0; i < _delays.size(); i++) {
-		std::cout << std::setfill(' ') << std::setw(7) << _delays[i].count() << "ns";
-		if ((i + 1) % 19 == 0) {
-			std::cout << std::endl;
-		}
-	}
-	std::cout << std::endl <<
-		"= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= =" << std::endl;
-}
-
-void DelayCalculator::addBaseline() {
+void DelayCalculator::addBaseline(std::queue<int>& _idCollectorMethodVector) {
 	spdlog::info("Calculating baseline durations for methods");
 	named_mutex _durationsMutex(open_only, "gcoz_Durations_Map_Mutex");
 	scoped_lock<named_mutex> lock(_durationsMutex);
@@ -44,6 +31,7 @@ void DelayCalculator::addBaseline() {
 	{// iterate through map<int, DurationVector>
 		if (method.second.size() > 0) 
 		{// Durations measured for method
+			_idCollectorMethodVector.push(method.first);
 			SharedDuration average = 0;
 			for (const auto& dur : method.second) {
 				average += dur;
@@ -56,8 +44,8 @@ void DelayCalculator::addBaseline() {
 				choice current;
 				current.method = method.first;
 				for (int i = 0; i < amoutSpeedupsMax; i++) {
-					current.speedup = static_cast<float>(i) / 10;
-					choices.push_back(current); /// TODO: add back
+					current.speedup = i * 10;
+					choices.push_back(current);
 				}
 			}
 		}
@@ -65,14 +53,14 @@ void DelayCalculator::addBaseline() {
 
 	std::shuffle(choices.begin(), choices.end(), gen);
 	spdlog::info("[DelayCalculator] created {} combinations of method/speedup", choices.size());
-	//printBaseline();
+	printBaseline();
 	baselineAdded = true;
 }
 
-void DelayCalculator::calculateDelays(float& _speedupPicked, int& _methodPicked, delayArray& _msgDelays) {
+void DelayCalculator::calculateDelays(int& _speedupPicked, int& _methodPicked, delayArray& _msgDelays) {
 
-	choice newChoice = { 0, .0 };
-	float selectedSpeedup;
+	choice newChoice = { 0, 0 };
+	int selectedSpeedup;
 	int selectedMethod;
 
 	if (allMethodsDelayedDone && choices.size() > 0) {
@@ -83,12 +71,12 @@ void DelayCalculator::calculateDelays(float& _speedupPicked, int& _methodPicked,
 		spdlog::info("Delaying all methods");
 	}
 
-	static float allSpeedup = static_cast<float>(0.0);
+	static int allSpeedup = 0;
 	selectedSpeedup = allMethodsDelayedDone ? newChoice.speedup : allSpeedup;
 	selectedMethod = allMethodsDelayedDone ? newChoice.method : -1;
-	allSpeedup += static_cast<float>(0.1);
+	allSpeedup += 10;
 
-	spdlog::info("Selected: {} with speedup {}, {} combinations remaining", selectedMethod, selectedSpeedup, choices.size());
+	spdlog::info("Selected: {} with speedup {}, ({} combinations remaining)", selectedMethod, selectedSpeedup, choices.size());
 
 	/*  calculate delays for methods. This delay is at least 1ns
 		first "if" sets delay for all methods except selectedMethod
@@ -120,14 +108,14 @@ void DelayCalculator::calculateDelays(float& _speedupPicked, int& _methodPicked,
 	_speedupPicked = selectedSpeedup;
 }
 
-void DelayCalculator::measurementDoneAll(float _speedup) {
+void DelayCalculator::measurementDoneAll(int _speedup) {
 	frametimeChangesAll[_speedup] = true;
 	if (frametimeChangesAll.size() == amoutSpeedupsMax) {
 		allMethodsDelayedDone = true;
 	}
 }
 
-void DelayCalculator::measurementDoneSingle(float _speedup, int _method) {
+void DelayCalculator::measurementDoneSingle(int _speedup, int _method) {
 	frametimeChangesSingle[_method][_speedup] = true;
 }
 

@@ -5,14 +5,21 @@ IdCollector::IdCollector() {
 }
 
 void IdCollector::idsAdded() {
-	currentMethod++;
+	//currentMethod++;
 }
 
 int IdCollector::nextMethod() {
+	currentMethod = calledMethods.front();
+	calledMethods.pop();
 	spdlog::info("Current method: {}", methodNames[currentMethod]);
 	return currentMethod;
 }
 
 bool IdCollector::isDone() {
-	return currentMethod == D3D11_METHOD_COUNT;
+	return calledMethods.size() == 0;
+}
+
+std::queue<int>& IdCollector::getRefMethodQueue()
+{
+	return calledMethods;
 }

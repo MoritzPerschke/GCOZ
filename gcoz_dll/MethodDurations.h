@@ -28,7 +28,7 @@ public:
 
 	Timepoint now();
 	void addDuration(int _methodIdx, RawDuration _duration);
-	void presentStart(int _method, float _delay);
+	void presentStart(int _method, int _delay);
 	void presentEnd();
 
 };

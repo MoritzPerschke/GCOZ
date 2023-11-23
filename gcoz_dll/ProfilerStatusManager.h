@@ -11,7 +11,7 @@ class ProfilerStatusManager {
 	Communication com;
 	ProfilerStatus* pSharedMemoryStatus;
 	int* pSharedMemoryMethod;
-	float* pSharedMemoryDelay;
+	int* pSharedMemoryDelay;
 
 public:
 	ProfilerStatusManager();
@@ -21,5 +21,5 @@ public:
 	void waitNewStatus();
 	void setStatus(ProfilerStatus _status);
 	int getMethod();
-	float getDelay();
+	int getDelay();
 };

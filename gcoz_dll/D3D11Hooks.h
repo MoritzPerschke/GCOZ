@@ -144,7 +144,7 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 		ids.mutex.lock();
 		ids.addID(8, std::this_thread::get_id());
 		ids.mutex.unlock();
-		if (callCount++ == METHOD_THREAD_COLLECTION_FRAME_COUNT) {
+		if (callCount++ >= static_cast<int>(METHOD_THREAD_COLLECTION_FRAME_COUNT / 100)) {
 			callCount = 0;
 			man.setStatus(ProfilerStatus::GCOZ_WAIT);
 			com.announceFinish(); 
