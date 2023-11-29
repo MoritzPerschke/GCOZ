@@ -54,6 +54,7 @@ int main(int argc, char* argv[]) {
 
 		ProfilerMessage nextMsg = {};
 		statusManager.nextMessage(nextStatus, nextMsg);
+		nextMsg.valid = true;
 		com.sendMessage(nextMsg);
 		com.waitRecv();
 		statusManager.setStatus(nextStatus);

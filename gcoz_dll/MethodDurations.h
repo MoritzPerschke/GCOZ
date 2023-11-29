@@ -9,6 +9,7 @@
 #include "ErrorMessage.h"
 
 class MethodDurations {
+	bool presentCalledInit = false;
 	Timepoint lastPresentStart;
 	Timepoint lastPresentEnd;
 
@@ -28,7 +29,7 @@ public:
 
 	Timepoint now();
 	void addDuration(int _methodIdx, RawDuration _duration);
-	void presentStart(int _method, int _delay);
+	void presentStart(int _method, int _delay, int &_counter);
 	void presentEnd();
-
+	void reset();
 };

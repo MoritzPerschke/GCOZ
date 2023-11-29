@@ -11,6 +11,9 @@ Nanoseconds DelayManager::getDelay(int methodIndex){
 
 void DelayManager::updateDelays(delayArray _newDelays){
 	methodDelays = _newDelays;
+	for (int i = 0; i < D3D11_METHOD_COUNT; i++) {
+		//DisplayInfoBox(L"Delay added for method " + std::to_wstring(i), std::to_wstring(methodDelays[i].count()));
+	}
 }
 
 void DelayManager::resetDelays() {

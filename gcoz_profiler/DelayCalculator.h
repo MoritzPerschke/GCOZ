@@ -28,7 +28,7 @@ class DelayCalculator {
 	int amoutSpeedupsMax = 10; // 0.1 - 0.9 in .1 increments
 
 	std::deque<choice> choices;
-	std::vector<SharedDuration> _baselineDurationsAverage; // filled with averages from addBaseline()
+	std::map<int, Nanoseconds> _baselineDurationsAverage; // filled with averages from addBaseline()
 
 	bool baselineAdded;
 	bool allMethodsDelayedDone = false; // all 10 different "speedups" applied to all methods at once

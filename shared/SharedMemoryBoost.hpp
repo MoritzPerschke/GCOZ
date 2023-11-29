@@ -47,9 +47,9 @@ namespace IPC {
 	template <typename K, typename V, typename Cmp = std::less<K>, typename P = std::pair<K const, V>>
 	using Map = boost::container::map<K, V, Cmp, Alloc<P>>;
 	
-	using DurationVector_Map = Map<int, Vector<SharedDuration>>; // Method Durations Map (int -> Vector<Duration>)
+	using DurationVector_Map = Map<int, Vector<Nanoseconds>>; // Method Durations Map (int -> Vector<Duration>)
 	using ThreadIdVector_Map = Map<int, Vector<idHash>>; //Map for ThreadIDs (int -> Vector<idHash>)
-	using ResultsMap_Map     = Map<int, Map<int, Vector<SharedDuration>>>; // Results Map (int -> float -> Vector<Duration>) // does not work because allocator tries to alloc pair <int, Map<>> for pair <float, vec<llong>>
+	using ResultsMap_Map     = Map<int, Map<int, Vector<Nanoseconds>>>; // Results Map (int -> float -> Vector<Duration>) // does not work because allocator tries to alloc pair <int, Map<>> for pair <float, vec<llong>>
 
 } // namespace IPC
 

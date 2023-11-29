@@ -122,8 +122,10 @@ ProfilerStatus ProfilerStatusManager::getNextStatus(){
 void ProfilerStatusManager::nextMessage(ProfilerStatus _status, ProfilerMessage& _msg){
 	switch (_status) {
 	case ProfilerStatus::GCOZ_MEASURE:
+		_msg.delays.fill(Nanoseconds(0));
 		break;
 	case ProfilerStatus::GCOZ_COLLECT_THREAD_IDS:
+		//_msg.delays.fill(Nanoseconds(0));
 		*_currentMethod = _ids.nextMethod();
 		break;
 	case ProfilerStatus::GCOZ_PROFILE:

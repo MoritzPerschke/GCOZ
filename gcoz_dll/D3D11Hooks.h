@@ -111,12 +111,12 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 	//	init = true;
 	//}
 
-	static unsigned long long int callCount = 0;
+	static int callCount = 0;
+	HRESULT value;
 	//MethodDurations::Timepoint start;
 
 	switch (man.getStatus()) {
 	case ProfilerStatus::GCOZ_MEASURE: // measure times of D3D11 Methods, nothing else
-		//MethodDurations::presentStart();// no need to track frames here
 		if (callCount++ == MEASURE_FRAME_COUNT) {
 			callCount = 0;
 			delays.resetDelays();
@@ -124,23 +124,23 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 			com.announceFinish();
 			man.announceStatusChange();
 		}
-		//MethodDurations::presentEnd();
+		value = oPresent(pSwapChain, SyncInterval, Flags);
 		break;
 
 	case ProfilerStatus::GCOZ_PROFILE: // apply last received delays and measure FPS
-		durations.presentStart(man.getMethod(), man.getDelay());
-		if (callCount++ == MEASURE_FRAME_COUNT + 2) { // +2 to make sure begin/end time of present is initialized
+		durations.presentStart(man.getMethod(), man.getDelay(), callCount);
+		if (callCount++ == MEASURE_FRAME_COUNT) {
 			callCount = 0;
 			delays.resetDelays();
 			man.setStatus(ProfilerStatus::GCOZ_WAIT);
 			com.announceFinish(); 
 			man.announceStatusChange();
+			durations.reset();
 		}
-		durations.presentEnd();
+		value = oPresent(pSwapChain, SyncInterval, Flags);
 		break;
 
 	case ProfilerStatus::GCOZ_COLLECT_THREAD_IDS:
-		//MethodDurations::presentStart(man.getMethod(), man.getDelay()); // no need to track frames here
 		ids.mutex.lock();
 		ids.addID(8, std::this_thread::get_id());
 		ids.mutex.unlock();
@@ -150,7 +150,7 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 			com.announceFinish(); 
 			man.announceStatusChange();
 		}
-		//MethodDurations::presentEnd();
+		value = oPresent(pSwapChain, SyncInterval, Flags);
 		break;
 
 	case ProfilerStatus::GCOZ_WAIT: // do nothing, wait for message from Profiler
@@ -161,19 +161,17 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 			//std::this_thread::sleep_for(std::chrono::seconds(5));
 			//DisplayInfoBox(L"Present Hook", L"Data received");
 			if (newData.valid) {
-				//DisplayInfoBox(L"Present Hook", L"new Data is valid");
 				man.waitNewStatus();
-				if (man.getStatus() == ProfilerStatus::GCOZ_MEASURE) {
-					try {
-						delays.updateDelays(newData.delays);
-						//DisplayInfoBox(L"Present Hook", L"updated delays");
-					}
-					catch (...) {
-						DisplayErrorBox(L"Dll Main");
-					}
+				try {
+					delays.updateDelays(newData.delays);
+					//DisplayInfoBox(L"Present Hook", L"updated delays");
+				}
+				catch (...) {
+					DisplayErrorBox(L"Dll Main");
 				}
 			}
 		}
+		value = oPresent(pSwapChain, SyncInterval, Flags);
 		break;
 	default:
 		//DisplayInfoBox(L"Dll Main", L"default case in Present switch");
@@ -181,8 +179,8 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 	} // switch(ProfilerStatusManager::currentStatus)
 
 	//GUI::showGCOZgui(man, overlayDebugMessage);
-
-	return oPresent(pSwapChain, SyncInterval, Flags);
+	durations.presentEnd();
+	return value;
 }
 
 void hookD3D11() {

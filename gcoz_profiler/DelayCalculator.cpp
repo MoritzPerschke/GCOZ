@@ -6,16 +6,25 @@ DelayCalculator::DelayCalculator() {
 
 void DelayCalculator::printBaseline() { // this probably won't be needed anymore
 	std::cout <<
-		"= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= =" << std::endl <<
+		"= ======= ======= ======= ======= ======= ======= ======= =======  ======= ======= ======= ======= ======= =" << std::endl <<
 		"Baseline Method Durations:" << std::endl;
 	for (int i = 0; i < _baselineDurationsAverage.size(); i++) {
-		std::cout << std::setfill(' ') << std::setw(15) << methodNames[i] << _baselineDurationsAverage[i];
-		if ((i + 1) % 4 == 0) {
+		std::cout << std::setfill(' ') << std::setw(27) << methodNames[i] << ": " << _baselineDurationsAverage[i];
+		if ((i + 1) % 3 == 0) {
 			std::cout << std::endl;
 		}
 	}
+	std::cout << "\n" << "Profiled methods:\n";
+	for (int i = 0; i < D3D11_METHOD_COUNT; i++) {
+		if (_baselineDurationsAverage[i] > Nanoseconds(1000)) {
+			std::cout << std::setfill(' ') << std::setw(25) << methodNames[i] << ": " << _baselineDurationsAverage[i];
+			if ((i + 1) % 3 == 0) {
+				std::cout << std::endl;
+			}
+		}
+	}
 	std::cout << std::endl <<
-		"= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= =" << std::endl;
+		"= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= ======= =" << std::endl;
 }
 
 void DelayCalculator::addBaseline(std::queue<int>& _idCollectorMethodVector) {
@@ -32,15 +41,16 @@ void DelayCalculator::addBaseline(std::queue<int>& _idCollectorMethodVector) {
 		if (method.second.size() > 0) 
 		{// Durations measured for method
 			_idCollectorMethodVector.push(method.first);
-			SharedDuration average = 0;
+			Nanoseconds average = Nanoseconds(0);
 			for (const auto& dur : method.second) {
 				average += dur;
 			}
 			average /= method.second.size();
-			_baselineDurationsAverage.push_back(average);
-			spdlog::info("Average for method {} is: {}", methodNames[method.first], average);
-			if (average < 1000)
-			{// 1000ns clock accuracy
+			_baselineDurationsAverage.emplace(method.first, average);
+			spdlog::warn("Size of _baselineDurationsAverage: {}", _baselineDurationsAverage.size());
+			spdlog::info("Average for method {} is: {}", methodNames[method.first], average.count());
+			if (average > Nanoseconds(1000))
+			{// 100ns clock accuracy (1000 * 0.1 = 100)
 				choice current;
 				current.method = method.first;
 				for (int i = 0; i < amoutSpeedupsMax; i++) {
@@ -83,20 +93,24 @@ void DelayCalculator::calculateDelays(int& _speedupPicked, int& _methodPicked, d
 		second "if" set delay for selectedMethod as well if frametimeChangesAll is not full yet
 		third "if" sets delay to basically none, just in case a method that wasn't called during measuring is called during profiling
 	*/
-	for (int i = 0; i < _baselineDurationsAverage.size(); i++) 
+	for (int i = 0; i < D3D11_METHOD_COUNT; i++) 
 	{
-		SharedDuration average = _baselineDurationsAverage[i];
-		if (_baselineDurationsAverage[i] > 1000)
+		Nanoseconds average = _baselineDurationsAverage[i];
+		float delay = static_cast<float>(selectedSpeedup) / 100;
+		if (average > Nanoseconds(0)) {
+			//spdlog::warn("Delay for {}: {} (average: {})", i, std::llround(static_cast<float>(average) * delay), average);
+		}
+		if (_baselineDurationsAverage[i] > Nanoseconds(1000))
 		{// 100ns == resolution of high_resolution_clock
 			if (i != selectedMethod)
 			{
-				_msgDelays[i] = Nanoseconds(std::llround(average * selectedSpeedup));
+				_msgDelays[i] = std::chrono::duration_cast<Nanoseconds>(average * delay);
 			}
 			else if (!allMethodsDelayedDone) {
-				_msgDelays[i] = Nanoseconds(std::llround(average * selectedSpeedup));
+				_msgDelays[i] = std::chrono::duration_cast<Nanoseconds>(average * delay);
 			}
 			else {
-				_msgDelays[i] = Nanoseconds(0);
+				_msgDelays[i] = Nanoseconds(500);
 			}
 		}
 		else {

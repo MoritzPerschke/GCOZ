@@ -27,7 +27,7 @@ json ResultsHandler::getMethodDurations(){
 		string locM = methodNames[method.first];
 		for (const auto& duration : method.second) 
 		{ // loop all measured durations
-			methodDurations[locM].push_back(duration);
+			methodDurations[locM].push_back(duration.count());
 		}
 	}
 	spdlog::info("Measured durations of method added to file");
@@ -52,7 +52,7 @@ json ResultsHandler::getFrameRates(){
 			string locD = to_string(delay.first) + "%";
 			for (const auto& time : delay.second)
 			{ // iterate the vector of frametimes
-				frameRates[method][locD].push_back(time);
+				frameRates[method][locD].push_back(time.count());
 			}
 		}
 	}
@@ -77,7 +77,7 @@ json ResultsHandler::getFrameTimes() {
 			string locD = to_string(delay.first) + "%";
 			for (const auto& time : delay.second)
 			{ // iterate the vector of frametimes
-				frameTimes[locM][locD].push_back(time);
+				frameTimes[locM][locD].push_back(time.count());
 			}
 		}
 	}
