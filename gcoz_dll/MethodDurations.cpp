@@ -6,7 +6,7 @@ Timepoint MethodDurations::now() {
 
 void MethodDurations::addDuration(int _methodIdx, RawDuration _dur) {
 
-	if(duration_cast<Nanoseconds>(_dur).count() > 0){
+	if(duration_cast<Nanoseconds>(_dur).count() > 100){
 		auto it = _durations->find(_methodIdx);
 		if (it == _durations->end()) {
 			it = _durations->emplace(_methodIdx, _durations->get_allocator()).first;

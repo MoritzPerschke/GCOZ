@@ -110,7 +110,7 @@ void DelayCalculator::calculateDelays(int& _speedupPicked, int& _methodPicked, d
 				_msgDelays[i] = std::chrono::duration_cast<Nanoseconds>(average * delay);
 			}
 			else {
-				_msgDelays[i] = Nanoseconds(500);
+				_msgDelays[i] = Nanoseconds(0);
 			}
 		}
 		else {

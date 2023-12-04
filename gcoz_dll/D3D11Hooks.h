@@ -48,11 +48,13 @@ void little_sleep(Nanoseconds _delay) { // https://stackoverflow.com/a/45571538
 	_RETURN_TYPE __stdcall hk##_NAME(FUNCTION_SIGNATURE(__VA_ARGS__)){ \
 		_RETURN_TYPE value; \
 		Timepoint start; \
+		Timepoint end; \
 		switch (man.getStatus()) { \
 			case ProfilerStatus::GCOZ_MEASURE : \
 				start = durations.now(); \
 				value = o##_NAME(PARAMETER_NAMES(__VA_ARGS__)); \
-				RawDuration duration = durations.now() - start; \
+				end = durations.now(); \
+				RawDuration duration = end - start; \
 				durations.addDuration(_IDX, duration); \
 				break; \
 			case ProfilerStatus::GCOZ_PROFILE : \
@@ -72,16 +74,18 @@ void little_sleep(Nanoseconds _delay) { // https://stackoverflow.com/a/45571538
 	}
 	D3D11_METHODS
 #undef X
-
+		
 /* same as above just for void functions (no return)*/
 #define X(_IDX, _RETURN_TYPE, _NAME, ...) \
 	_RETURN_TYPE __stdcall hk##_NAME(FUNCTION_SIGNATURE(__VA_ARGS__)){ \
 		Timepoint start; \
+		Timepoint end; \
 		switch (man.getStatus()) { \
 			case ProfilerStatus::GCOZ_MEASURE : \
 				start = durations.now(); \
 				o##_NAME(PARAMETER_NAMES(__VA_ARGS__)); \
-				RawDuration duration = durations.now() - start; \
+				end = durations.now(); \
+				RawDuration duration = end - start; \
 				durations.addDuration(_IDX, duration); \
 				break; \
 			case ProfilerStatus::GCOZ_PROFILE : \
@@ -104,6 +108,7 @@ void little_sleep(Nanoseconds _delay) { // https://stackoverflow.com/a/45571538
 typedef HRESULT(__stdcall* Present)(IDXGISwapChain*, UINT, UINT);
 static Present oPresent = NULL;
 HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT Flags) {
+	static int callCount = 0;
 	// ImGui Setup
 	//static bool init = false;
 	//if (!init){
@@ -111,7 +116,6 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 	//	init = true;
 	//}
 
-	static int callCount = 0;
 	HRESULT value;
 	//MethodDurations::Timepoint start;
 
@@ -131,6 +135,7 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 		durations.presentStart(man.getMethod(), man.getDelay(), callCount);
 		if (callCount++ == MEASURE_FRAME_COUNT) {
 			callCount = 0;
+			durations.finish(man.getMethod(), man.getDelay());
 			delays.resetDelays();
 			man.setStatus(ProfilerStatus::GCOZ_WAIT);
 			com.announceFinish(); 
