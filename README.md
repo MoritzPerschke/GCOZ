@@ -7,7 +7,7 @@ Causal profiling is a technique that, in short, simulates speeding up a method b
 This is called virtual speedup.
 In order to reduce complexity, GCOZ only tries 10 different virtual speedups (10% steps from 0-1).
 For more information you can [check out the original causal profiler](https://github.com/plasma-umass/coz) or read the [original paper](https://arxiv.org/pdf/1608.03676v1) by Curtsinger and Berger.
-This project was developed as part of my bachelor's thesis at the university of Innsbruck in 2023 (which can be found in the `miscellaneous` directory).
+This project was developed as part of my bachelor's thesis at the university of Innsbruck in 2023 (which is also part of this repo).
 
 The profiler is a commandline tool that works by injecting a .dll file into a running game using DirectX11.
 This .dll then uses [rebzzel/kiero](https://github.com/Rebzzel/kiero) to hook into all possible methods in order to manipulate the rendering process.
