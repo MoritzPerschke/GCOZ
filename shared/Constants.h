@@ -6,13 +6,13 @@
 #include <chrono>
 #include <thread>
 
-/*-----------[General Profiler Constants]-----------*/
+/*-----------[General Profiler Constants]---------*/
 #define D3D11_METHOD_COUNT   205  
 #define MEASURE_FRAME_COUNT  500
 #define METHOD_ID_ARRAY_SIZE 500
 #define METHOD_THREAD_COLLECTION_FRAME_COUNT 500
 
-/*---------------[Chrono Typedefs]-----------------*/
+/*---------------[Chrono Typedefs]----------------*/
 typedef std::chrono::duration<double> RawDuration;
 typedef std::chrono::nanoseconds Nanoseconds;
 typedef std::chrono::steady_clock::time_point Timepoint;
@@ -24,7 +24,7 @@ typedef std::thread::id threadID;
 /*---------------[Data Structures]----------------*/
 typedef std::array<Nanoseconds, D3D11_METHOD_COUNT>  delayArray;
 
-/*--------------[Method specific]----------------*/
+/*--------------[Method specific]-----------------*/
 #define D3D11_METHOD_NAMES \
     X(QueryInterface)\
     X(AddRef)\
@@ -232,6 +232,7 @@ typedef std::array<Nanoseconds, D3D11_METHOD_COUNT>  delayArray;
     X(BeginEventInt)\
     X(EndEvent)
 
+/*-----------[Array of Method names]--------------*/
 const static std::array<std::string, D3D11_METHOD_COUNT> methodNames = {
 #define X(_MethodName)\
 	#_MethodName,

@@ -9,17 +9,9 @@ void boostCleanup() {
 	named_mutex::remove("gcoz_FrameTimes_Map_Mutex");
 	named_mutex::remove("gcoz_FrameRates_Map_Mutex");
 }
-/* Setup boost shared memory for:
-- Frametimes
-- method Durations
-- how often methods get called
-- calling Thread IDs for methods
-- framerates
-- delays
-- maybe also current method ID for threadID collection
-*/
+
 Communication::Communication() {
-	/* Profiler -> Dll Communication */
+	/* Profiler -> Dll Communication (to send calculated delays) */
 	hProfilerFileMapping = CreateFileMapping(
 		INVALID_HANDLE_VALUE,
 		NULL,
@@ -39,9 +31,9 @@ Communication::Communication() {
 	}
 	pProfilerData = static_cast<ProfilerMessage*>(pSharedMemoryProfiler);
 
-	/* Make sure objects don't already exist */
+	/* Make sure boost objects don't already exist */
 	boostCleanup();
-	/* Boost shared memory setup */
+	/* Boost shared memory general setup */
 	managed_shared_memory segment(create_only, "gcoz_SharedMemory", 1024 * 50000); // 1KB * 1000 = 1MB
 	named_mutex generalMutex(create_only, "gcoz_SharedMemory_General_Mutex");
 
@@ -83,14 +75,9 @@ Communication::~Communication() {
 	spdlog::info("Communication Destructor called");
 }
 
+// Careful, this does not check for success(ful read)
 bool Communication::sendMessage(ProfilerMessage _msg) {
 	*pProfilerData = _msg;
-	//if (memcmp(pProfilerData, &_msg, sizeof(_msg)) == 0) {
-	//	return SetEvent(hProfilerWrittenEvent);
-	//}
-	//else {
-	//	return false;
-	//} test later
 	return SetEvent(hProfilerWrittenEvent);
 }
 
@@ -101,9 +88,3 @@ DWORD Communication::waitDllDone() {
 DWORD Communication::waitRecv(){
 	return WaitForSingleObject(hDllDataReceived, INFINITE);
 }
-
-/*deprecated*/
-//DWORD Communication::waitMsg(){
-//	DWORD result = WaitForSingleObject(hDllWrittenEvent, INFINITE);
-//	return result;
-//}

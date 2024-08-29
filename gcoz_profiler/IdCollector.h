@@ -10,6 +10,9 @@
 #include <status.h>
 #include <Constants.h>
 
+/* Class providing functionality to collect information
+*  about which thread calls which methods
+*/
 class IdCollector {
 	std::queue<int> calledMethods;
 	int currentMethod;

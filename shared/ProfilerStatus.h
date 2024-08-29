@@ -2,6 +2,8 @@
 #ifndef _PROFILER_STATUS
 #define _PROFILER_STATUS
 
+// I might be going overboard with x-macros but
+// it seems easiest to define all possible statuses here
 #define X_PROFILER_STATUS\
 	X(GCOZ_MEASURE)\
 	X(GCOZ_PROFILE)\
@@ -10,6 +12,7 @@
 	X(GCOZ_FINISH)\
 	X(GCOZ_FAIL)
 
+// For example to create this enum
 enum ProfilerStatus {
 #define X(_STATUS)\
 	_STATUS,
@@ -18,6 +21,7 @@ enum ProfilerStatus {
 };
 
 /// TODO: probably not great to inline these but i just don't want to deal with this rn
+// Conversion of enum value to string
 static inline std::string profilerStatusString(ProfilerStatus _status) {
 	switch (_status) {
 #define X(_STATUS)\
@@ -31,6 +35,7 @@ static inline std::string profilerStatusString(ProfilerStatus _status) {
 	}
 }
 
+// and to wstring
 static inline std::wstring profilerStatusWstring(ProfilerStatus _status) {
 	std::string narrowStatus;
 	switch (_status) {

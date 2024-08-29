@@ -1,3 +1,10 @@
+/*
+* This was an attempt to create a GUI providing Information about 
+* the current profiling run within the games window.
+* There was a bit of a hit to performance but not in a very impactful way.
+* The reason this is not used anymore is that it required too much effort
+* to maintain during the last sprint of the thesis
+*/
 #pragma once
 #include <Windows.h>
 #include <d3d11.h>

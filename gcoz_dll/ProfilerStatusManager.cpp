@@ -1,12 +1,5 @@
 #include "ProfilerStatusManager.h"
 
-/*
-	HANDLE mutex;
-	HANDLE hStatusWrittenEvent;
-	HANDLE hProfilingDataRecv;
-	LPVOID pSharedMemoryStatus;
-	*/
-
 ProfilerStatusManager::ProfilerStatusManager(){
 	/* shared memory for status */
 	HANDLE hStatusFileMapping = OpenFileMapping(
@@ -79,16 +72,13 @@ void ProfilerStatusManager::announceStatusChange() {
 }
 
 void ProfilerStatusManager::waitNewStatus(){
-	//DisplayInfoBox(L"ProfilerStatusManager", L"waiting for status written event");
 	WaitForSingleObject(hStatusWrittenEvent, 1000);
 }
 
 int ProfilerStatusManager::getMethod(){
-	//DisplayInfoBox(L"ProfilerStatusManager", L"Method: " + std::to_wstring(*pSharedMemoryMethod));
 	return *pSharedMemoryMethod;
 }
 
 int ProfilerStatusManager::getDelay(){
-	//DisplayInfoBox(L"ProfilerStatusManager", L"Delay: " + std::to_wstring(*pSharedMemoryDelay));
 	return *pSharedMemoryDelay;
 }

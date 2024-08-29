@@ -1,5 +1,6 @@
 #include "ResultsHandler.h"
 
+// method that returns [filename]_[running count]
 string uniqueFileName(fs::path& _dir, string _base, string _ext = ".json") {
 	std::string unique = _base + _ext;
 	int counter = 0;

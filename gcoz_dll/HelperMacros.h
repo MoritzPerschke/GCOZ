@@ -1,11 +1,14 @@
 
 /*
+  This file contains the macros used to generate the function definitions needed for hooking
+
   To precompile correctly I had to add /experimental:preprocessor to the cmd options of the solution.
   Otherwise, MSVC treats __VA_ARGS__ as one token and not as multiple seperated by a comma :))
   https://stackoverflow.com/questions/9183993/msvc-variadic-macro-expansion
 */
 
 // https://stackoverflow.com/questions/45756920/c-c-preprocessor-extract-every-second-variadic-parameter
+// These macros extract either the type or name of the parameter of a function defined below
 #define EVERY_SECOND0(...)
 
 #define EVERY_SECOND1_(second, ...) second
@@ -97,11 +100,8 @@
 #define COUNT_ALL_(_1, __1, _2, __2, _3, __3, _4, __4, _5, __5, _6, __6, _7, __7, _8, __8, _9, __9, _10, __10, _11, __11,_12,__12,_13,__13,_14,__14,_15,__15, num, ...) ALL##num
 #define FUNCTION_SIGNATURE(...) COUNT_ALL_(__VA_ARGS__,15,15,14,14,13,13,12,12,11,11,10,10,9,9,8,8,7,7,6,6,5,5,4,4,3,3,2,2,1,0)(__VA_ARGS__)
 
-//void test() {
-//	IDXGISwapChain chain;
-//	chain.QueryInterface()
-//}
-
+// This macro defines all the parameters for the functions kiero can hook
+// It uses x-macro expansion to generate the hook functions (happens in 'D3D11Hooks.h')
 #define D3D11_METHODS \
 	X(19, ULONG, AddRefDevice, ID3D11Device*, pDevice) \
 	X(20, ULONG, ReleaseDevice, ID3D11Device*, pDevice) \

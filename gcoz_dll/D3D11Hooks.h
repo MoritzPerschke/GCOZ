@@ -18,8 +18,9 @@ MethodDurations durations;
 ProfilerStatusManager man;
 Communication com;
 ThreadIDs ids;
-std::string overlayDebugMessage = "Looking good :)"; // this is ugly, get this to a namespace or sth
+std::string overlayDebugMessage = "Looking good :)";
 
+// Busy waiting function to simulate the function taking longer
 void little_sleep(Nanoseconds _delay) { // https://stackoverflow.com/a/45571538
 	auto start = durations.now();
 	auto end = start + _delay;
@@ -30,6 +31,7 @@ void little_sleep(Nanoseconds _delay) { // https://stackoverflow.com/a/45571538
 	}
 }
 
+/* The macros below use the definitions in 'HelperMacros.h' to generate whats needed for kiero hooking */
 /* expands to function pointers for D3D11 methods */
 #define X(idx, returnType, name, ...) typedef returnType (__stdcall* name)(PARAMETER_TYPES(__VA_ARGS__));
 	D3D11_METHODS
@@ -43,7 +45,13 @@ void little_sleep(Nanoseconds _delay) { // https://stackoverflow.com/a/45571538
 #undef X
 
 /* expands to hooked d3d11 function */
-// maybe always measure duration to verify pauses
+/*
+ Depending on the current status, each hook function can
+ 1. measure execution time
+ 2. busy wait to do the profiling
+ 3. collect information about which thread calls which function
+ 4. do nothing
+*/ 
 #define X(_IDX, _RETURN_TYPE, _NAME, ...) \
 	_RETURN_TYPE __stdcall hk##_NAME(FUNCTION_SIGNATURE(__VA_ARGS__)){ \
 		_RETURN_TYPE value; \
@@ -105,16 +113,13 @@ void little_sleep(Nanoseconds _delay) { // https://stackoverflow.com/a/45571538
 	D3D11_METHODS_VOID
 #undef X
 
+/* At the end of every rendered frame the 'Present' Method is called, which is why its hook is used to 
+   communicate with the profiler and control the actions of the dll
+*/
 typedef HRESULT(__stdcall* Present)(IDXGISwapChain*, UINT, UINT);
 static Present oPresent = NULL;
 HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT Flags) {
 	static int callCount = 0;
-	// ImGui Setup
-	//static bool init = false;
-	//if (!init){
-	//	GUI::init(pSwapChain);
-	//	init = true;
-	//}
 
 	HRESULT value;
 	//MethodDurations::Timepoint start;
@@ -160,11 +165,7 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 
 	case ProfilerStatus::GCOZ_WAIT: // do nothing, wait for message from Profiler
 		if (com.newDataAvailable()) {
-			//DisplayInfoBox(L"Present Hook", L"newDataAvailable() == true");
 			ProfilerMessage newData = com.getMessage();
-			//DisplayInfoBox(L"Present Hook", L"Data received");
-			//std::this_thread::sleep_for(std::chrono::seconds(5));
-			//DisplayInfoBox(L"Present Hook", L"Data received");
 			if (newData.valid) {
 				man.waitNewStatus();
 				try {
@@ -179,11 +180,9 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 		value = oPresent(pSwapChain, SyncInterval, Flags);
 		break;
 	default:
-		//DisplayInfoBox(L"Dll Main", L"default case in Present switch");
 		break;
 	} // switch(ProfilerStatusManager::currentStatus)
 
-	//GUI::showGCOZgui(man, overlayDebugMessage);
 	durations.presentEnd();
 	return value;
 }

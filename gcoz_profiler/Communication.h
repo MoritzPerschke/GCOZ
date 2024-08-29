@@ -8,34 +8,31 @@
 #include <functional>
 #include <utility>
 
-// this should ensure that on creation/destruction of the Communication object the shared memory is properly destroyed
-// https://www.boost.org/doc/libs/1_83_0/doc/html/interprocess/quick_guide.html#interprocess.quick_guide.qg_interprocess_container
-//struct shm_remove {
-//	shm_remove() { boost::interprocess::shared_memory_object::remove("gcoz_FrametimesShared"); }
-//	~shm_remove() { boost::interprocess::shared_memory_object::remove("gcoz_FrametimesShared"); }
-//};
-
 class Communication {
 
-	//shm_remove remover;
+	// 
 	HANDLE hProfilerFileMapping;
 	LPVOID pSharedMemoryProfiler;
 	HANDLE hDllWrittenEvent, hProfilerWrittenEvent, hDllDataReceived, hProfilerDataReceived;
+	// Simple WinAPI shared memory for sending frame data
 	ProfilerMessage* pProfilerData;
 	HANDLE dllDoneEvent;
 
-	// these do not need to be member variables i think
-	//IPC::ResultsMap_Map* frameTimesMap; // FrameTimes_Map; gcoz_FrameTimes_Map_Mutex
-	//IPC::ResultsMap_Map* frameRatesMap; // Framerates_Map; gcoz_FrameRates_Map_Mutex
-	//IPC::DurationVector_Map* methodDurationsMap; // Durations_Map; gcoz_Durations_Map_Mutex
-	//IPC::ThreadIdVector_Map* threadIDmap; // ThreadID_Map; gcoz_ThreadID_Map_Mutex
-
 public:
+	/* Setup boost shared memory for:
+	- Frametimes
+	- method Durations
+	- Method call-count
+	- calling Thread IDs for methods
+	- framerates
+	- delays
+	*/
 	Communication();
+	// The explicit destructor is used to ensure proper
+	// removal of all shared memory mappings
 	~Communication();
 
 	bool sendMessage(ProfilerMessage _msg);
 	DWORD waitDllDone();
-	//DWORD waitMsg();
 	DWORD waitRecv();
 };

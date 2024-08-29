@@ -19,10 +19,6 @@ class MethodDurations {
 
 	static std::chrono::steady_clock clock;
 
-	//using DurationVector_Map = Map<int, Vector<Nanoseconds>>; // Method Durations Map (int -> Vector<Duration>)
-	//using ThreadIdVector_Map = Map<int, Vector<idHash>>; //Map for ThreadIDs (int -> Vector<idHash>)
-	//using ResultsMap_Map = Map<int, Map<int, Vector<Nanoseconds>>>; // Results Map (int -> float -> Vector<Duration>) // does not work because allocator tries to alloc pair <int, Map<>> for pair <float, vec<llong>>
-
 	std::map<int, std::map<int, std::vector<Nanoseconds>>> frameTimes;
 
 	managed_shared_memory segment;

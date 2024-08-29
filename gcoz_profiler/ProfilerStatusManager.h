@@ -10,12 +10,16 @@
 #include "IdCollector.h"
 #include "ResultsHandler.h"
 
+/* Class providing the control logic for the overall profiling process */
 class ProfilerStatusManager {
+	// Components that provide the needed functionality
 	DelayCalculator _delays;
 	IdCollector		_ids;
 	ResultsHandler  _results;
 
+	// mutex used while writing status to shared memory
 	HANDLE _statusMutex;
+	// handle to the event signaling that a new status was written
 	HANDLE _hStatusWrittenEvent;
 
 	ProfilerStatus  _nextStatus;

@@ -13,29 +13,6 @@ int profilerThread() {
 	return 0;
 }
 
-//int debugMessageBoxThread() {
-//	using namespace boost::interprocess;
-//	
-//	try {
-//
-//		managed_shared_memory segment = managed_shared_memory(open_or_create, "gcoz_FrametimesShared", 65539);
-//		DisplayInfoBox(L"main", L"opened segment");
-//		IPC::DurationVector_Map* myMap = segment.construct<IPC::DurationVector_Map>("Frametime_Map")(segment.get_segment_manager());
-//		DisplayInfoBox(L"main", L"got map");
-//
-//		for (int i = 0; i < 10; i++) {
-//			//myMap->at(1).push_back(std::chrono::steady_clock::now() - std::chrono::steady_clock::now());
-//			DisplayInfoBox(L"inserting", std::to_wstring(i));
-//		}
-//		//myMap->size() > 0 ? DisplayInfoBox(L"main", L"map filled") : DisplayInfoBox(L"main", L"map empty");
-//	}
-//	catch (...) {
-//		DisplayErrorBox(L"opening failed");
-//	}
-//	
-//	return 0;
-//}
-
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
 {
 	DisableThreadLibraryCalls(hModule);

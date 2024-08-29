@@ -35,11 +35,10 @@ void DelayCalculator::addBaseline(std::queue<int>& _idCollectorMethodVector) {
 	managed_shared_memory segment(open_only, "gcoz_SharedMemory");
 	IPC::DurationVector_Map* _baselineDurations = segment.find<IPC::DurationVector_Map>("Durations_Map").first;
 	
-	//for(auto method_it = _baselineDurations->begin(); method_it < _baselineDurations->end(); method_it++)
-	for (const auto& method : *_baselineDurations) 
-	{// iterate through map<int, DurationVector>
-		if (method.second.size() > 0) 
-		{// Durations measured for method
+	for (const auto& method : *_baselineDurations) {
+		// iterate through map<int, DurationVector>
+		if (method.second.size() > 0) {
+			// Durations measured for method
 			_idCollectorMethodVector.push(method.first);
 			Nanoseconds average = Nanoseconds(0);
 			for (const auto& dur : method.second) {
@@ -131,10 +130,6 @@ void DelayCalculator::measurementDoneAll(int _speedup) {
 
 void DelayCalculator::measurementDoneSingle(int _speedup, int _method) {
 	frametimeChangesSingle[_method][_speedup] = true;
-}
-
-bool DelayCalculator::dataCollectedAllMethods() {
-	return allMethodsDelayedDone;
 }
 
 bool DelayCalculator::dataCollected() {

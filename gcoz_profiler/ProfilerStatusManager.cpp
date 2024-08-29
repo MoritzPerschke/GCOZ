@@ -3,6 +3,7 @@
 ProfilerStatusManager::ProfilerStatusManager(std::string _processName) {
 	_results = ResultsHandler();
 
+	// Setup shared memory for communicating current status of the profiler
 	HANDLE hStatusFileMapping = CreateFileMapping(
 		INVALID_HANDLE_VALUE,
 		NULL,
@@ -17,8 +18,8 @@ ProfilerStatusManager::ProfilerStatusManager(std::string _processName) {
 		0, 0, sizeof(ProfilerStatus)
 	); if (SharedMemoryStatus == NULL) {spdlog::error("Mapping view of Status file failed");}
 	_currentStatus = static_cast<ProfilerStatus*>(SharedMemoryStatus);
-	// Shared memory for status sharing
 
+	// shared memory for mutex to control writing to the above
 	HANDLE hSharedMutexMapping = CreateFileMapping(
 		INVALID_HANDLE_VALUE,
 		NULL,
@@ -28,8 +29,8 @@ ProfilerStatusManager::ProfilerStatusManager(std::string _processName) {
 		L"SharedMemoryMutex"
 	); if (hSharedMutexMapping == NULL) { spdlog::error("File mapping creation for mutex failed"); }
 	_statusMutex = CreateMutex(NULL, FALSE, L"SharedMemoryMutex");
-	// shared memory for mutex
 
+	// shared memory for currently profiled method
 	HANDLE hMethodFileMapping = CreateFileMapping(
 		INVALID_HANDLE_VALUE,
 		NULL,
@@ -46,8 +47,8 @@ ProfilerStatusManager::ProfilerStatusManager(std::string _processName) {
 	); if (SharedMemoryMethod == NULL) { spdlog::error("Mapping view of Method file failed"); }
 
 	_currentMethod = static_cast<int*>(SharedMemoryMethod);
-	// shared memory for method
 
+	// shared memory for communicating current 'speedup'
 	HANDLE hDelayFileMapping = CreateFileMapping(
 		INVALID_HANDLE_VALUE,
 		NULL,
@@ -91,7 +92,7 @@ ProfilerStatus ProfilerStatusManager::getNextStatus(){
 		break;
 	}
 	/*
-	- are all baseline measurements collected? (should one be one)
+	- are all baseline measurements collected?
 	- are all slowdowns applied to all methods?
 	- are all slowdowns applied to every method?
 	- (are all threadIDs collected?)

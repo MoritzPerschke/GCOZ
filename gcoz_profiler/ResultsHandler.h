@@ -20,10 +20,18 @@ using std::copy;
 using std::to_string;
 using std::string;
 
+/* Class providing the functionality of writing 
+*  all of the relevant collected information
+*  to files
+*/
 class ResultsHandler {
 	std::string _outputName;
 
 public:
+	// get might not be the correct word
+	// these methods just lock the mutex,
+	// get the data and use nlohmann json
+	// to write it to a file
 	json getMethodDurations();
 	json getFrameRates();
 	json getFrameTimes();
