@@ -37,10 +37,35 @@ It is important to build it in DEBUG due to [assert statements used in kiero](ht
 
 Most antivirus solutions block dll injection by default, so make sure you add the executable to exceptions.
 
+There are also some settings that need to be changed on the host machine:
+- `Windows Advanced Power Management`: this limits the maximum processor state of the machine, set this to ~10%
+- VSync has to be turned off
+
+For more information on these settings, please consult the thesis.
+
 ## Run
 
 Open a Powershell window in the `gcoz_profiler/x64/Debug` directory.
 
 Now run `.\gcoz_profiler <name of the game> <process id of the game>`
+
+The profiler will now run through all the steps described above and write the data to the `data/` directory.
+
+It also generates a new directory for every profiling run (e.g. `data/Borderlands 3/run_0`)
+
+## Analysis
+Open the `analysis.ipynb` jupyter notebook.
+
+Replace value of the `_GAME` variable with the string you gave the profiler on invocation.
+
+Replace the value of the `_RUN` variable with the specific folder in the `data/<game>` directory that you want to generate the visualizations for.
+
+The notebook will generate a number of graphs (in the `graphs/` directory):
+- AllFrameTimesBox.png: A number of graphs where each one shows every single frametime collected, ordered by the method that was delayed
+- AllFrameTimesLine.png: Same as above, just in a line graph
+- SingleFrametimesBox.png: Similar to `AllFrameTimesBox.png`, but showing the resulting frametimes when delaying all methods (serves a similar purpose to `BaselineAverage.png`)
+- BaselineAverage.png: This is meant to be a 'sanity check'. This graph show the average of values in the [interquartile range](https://en.wikipedia.org/wiki/Interquartile_range) of the data. If the bars in this graph grow in a linear fashion, then the setup was completed correctly and the profiler can work as intended.
+- resultAbs.png: The calculated, theoretical speedup in the time needed to render a single frame.
+- resultRel.png: Same as above, just relative to the baseline.
 
 **THIS PROJECT IS NO LONGER MAINTAINED AND ONLY SERVES AS AN ARCHIVE OF THE THESIS**
